@@ -104,6 +104,51 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
+    public function nuevoDispositivo () {
+        $nombre = $this->input->post("nombre");
+        $mac = $this->input->post("mac");
+        $ssid = $this->input->post("ssid");
+        $psw = $this->input->post("psw");
+        $tipo = $this->input->post("tipo");
+        $maestro = $this->input->post("maestro");
+        $id_usuario = $this->input->post("id_usuario");
+
+        $data = array(
+            "nombre" => $nombre,
+            "mac" => $mac,
+            "ssid" => $ssid,
+            "psw" => $psw,
+            "tipo" => $tipo,
+            "maestro" => $maestro,
+            "automatizado" => NULL,
+            "id_usuario" => $id_usuario,
+            "id_cosecha" => NULL
+        );
+
+        $id_dispositivo = $this->Usuarios_model->nuevoDispositivo($data);
+
+        $obj["resultado"] = $id_dispositivo != 0;
+        $obj['mensaje'] = $obj["resultado"] ? "Dispositivo nuevo agregado" : "Imposible insertar promocion";
+        $obj["id_dispositivo"] = $id_dispositivo;
+
+        echo json_encode($obj);
+
+    }
+
+    public function dispositivos(){
+
+        $id_usuario = $this->input->post("id_usuario");
+
+        $data = $this->Usuarios_model->getDispositivos($id_usuario);
+
+            $obj['resultado'] = $data != NULL;
+            $obj['mensaje'] = $obj['resultado'] ? "Se recuperaron " .count($data). " dispositivo(s)" : "No hay nigun dispositivo registrado";
+            $obj['dispositivos'] = $data;
+
+            echo json_encode($obj);
+
+    }
+
     //Obtener las plantas registradas
     public function getPlantas(){
         $row = $this->Plantas_model->getPlantas();

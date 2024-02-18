@@ -76,4 +76,12 @@ class Usuarios_model extends CI_Model
         return $rs->num_rows() > 0 ?
             $rs->result() : NULL;
     }
+
+    //Método para  agregar un nuevo dispositivo
+    public function nuevoDispositivo($data) {
+        $this->db->insert("dispositivo", $data);
+
+        return $this->db->affected_rows() > 0 ? 
+            $this->db->insert_id() : 0;
+    }
 }

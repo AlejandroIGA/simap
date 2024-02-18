@@ -118,7 +118,6 @@ class Back extends CI_Controller
             "psw" => $psw,
             "tipo" => $tipo,
             "maestro" => $maestro,
-            "estatus" => 1,
             "automatizado" => NULL,
             "id_usuario" => $id_usuario,
             "id_cosecha" => NULL
@@ -131,6 +130,20 @@ class Back extends CI_Controller
         $obj["id_dispositivo"] = $id_dispositivo;
 
         echo json_encode($obj);
+
+    }
+
+    public function dispositivos(){
+
+        $id_usuario = $this->input->post("id_usuario");
+
+        $data = $this->Usuarios_model->getDispositivos($id_usuario);
+
+            $obj['resultado'] = $data != NULL;
+            $obj['mensaje'] = $obj['resultado'] ? "Se recuperaron " .count($data). " dispositivo(s)" : "No hay nigun dispositivo registrado";
+            $obj['dispositivos'] = $data;
+
+            echo json_encode($obj);
 
     }
 

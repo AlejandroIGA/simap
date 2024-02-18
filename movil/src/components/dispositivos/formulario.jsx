@@ -4,7 +4,7 @@ import {Picker} from "@react-native-picker/picker";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import conf from '../../data/conf';
 
-const Formulario = ({ visible, onClose }) => {
+const Formulario = ({ visible, onClose, actualizarDispositivos }) => {
   const [nombre, setNombre] = useState('');
   const [direccionMac, setDireccionMac] = useState('');
   const [tipoDispositivo, setTipoDispositivo] = useState('esclavo');
@@ -33,7 +33,7 @@ const Formulario = ({ visible, onClose }) => {
     getUserData();
   }, []);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (props) => {
     const formData = new FormData();
     formData.append('nombre', nombre);
     formData.append('mac', direccionMac);
@@ -63,8 +63,8 @@ const Formulario = ({ visible, onClose }) => {
       console.error('Error al insetrtar dispositivo:', error);
       alert('Error agregar dispositivo. Por favor, inténtalo de nuevo.');
     }
-
-    onClose();
+    props.onClose();
+    props.actualizarDispositivos();
   };
 
   const renderFields = () => {
@@ -126,7 +126,7 @@ const Formulario = ({ visible, onClose }) => {
             onChangeText={setDireccionMac}
           />
           {renderFields()}
-          <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+          <TouchableOpacity style={styles.button} onPress={() => handleSubmit({ onClose, actualizarDispositivos })}>
             <Text style={styles.buttonText}>Añadir</Text>
           </TouchableOpacity>
         </View>

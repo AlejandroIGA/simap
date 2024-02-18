@@ -19,7 +19,7 @@ const ListaCultivos = ({ cultivos, filtro }) => {
                 renderItem={({ item: cultivo }) => {
 
                     return (
-                        <View style={style.container} flexDirection='column'>
+                        <View style={style.container} flexDirection='column' key={cultivo.id_cosecha}>
                             <Text style={style.header} alignSelf="center" >{cultivo.nombre}</Text>
                             <View style={style.linea}></View>
                             <View flexDirection='row' >

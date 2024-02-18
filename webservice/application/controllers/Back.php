@@ -12,6 +12,8 @@ class Back extends CI_Controller
 
         $this->output->set_content_type("application/json");
         $this->load->model("Usuarios_model");
+        $this->load->model("Plantas_model");
+        $this->load->model("Cultivo_model");
     }
 
     public function index()
@@ -147,4 +149,53 @@ class Back extends CI_Controller
 
     }
 
+    //Obtener las plantas registradas
+    public function getPlantas(){
+        $row = $this->Plantas_model->getPlantas();
+        $obj["resultado"] = $row != NULL;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Plantas recuperadas"
+            : "No hay plantas";
+        $obj["data"] = $row;
+
+        echo json_encode($obj);
+    }
+
+    public function getPlanta($planta){
+        $row = $this->Plantas_model->getPlanta($planta);
+        $obj["resultado"] = $row != NULL;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Planta recuperada"
+            : "No hay planta";
+        $obj["data"] = $row;
+
+        echo json_encode($obj);
+    }
+
+    //Registrar un cultivo/cosecha
+    public function addCultivo(){
+        $data = array(
+            'id_usuario' => $this->input->post("id_usuario"), 
+            'id_planta' => $this->input->post("id_planta"), 
+            'nombre' => $this->input->post("nombre"), 
+            'fecha_inicio' => $this->input->post("fecha_inicio"), 
+            'cant_siembra' => $this->input->post("cant_siembra"), 
+            'temp_amb_min' => $this->input->post("temp_amb_min"), 
+            'temp_amb_max' => $this->input->post("temp_amb_max"), 
+            'hum_amb_min' => $this->input->post("hum_amb_min"), 
+            'hum_amb_max' => $this->input->post("hum_amb_max"), 
+            'hum_sue_min' => $this->input->post("hum_sue_min"), 
+            'hum_sue_max' => $this->input->post("hum_sue_max"),
+        );
+
+        $rs = $this->Cultivo_model->addCultivo($data);
+
+        $obj["resultado"] = $rs != false;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Cultivo guardado"
+            : "Se genero un error";
+
+        echo json_encode($obj);
+
+    }
 }

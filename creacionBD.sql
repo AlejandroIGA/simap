@@ -168,7 +168,3 @@ INSERT INTO dispositivo(maestro, id_usuario,id_cosecha,mac,ssid,psw,tipo,automat
 (null,1,5,"aabbccdd","red1","1234","maestro",1),
 (10,2,5,"eeffgghh","red1","1234","esclavo",null),
 (null,3,6,"aaeeiioo","red1","1234","maestro",1)
-
-
-
-

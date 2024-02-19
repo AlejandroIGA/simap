@@ -37,6 +37,7 @@ const FormularioAgregar = ({ visible, onClose, onCambio }) => {
     const cerrar = () => {
         onClose();
         borrarDatos();
+        
     }
 
     const borrarDatos = () => {
@@ -130,7 +131,6 @@ const FormularioAgregar = ({ visible, onClose, onCambio }) => {
                     console.log(data);
 
                     if (data.resultado === true) {
-                        console.log("SI FUE TRUE")
                         borrarDatos();
                         onCambio();
                         onClose();
@@ -141,12 +141,13 @@ const FormularioAgregar = ({ visible, onClose, onCambio }) => {
                 console.error("ERROR:", error.message);
             }
         }
+        getPlantas();
     }
-
+    
     useEffect(() => {
         getPlantas();
         getPlanta();
-    }, [])
+    }, [planta])
 
     return (
         <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
@@ -169,7 +170,7 @@ const FormularioAgregar = ({ visible, onClose, onCambio }) => {
                         <Picker
                             style={[style.picker, style.pickerInput]}
                             selectedValue={planta}
-                            onValueChange={(itemValue) => setPlanta(itemValue)}>
+                            onValueChange={(itemValue) => {setPlanta(itemValue)}}>
                             {
                                 plantasData.map((planta) => (
                                     <Picker.Item key={planta.id_planta} label={planta.nombre} value={planta.id_planta} />

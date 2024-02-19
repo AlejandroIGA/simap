@@ -104,6 +104,17 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
+    //Obtener la información de un cultivo especifico
+    public function getCultivo($id_cosecha){
+        $row = $this->Cultivo_model->getCultivo($id_cosecha);
+        $obj["resultado"] = $row != NULL;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Cultivo recuperado"
+            : "No hay cultivo";
+        $obj["data"] = $row;
+        echo json_encode($obj);
+    }
+
     //Obtener las plantas registradas
     public function getPlantas(){
         $row = $this->Plantas_model->getPlantas();
@@ -152,5 +163,39 @@ class Back extends CI_Controller
 
         echo json_encode($obj);
 
+    }
+
+    //Actualizar un cultivo
+    public function updateCultivo(){
+        $data = array(
+            'id_cosecha' => $this->input->post("id_cosecha"), 
+            'id_planta' => $this->input->post("id_planta"), 
+            'nombre' => $this->input->post("nombre"), 
+            'fecha_inicio' => $this->input->post("fecha_inicio"), 
+            'cant_siembra' => $this->input->post("cant_siembra"), 
+            'temp_amb_min' => $this->input->post("temp_amb_min"), 
+            'temp_amb_max' => $this->input->post("temp_amb_max"), 
+            'hum_amb_min' => $this->input->post("hum_amb_min"), 
+            'hum_amb_max' => $this->input->post("hum_amb_max"), 
+            'hum_sue_min' => $this->input->post("hum_sue_min"), 
+            'hum_sue_max' => $this->input->post("hum_sue_max"),
+        );
+
+        $rs = $this->Cultivo_model->updateCultivo($data);
+        $obj["resultado"] = $rs != false;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Cultivo actualizado"
+            : "No se actualizo o no hay cambios";
+
+        echo json_encode($obj);
+    }
+
+    public function deleteCultivo($id_cultivo){
+        $row = $this->Cultivo_model->deleteCultivo($id_cultivo);
+        $obj["resultado"] = $row != false;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Cultivo eliminado"
+            : "Hay dispositivos conectados";
+        echo json_encode($obj);
     }
 }

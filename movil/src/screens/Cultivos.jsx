@@ -90,8 +90,8 @@ const Cultivos = () => {
             {responseData.resultado === true ? (
                 <>
                     <FiltroCultivos onFilter={handleFilterChange} />
-                    <ListaCultivos filtro={filtro} cultivos={responseData.data} />
-                    <TouchableOpacity style={style.floatingButton} onPress={agregarCultivo}>
+                    <ListaCultivos filtro={filtro} cultivos={responseData.data} onCambio={() => setCambios(true)}/>
+                    <TouchableOpacity style={style.floatingButton} onPress={()=>{agregarCultivo()}}>
                         <Icon name="plus" size={30} color={theme.colors.backgroundPrimary} />
                     </TouchableOpacity>
                     <FormularioAgregar visible={agregar} onClose={cerrarAgregar} onCambio={() => setCambios(true)}/>

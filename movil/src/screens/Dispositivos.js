@@ -55,6 +55,7 @@ export function Dispositivos() {
         const data = await response.json();
         console.log(data);
         setDispositivos(data.dispositivos);
+        console.log(dispositivos);
       }
     } catch (error) {
       console.error("ERROR:", error.message);
@@ -90,28 +91,33 @@ export function Dispositivos() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.row}>
-        <ScrollView contentContainerStyle={styles.column}>
-          {dispositivos.map((dispositivo, index) => (
-            index % 2 === 0 && (
-              <DeviceItem key={dispositivo.id_dispositivo} dispositivo={dispositivo} width={deviceItemWidth} onDelete={deleteDispositivo} />
-            )
-          ))}
-        </ScrollView>
-        <ScrollView contentContainerStyle={styles.column}>
-          {dispositivos.map((dispositivo, index) => (
-            index % 2 !== 0 && (
-              <DeviceItem key={dispositivo.id_dispositivo} dispositivo={dispositivo} width={deviceItemWidth} onDelete={deleteDispositivo} />
-            )
-          ))}
-        </ScrollView>
-      </View>
+      {dispositivos != null ? (
+        <View style={styles.row}>
+          <ScrollView contentContainerStyle={styles.column}>
+            {dispositivos && dispositivos.map((dispositivo, index) => (
+              index % 2 === 0 && (
+                <DeviceItem key={dispositivo.id_dispositivo} dispositivo={dispositivo} width={deviceItemWidth} onDelete={deleteDispositivo} />
+              )
+            ))}
+          </ScrollView>
+          <ScrollView contentContainerStyle={styles.column}>
+            {dispositivos && dispositivos.map((dispositivo, index) => (
+              index % 2 !== 0 && (
+                <DeviceItem key={dispositivo.id_dispositivo} dispositivo={dispositivo} width={deviceItemWidth} onDelete={deleteDispositivo} />
+              )
+            ))}
+          </ScrollView>
+        </View> 
+      ) : (
+        <Text style={styles.noDevicesText}>No hay dispositivos dados de alta.</Text>
+      )}
       <TouchableOpacity style={styles.floatingButton} onPress={openModal}>
         <Icon name='plus' size={30} color={theme.colors.backgroundPrimary} />
       </TouchableOpacity>
-      <Formulario visible={showModal} onClose={closeModal} actualizarDispositivos={actualizarDispositivos} />
+        <Formulario visible={showModal} onClose={closeModal} actualizarDispositivos={actualizarDispositivos} />
     </View>
   );
+  
 }
 
 const DeviceItem = ({ dispositivo, width, onDelete }) => {
@@ -208,5 +214,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     elevation: 3,
     zIndex: 10,
+  },
+  noDevicesText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 20,
   },
 });

@@ -114,17 +114,29 @@ class Back extends CI_Controller
         $maestro = $this->input->post("maestro");
         $id_usuario = $this->input->post("id_usuario");
 
-        $data = array(
-            "nombre" => $nombre,
-            "mac" => $mac,
-            "ssid" => $ssid,
-            "psw" => $psw,
-            "tipo" => $tipo,
-            "maestro" => $maestro,
-            "automatizado" => NULL,
-            "id_usuario" => $id_usuario,
-            "id_cosecha" => NULL
-        );
+        if ($maestro > 0) {
+            $data = array(
+                "nombre" => $nombre,
+                "mac" => $mac,
+                "ssid" => $ssid,
+                "psw" => $psw,
+                "tipo" => $tipo,
+                "maestro" => $maestro,
+                "automatizado" => NULL,
+                "id_usuario" => $id_usuario,
+                "id_cosecha" => NULL
+            );
+        } else {
+            $data = array(
+                "nombre" => $nombre,
+                "mac" => $mac,
+                "ssid" => $ssid,
+                "psw" => $psw,
+                "tipo" => $tipo,
+                "automatizado" => NULL,
+                "id_usuario" => $id_usuario
+            );
+        }
 
         $id_dispositivo = $this->Dispositivos_model->nuevoDispositivo($data);
 
@@ -158,7 +170,7 @@ class Back extends CI_Controller
         $data = $this->Dispositivos_model->getMaestros($id_usuario);
 
             $obj['resultado'] = $data != NULL;
-            $obj['mensaje'] = $obj['resultado'] ? "Se recuperaron " .count($data). " dispositivo(s) maestros" : "No hay nigun dispositivo registrado del usuario " + $id_usuario;
+            $obj['mensaje'] = $obj['resultado'] ? "Se recuperaron " .count($data). " dispositivo(s) maestros" : "No hay nigun dispositivo registrado del usuario $id_usuario";
             $obj['dispositivosMaestro'] = $data;
 
             echo json_encode($obj);

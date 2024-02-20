@@ -10,7 +10,7 @@ const Formulario = ({ visible, onClose, actualizarDispositivos }) => {
   const [tipoDispositivo, setTipoDispositivo] = useState('esclavo');
   const [nombreRed, setNombreRed] = useState('');
   const [psw, setPsw] = useState('');
-  const [dispositivoMaestro, setDispositivoMaestro] = useState("");
+  const [dispositivoMaestro, setDispositivoMaestro] = useState(0);
   const [dispositivosMaestros, setDispositivosMaestros] = useState([]);
   const [tipoUsuario, setTipoUsuario] = useState('');
   const [idUsuario, setIdUsuario] = useState(0);
@@ -21,7 +21,6 @@ const Formulario = ({ visible, onClose, actualizarDispositivos }) => {
     setNombreRed('');
     setPsw('');
     setDispositivoMaestro('');
-
   }
 
   const getUserData = async () => {
@@ -54,7 +53,7 @@ const Formulario = ({ visible, onClose, actualizarDispositivos }) => {
       console.log(dataResponse);
       setDispositivosMaestros(dataResponse.dispositivosMaestro);
     } catch (error) {
-      console.error('Error al obtener dispositivos maestros del usuario :' + idUsuario, error);
+      console.error('Error al obtener dispositivos maestros del usuario :' + idUsuario + error);
     }
   };
 
@@ -70,6 +69,12 @@ const Formulario = ({ visible, onClose, actualizarDispositivos }) => {
 
   // Dar de alta nuevo dispositivo
   const handleSubmit = async (props) => {
+
+    if (nombre.trim() === '' || direccionMac.trim() === '' || nombreRed.trim() === '' || psw.trim() === '') {
+      alert('Por favor completa todos los campos.');
+      return;
+    }
+    
     const formData = new FormData();
     formData.append('nombre', nombre);
     formData.append('mac', direccionMac);
@@ -130,9 +135,14 @@ const Formulario = ({ visible, onClose, actualizarDispositivos }) => {
             style={styles.picker}
             selectedValue={dispositivoMaestro}
             onValueChange={(itemValue) => setDispositivoMaestro(itemValue)}>
-            {dispositivosMaestros.map((dispositivo) => (
-              <Picker.Item key={dispositivo.id_dispositivo} label={dispositivo.nombre} value={dispositivo.id_dispositivo} />
-            ))}
+              <Picker.Item label="Seleccione un dispositivo maestro" value={''} />
+              {dispositivosMaestros != null ? (
+                dispositivosMaestros.map((dispositivo) => (
+                <Picker.Item key={dispositivo.id_dispositivo} label={dispositivo.nombre} value={dispositivo.id_dispositivo} />
+              ))
+            ) : (
+              <Picker.Item label="No hay dispositivos maestros dados de alta" value="" />
+            )}
           </Picker>
         </View>
       );
@@ -167,7 +177,12 @@ const Formulario = ({ visible, onClose, actualizarDispositivos }) => {
             style={styles.input}
             placeholder="Dirección MAC"
             value={direccionMac}
-            onChangeText={setDireccionMac}
+            onChangeText={(text) => {
+              text = text.replace(/:/g, '');
+              text = text.replace(/(.{2})/g, '$1:');
+              text = text.replace(/:$/, '');
+              setDireccionMac(text);
+            }}
           />
           {renderFields()}
           <TouchableOpacity style={styles.button} onPress={() => handleSubmit({ onClose, actualizarDispositivos })}>

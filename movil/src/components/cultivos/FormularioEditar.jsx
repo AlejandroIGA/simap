@@ -129,7 +129,9 @@ const FormularioEditar = ({ visible, onClose, onCambio, id }) => {
                     formData.append("id_planta", planta);
                     formData.append("nombre", nombre);
                     //Se debe mandar en string para que no salte error de red
-                    formData.append("fecha_inicio", fecha_inicio.toISOString());
+                    const fechaLocal = new Date(fecha_inicio.getTime() - (fecha_inicio.getTimezoneOffset() * 60000));
+                    const fechaISO = fechaLocal.toISOString();
+                    formData.append("fecha_inicio", fechaISO);
                     formData.append("cant_siembra", siembra);
                     formData.append("temp_amb_min", temp_amb_min);
                     formData.append("temp_amb_max", temp_amb_max);
@@ -164,10 +166,11 @@ const FormularioEditar = ({ visible, onClose, onCambio, id }) => {
     
     
     useEffect(() => {
-        getPlantas();
         if(visible){
             getCultivo();
+            getPlantas();
         }
+        getPlantas();
     }, [visible])
 
     return (

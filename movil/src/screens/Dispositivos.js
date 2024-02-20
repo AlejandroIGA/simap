@@ -19,11 +19,18 @@ import conf from "../data/conf";
 export function Dispositivos() {
   const [showModal, setShowModal] = useState(false);
   const [dispositivos, setDispositivos] = useState([]);
+  const [dispositivoEditar, setDispositivoEditar] = useState(null);
   const screenWidth = Dimensions.get('window').width;
   const deviceItemWidth = (screenWidth - 40 - 20) / 2;
 
+
+  const openEditModal = (dispositivo) => {
+    setDispositivoEditar(dispositivo);
+    openModal(); 
+  };
+
   const openModal = () => {
-    setShowModal(true);
+    setShowModal(true); 
   };
 
   const closeModal = () => {
@@ -34,6 +41,7 @@ export function Dispositivos() {
     await getDispositivos();
   };
 
+  //OBTENER TODOS LOS DISPOSITIVOS DEL USUARIO
   const getDispositivos = async () => {
     try {
       const userDataJSON = await AsyncStorage.getItem('userData');
@@ -62,6 +70,7 @@ export function Dispositivos() {
     }
   };
 
+  //ELIMINAR DISPOSITIVO
   const deleteDispositivo = async (id_dispositivo) => {
     try {
 
@@ -96,14 +105,14 @@ export function Dispositivos() {
           <ScrollView contentContainerStyle={styles.column}>
             {dispositivos && dispositivos.map((dispositivo, index) => (
               index % 2 === 0 && (
-                <DeviceItem key={dispositivo.id_dispositivo} dispositivo={dispositivo} width={deviceItemWidth} onDelete={deleteDispositivo} />
+                <DeviceItem key={dispositivo.id_dispositivo} dispositivo={dispositivo} width={deviceItemWidth} onDelete={deleteDispositivo} onEdit={openEditModal} />
               )
             ))}
           </ScrollView>
           <ScrollView contentContainerStyle={styles.column}>
             {dispositivos && dispositivos.map((dispositivo, index) => (
               index % 2 !== 0 && (
-                <DeviceItem key={dispositivo.id_dispositivo} dispositivo={dispositivo} width={deviceItemWidth} onDelete={deleteDispositivo} />
+                <DeviceItem key={dispositivo.id_dispositivo} dispositivo={dispositivo} width={deviceItemWidth} onDelete={deleteDispositivo} onEdit={openEditModal} />
               )
             ))}
           </ScrollView>
@@ -114,13 +123,15 @@ export function Dispositivos() {
       <TouchableOpacity style={styles.floatingButton} onPress={openModal}>
         <Icon name='plus' size={30} color={theme.colors.backgroundPrimary} />
       </TouchableOpacity>
-        <Formulario visible={showModal} onClose={closeModal} actualizarDispositivos={actualizarDispositivos} />
+        <Formulario visible={showModal} onClose={closeModal} actualizarDispositivos={actualizarDispositivos} dispositivoEditar={dispositivoEditar} />
     </View>
   );
   
 }
 
-const DeviceItem = ({ dispositivo, width, onDelete }) => {
+
+// CONSTRUCTOR DISPOSITIVO
+const DeviceItem = ({ dispositivo, width, onDelete, onEdit }) => {
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -135,14 +146,19 @@ const DeviceItem = ({ dispositivo, width, onDelete }) => {
     }
   };
 
+  const handleEdit = () => {
+    onEdit(dispositivo); 
+  };
+
   return (
     <View style={[styles.deviceItem, styles.deviceItemMargin, { width: width }]}>
       <Text style={styles.deviceText}>Nombre: {dispositivo.nombre}</Text>
       <Text style={styles.deviceTextInfo}>MAC: {dispositivo.mac}</Text>
       <Text style={styles.deviceTextInfo}>Red: {dispositivo.ssid}</Text>
+      <Text style={styles.deviceTextInfo}>Contraseña: {dispositivo.psw}</Text>
       <Text style={styles.deviceTextInfo}>Tipo: {dispositivo.tipo}</Text>
       <View style={styles.btnCenter}>
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity style={styles.button} onPress={handleEdit} >
           <Icon name='edit' size={20} color='white' />
         </TouchableOpacity>
         <TouchableOpacity
@@ -157,6 +173,7 @@ const DeviceItem = ({ dispositivo, width, onDelete }) => {
   );
 };
 
+//ESTILOS
 const styles = StyleSheet.create({
   container: {
     flex: 1,

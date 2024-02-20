@@ -14,6 +14,7 @@ class Back extends CI_Controller
         $this->load->model("Usuarios_model");
         $this->load->model("Plantas_model");
         $this->load->model("Cultivo_model");
+        $this->load->model("Dispositivos_model");
     }
 
     public function index()
@@ -123,19 +124,31 @@ class Back extends CI_Controller
         $maestro = $this->input->post("maestro");
         $id_usuario = $this->input->post("id_usuario");
 
-        $data = array(
-            "nombre" => $nombre,
-            "mac" => $mac,
-            "ssid" => $ssid,
-            "psw" => $psw,
-            "tipo" => $tipo,
-            "maestro" => $maestro,
-            "automatizado" => NULL,
-            "id_usuario" => $id_usuario,
-            "id_cosecha" => NULL
-        );
+        if ($maestro > 0) {
+            $data = array(
+                "nombre" => $nombre,
+                "mac" => $mac,
+                "ssid" => $ssid,
+                "psw" => $psw,
+                "tipo" => $tipo,
+                "maestro" => $maestro,
+                "automatizado" => NULL,
+                "id_usuario" => $id_usuario,
+                "id_cosecha" => NULL
+            );
+        } else {
+            $data = array(
+                "nombre" => $nombre,
+                "mac" => $mac,
+                "ssid" => $ssid,
+                "psw" => $psw,
+                "tipo" => $tipo,
+                "automatizado" => NULL,
+                "id_usuario" => $id_usuario
+            );
+        }
 
-        $id_dispositivo = $this->Usuarios_model->nuevoDispositivo($data);
+        $id_dispositivo = $this->Dispositivos_model->nuevoDispositivo($data);
 
         $obj["resultado"] = $id_dispositivo != 0;
         $obj['mensaje'] = $obj["resultado"] ? "Dispositivo nuevo agregado" : "Imposible insertar promocion";
@@ -149,7 +162,7 @@ class Back extends CI_Controller
 
         $id_usuario = $this->input->post("id_usuario");
 
-        $data = $this->Usuarios_model->getDispositivos($id_usuario);
+        $data = $this->Dispositivos_model->getDispositivos($id_usuario);
 
             $obj['resultado'] = $data != NULL;
             $obj['mensaje'] = $obj['resultado'] ? "Se recuperaron " .count($data). " dispositivo(s)" : "No hay nigun dispositivo registrado";
@@ -157,6 +170,33 @@ class Back extends CI_Controller
 
             echo json_encode($obj);
 
+    }
+
+    // Obtener dispisitivos maestros para asignacion de redes a otros dispositivos.
+    public function dispositivosMaestros(){
+
+        $id_usuario = $this->input->post("id_usuario");
+
+        $data = $this->Dispositivos_model->getMaestros($id_usuario);
+
+            $obj['resultado'] = $data != NULL;
+            $obj['mensaje'] = $obj['resultado'] ? "Se recuperaron " .count($data). " dispositivo(s) maestros" : "No hay nigun dispositivo registrado del usuario $id_usuario";
+            $obj['dispositivosMaestro'] = $data;
+
+            echo json_encode($obj);
+
+    }
+
+    //Eliminar dispositivos
+
+    public function borrarDispositivo(){
+
+        $id_dispositivo = $this->input->post("id_dispositivo");
+
+        $obj["resultado"] = $this->Dispositivos_model->deleteDispositivo($id_dispositivo);
+        $obj['mensaje'] = $obj["resultado"] ? "Dispositivo borrado exitosamente" : "Imposible borrar dispositivo, tiene una cosecha en curso";
+
+        echo json_encode($obj);
     }
 
     //Obtener las plantas registradas

@@ -11,28 +11,64 @@ const Formulario = ({ visible, onClose, actualizarDispositivos }) => {
   const [nombreRed, setNombreRed] = useState('');
   const [psw, setPsw] = useState('');
   const [dispositivoMaestro, setDispositivoMaestro] = useState("");
+  const [dispositivosMaestros, setDispositivosMaestros] = useState([]);
   const [tipoUsuario, setTipoUsuario] = useState('');
   const [idUsuario, setIdUsuario] = useState(0);
 
-  useEffect(() => {
-    const getUserData = async () => {
-      try {
-        const userDataJSON = await AsyncStorage.getItem('userData');
-        if (userDataJSON) {
-          const userData = JSON.parse(userDataJSON);
-          const tipo = userData.tipo;
-          const id_usuario = userData.id_usuario;
-          setTipoUsuario(tipo);
-          setIdUsuario(id_usuario);
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    };
+  const limpiarCampos = () => {
+    setNombre('');
+    setDireccionMac('');
+    setNombreRed('');
+    setPsw('');
+    setDispositivoMaestro('');
 
+  }
+
+  const getUserData = async () => {
+    try {
+      const userDataJSON = await AsyncStorage.getItem('userData');
+      if (userDataJSON) {
+        const userData = JSON.parse(userDataJSON);
+        const tipo = userData.tipo_usuario;
+        const id_usuario = userData.id_usuario;
+        setTipoUsuario(tipo);
+        setIdUsuario(id_usuario);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // Obtener dispositivos maestros 
+  const getDispositivosMaestros = async () => {
+    const formData = new FormData();
+    formData.append('id_usuario', idUsuario);
+
+    try {
+      const response = await fetch(conf.url + '/dispositivosMaestros', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const dataResponse = await response.json();
+      console.log(dataResponse);
+      setDispositivosMaestros(dataResponse.dispositivosMaestro);
+    } catch (error) {
+      console.error('Error al obtener dispositivos maestros del usuario :' + idUsuario, error);
+    }
+  };
+
+  useEffect(() => {
     getUserData();
   }, []);
 
+  useEffect(() => {
+    if (idUsuario !== 0) {
+      getDispositivosMaestros();
+    }
+  }, [idUsuario]);
+
+  // Dar de alta nuevo dispositivo
   const handleSubmit = async (props) => {
     const formData = new FormData();
     formData.append('nombre', nombre);
@@ -65,6 +101,8 @@ const Formulario = ({ visible, onClose, actualizarDispositivos }) => {
     }
     props.onClose();
     props.actualizarDispositivos();
+    getDispositivosMaestros();
+    limpiarCampos();
   };
 
   const renderFields = () => {
@@ -87,12 +125,16 @@ const Formulario = ({ visible, onClose, actualizarDispositivos }) => {
       );
     } else if (tipoDispositivo === "esclavo") {
       return (
-        <TextInput
-          style={styles.input}
-          placeholder="Dispositivo Maestro"
-          value={dispositivoMaestro}
-          onChangeText={setDispositivoMaestro}
-        />
+        <View style={styles.pickerContainer}>
+          <Picker
+            style={styles.picker}
+            selectedValue={dispositivoMaestro}
+            onValueChange={(itemValue) => setDispositivoMaestro(itemValue)}>
+            {dispositivosMaestros.map((dispositivo) => (
+              <Picker.Item key={dispositivo.id_dispositivo} label={dispositivo.nombre} value={dispositivo.id_dispositivo} />
+            ))}
+          </Picker>
+        </View>
       );
     }
   };
@@ -103,14 +145,16 @@ const Formulario = ({ visible, onClose, actualizarDispositivos }) => {
         <View style={styles.modalContent}>
           <Text style={styles.title}>Agregar dispositivo</Text>
 
-          {(tipoUsuario === 'administrador') &&
-            <Picker
-              style={[styles.picker, styles.input]}
-              selectedValue={tipoDispositivo}
-              onValueChange={(itemValue) => setTipoDispositivo(itemValue)}>
-              <Picker.Item label="Dispositivo Maestro" value="maestro" />
-              <Picker.Item label="Dispositivo Esclavo" value="esclavo" />
-            </Picker>
+          {(tipoUsuario === 'propietario') &&
+            <View style={styles.pickerContainer}>
+              <Picker
+                style={styles.picker}
+                selectedValue={tipoDispositivo}
+                onValueChange={(itemValue) => setTipoDispositivo(itemValue)}>
+                <Picker.Item label="Dispositivo Maestro" value="maestro" />
+                <Picker.Item label="Dispositivo Esclavo" value="esclavo" />
+              </Picker>
+            </View>
           }
 
           <TextInput
@@ -158,11 +202,16 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "white",
   },
-  picker: {
-    marginBottom: 20,
+  pickerContainer: {
+    justifyContent: 'center',
+    borderWidth: 1,
     backgroundColor: "white",
     borderColor: '#ccc',
     borderRadius: 5,
+    marginBottom: 20,
+  },
+  picker: {
+    height: 30,
   },
   input: {
     borderWidth: 1,
@@ -170,6 +219,8 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 5,
     marginBottom: 20,
+    height: 30,
+    paddingLeft: 15
   },
   button: {
     backgroundColor: '#ABBF15',

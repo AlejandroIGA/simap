@@ -12,6 +12,7 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 import theme from '../theme.js';
 import Formulario from '../components/dispositivos/formulario.jsx';
+import Borrar from '../components/dispositivos/borrar.jsx';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import conf from "../data/conf";
 
@@ -60,6 +61,29 @@ export function Dispositivos() {
     }
   };
 
+  const deleteDispositivo = async (id_dispositivo) => {
+    try {
+
+      const formData = new FormData();
+      formData.append("id_dispositivo", id_dispositivo);
+
+
+      const response = await fetch(conf.url+"/borrarDispositivo", {
+        method: 'POST',
+        body: formData,
+      });
+
+      const dataResponse = await response.json();
+      console.log(dataResponse);
+
+      alert(dataResponse.mensaje);
+
+      await actualizarDispositivos();
+    } catch (error) {
+      console.error("ERROR:", error.message);
+    }
+  };
+
   useEffect(() => {
     getDispositivos();
   }, []);
@@ -70,14 +94,14 @@ export function Dispositivos() {
         <ScrollView contentContainerStyle={styles.column}>
           {dispositivos.map((dispositivo, index) => (
             index % 2 === 0 && (
-              <DeviceItem key={dispositivo.id_dispositivo} dispositivo={dispositivo} width={deviceItemWidth} />
+              <DeviceItem key={dispositivo.id_dispositivo} dispositivo={dispositivo} width={deviceItemWidth} onDelete={deleteDispositivo} />
             )
           ))}
         </ScrollView>
         <ScrollView contentContainerStyle={styles.column}>
           {dispositivos.map((dispositivo, index) => (
             index % 2 !== 0 && (
-              <DeviceItem key={dispositivo.id_dispositivo} dispositivo={dispositivo} width={deviceItemWidth} />
+              <DeviceItem key={dispositivo.id_dispositivo} dispositivo={dispositivo} width={deviceItemWidth} onDelete={deleteDispositivo} />
             )
           ))}
         </ScrollView>
@@ -90,7 +114,21 @@ export function Dispositivos() {
   );
 }
 
-const DeviceItem = ({ dispositivo, width }) => {
+const DeviceItem = ({ dispositivo, width, onDelete }) => {
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const handleDelete = () => {
+    setShowDeleteModal(true);
+  };
+
+  const handleCloseModal = (confirmed) => {
+    setShowDeleteModal(false);
+    if (confirmed) {
+      onDelete(dispositivo.id_dispositivo);
+    }
+  };
+
   return (
     <View style={[styles.deviceItem, styles.deviceItemMargin, { width: width }]}>
       <Text style={styles.deviceText}>Nombre: {dispositivo.nombre}</Text>
@@ -103,10 +141,12 @@ const DeviceItem = ({ dispositivo, width }) => {
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.button, { backgroundColor: '#FF0000' }]}
+          onPress={handleDelete}
         >
           <Icon name='trash' size={20} color='white' />
         </TouchableOpacity>
       </View>
+      <Borrar visible={showDeleteModal} onClose={handleCloseModal} />
     </View>
   );
 };

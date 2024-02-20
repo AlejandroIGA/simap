@@ -242,4 +242,53 @@ class Back extends CI_Controller
             : "Hay dispositivos conectados";
         echo json_encode($obj);
     }
+
+    //Obtener plagas
+    public function getPlagas($id_cosecha){
+        $row = $this->Plantas_model->getPlagas($id_cosecha);
+        $obj["resultado"] = $row != NULL;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Plagas recuperadas"
+            : "No hay plagas registradas";
+        $obj["data"] = $row;
+
+        echo json_encode($obj);
+    }
+
+    //Obtener metodos de combate de plagas
+    public function getMetodos(){
+        $row = $this->Plantas_model->getMetodos();
+        $opciones = explode(",",$row->opciones);
+        foreach ($opciones as &$elemento) {
+            $elemento = trim($elemento, "'");
+        }
+        
+        $obj["resultado"] = $row != NULL;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Metodos recuperados"
+            : "No hay metodos registrados";
+        $obj["data"] =$opciones;
+
+        echo json_encode($obj);
+    }
+
+    //Finalizar un cultivo
+    public function endCultivo(){
+        $data = array(
+            "id_cosecha" => $this->input->post("id_cosecha"),
+            "fecha_fin" => $this->input->post("fecha_fin"),
+            "cant_cosecha" => $this->input->post("cant_cosecha"),
+            "combate" => $this->input->post("combate"),
+            "combate_efectivo" => $this->input->post("combate_efectivo"),
+            "plaga" => $this->input->post("plaga")
+        );
+
+        $rs = $this->Cultivo_model->endCultivo($data);
+        $obj["resultado"] = $rs != false;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Cultivo finalizado"
+            : "Surgio un error";
+
+        echo json_encode($obj);
+    }
 }

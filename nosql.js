@@ -1,61 +1,74 @@
 /*
-Tengo una colección cultivos
-1. Se debe guardar los valores de temperatura y humedad del aire.
-2. Se debe de guardar los valores de humedad del suelo.
-3. Se debe identificar a que cultivo le pertenece.
-4. Se debe registrar el consumo de agua 
-
-
+  Con el documento dispositivos se pueden ontener las medidas realizadas por cada esclavo
+  y con esto realizar graficas de tiempo por cada tarjeta esclavo.
 */
-const document = {
-  nombre: 'nombre cultivo',
-  id_cultivo: 'id_cultivo',
-  tem_amb_min: [
-    {
-      valor: '',
-      fecha: '',
-    },
-  ],
-  tem_amb_max: [
-    {
-      valor: '',
-      fecha: '',
-    },
-  ],
-  hum_amb_min: [
-    {
-      valor: '',
-      fecha: '',
-    },
-  ],
-  hum_amb_max: [
-    {
-      valor: '',
-      fecha: '',
-    },
-  ],
-  hum_sue_min: [
-    {
-      valor: '',
-      fecha: '',
-    },
-  ],
-  hum_sue_max: [
-    {
-      valor: '',
-      fecha: '',
-    },
-  ],
-  agua: [
-    {
-      valor: '',
-      fecha: '',
-    },
-  ],
-  gdd: [
-    {
-      valor: '',
-      fecha: '',
-    },
-  ],
-};
+
+const dispositivos = [
+  {
+    id_dispositivo: 'id_dispositivo',
+    id_master: 'id_master',
+    id_cultivo: 'id_cultivo',
+    dispositivo: 'nombre_dispositivo',
+    temp_amb: [
+      {
+        valor: 'valor',
+        fecha: 'fecha y hora medicion',
+      },
+    ],
+    hum_amb: [
+      {
+        valor: 'valor',
+        fecha: 'fecha y hora medicion',
+      },
+    ],
+    hum_sue: [
+      {
+        valor: 'valor',
+        fecha: 'fecha y hora medicion',
+      },
+    ],
+  },
+];
+
+/*
+  Con el documento cultivos se tiene la información general del cultivo,
+  con esta información se realizan los procesos estadisticos en la web.
+*/
+const cultivos = [
+  {
+    id_cultivo: 'id_cultivo',
+    cultivo: 'nombre_cultivo',
+    id_master: 'id_master',
+    master: 'nombre_master',
+    temp_amb_prom: [
+      {
+        valor: 'valor',
+        fecha: 'fecha y hora',
+      },
+    ],
+    hum_amb_prom: [
+      {
+        valor: 'valor',
+        fecha: 'fecha y hora',
+      },
+    ],
+    hum_sue_prom: [
+      {
+        valor: 'valor',
+        fecha: 'fecha y hora',
+      },
+    ],
+    agua: [
+      {
+        valor: 'valor',
+        fecha: 'fecha y hora',
+      },
+    ],
+    gdd: [
+      {
+        valor: 'valor',
+        fecha: 'fecha',
+      },
+    ],
+  },
+];

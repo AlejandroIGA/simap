@@ -18,6 +18,14 @@ class Cultivo_model extends CI_Model
         return $this->db->affected_rows()>0;
     }
 
+    //Finalizar cultivo
+    function endCultivo($data){
+        $this->db
+        ->where("id_cosecha",$data["id_cosecha"])
+        ->update("cosecha",$data);
+        return $this->db->affected_rows()>0;
+    }
+
     //Método para obtener un cultivo
     function getCultivo($id_cosecha){
         $rs = $this->db

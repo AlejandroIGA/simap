@@ -94,3 +94,20 @@ END;
 drop trigger eliminarCultivo;
 delete from cosecha where id_cosecha = 48;
 
+
+#obtener las plagas de una planta
+select plaga.nombre as plaga, plaga.id_plaga as id_plaga from plaga
+    inner join planta_plaga on planta_plaga.id_plaga = plaga.id_plaga
+    inner join planta on planta_plaga.id_planta = planta.id_planta
+    inner join cosecha on planta.id_planta = cosecha.id_planta
+    where id_cosecha = 6
+    order by plaga.nombre;
+
+
+#OBTENER LOS VALORES DE ENUM
+Select
+SUBSTRING(COLUMN_TYPE, 6, LENGTH(COLUMN_TYPE) - 6) AS opciones
+FROM information_schema.columns
+WHERE TABLE_SCHEMA = 'simap' -- Reemplaza 'tu_base_de_datos' con el nombre de tu base de datos
+AND TABLE_NAME = 'cosecha' -- Reemplaza 'tu_tabla' con el nombre de tu tabla
+AND COLUMN_NAME = 'combate'; -- Reemplaza 'opcion' con el nombre de tu columna ENUM

@@ -4,17 +4,18 @@ import {Picker} from "@react-native-picker/picker";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import conf from '../../data/conf';
 
-const Formulario = ({ visible, onClose, actualizarDispositivos }) => {
+const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEditar }) => {
   const [nombre, setNombre] = useState('');
   const [direccionMac, setDireccionMac] = useState('');
   const [tipoDispositivo, setTipoDispositivo] = useState('esclavo');
   const [nombreRed, setNombreRed] = useState('');
   const [psw, setPsw] = useState('');
-  const [dispositivoMaestro, setDispositivoMaestro] = useState(0);
+  const [dispositivoMaestro, setDispositivoMaestro] = useState('');
   const [dispositivosMaestros, setDispositivosMaestros] = useState([]);
   const [tipoUsuario, setTipoUsuario] = useState('');
   const [idUsuario, setIdUsuario] = useState(0);
 
+  // LIMPIAR CAMPODS DEL FORMULARIO
   const limpiarCampos = () => {
     setNombre('');
     setDireccionMac('');
@@ -59,7 +60,15 @@ const Formulario = ({ visible, onClose, actualizarDispositivos }) => {
 
   useEffect(() => {
     getUserData();
-  }, []);
+    if (dispositivoEditar) {
+      setNombre(dispositivoEditar.nombre);
+      setDireccionMac(dispositivoEditar.mac);
+      setTipoDispositivo(dispositivoEditar.tipo);
+      setNombreRed(dispositivoEditar.ssid);
+      setPsw(dispositivoEditar.psw);
+      setDispositivoMaestro(dispositivoEditar.maestro);
+    }
+  }, [dispositivoEditar]);
 
   useEffect(() => {
     if (idUsuario !== 0) {
@@ -70,11 +79,18 @@ const Formulario = ({ visible, onClose, actualizarDispositivos }) => {
   // Dar de alta nuevo dispositivo
   const handleSubmit = async (props) => {
 
-    if (nombre.trim() === '' || direccionMac.trim() === '' || nombreRed.trim() === '' || psw.trim() === '') {
-      alert('Por favor completa todos los campos.');
-      return;
+    if(tipoDispositivo === "maestro") {
+      if (nombre.trim() === '' || direccionMac.trim() === '' || nombreRed.trim() === '' || psw.trim() === '') {
+        alert('Por favor completa todos los campos.');
+        return;
+      }
+    } else if(tipoDispositivo === "esclavo") {
+      if (nombre.trim() === '' || direccionMac.trim() === '' || dispositivoMaestro.trim()  === '' ) {
+        alert('Por favor completa todos los campos.');
+        return;
+      }
     }
-    
+
     const formData = new FormData();
     formData.append('nombre', nombre);
     formData.append('mac', direccionMac);
@@ -110,6 +126,12 @@ const Formulario = ({ visible, onClose, actualizarDispositivos }) => {
     limpiarCampos();
   };
 
+
+  const closeModal = async (props) => {
+    props.onClose();
+    limpiarCampos();
+  };
+
   const renderFields = () => {
     if (tipoDispositivo === 'maestro') {
       return (
@@ -130,11 +152,22 @@ const Formulario = ({ visible, onClose, actualizarDispositivos }) => {
       );
     } else if (tipoDispositivo === "esclavo") {
       return (
+        <>
         <View style={styles.pickerContainer}>
           <Picker
             style={styles.picker}
             selectedValue={dispositivoMaestro}
-            onValueChange={(itemValue) => setDispositivoMaestro(itemValue)}>
+            onValueChange={(itemValue) => {
+              setDispositivoMaestro(itemValue);
+              const dispositivoMaestroSeleccionado = dispositivosMaestros.find(dispositivo => dispositivo.id_dispositivo === itemValue);
+              if (dispositivoMaestroSeleccionado) {
+                setNombreRed(dispositivoMaestroSeleccionado.ssid);
+                setPsw(dispositivoMaestroSeleccionado.psw);
+              } else {
+                setNombreRed('');
+                setPsw('');
+              }
+            }}>
               <Picker.Item label="Seleccione un dispositivo maestro" value={''} />
               {dispositivosMaestros != null ? (
                 dispositivosMaestros.map((dispositivo) => (
@@ -145,6 +178,7 @@ const Formulario = ({ visible, onClose, actualizarDispositivos }) => {
             )}
           </Picker>
         </View>
+        </>
       );
     }
   };
@@ -187,6 +221,9 @@ const Formulario = ({ visible, onClose, actualizarDispositivos }) => {
           {renderFields()}
           <TouchableOpacity style={styles.button} onPress={() => handleSubmit({ onClose, actualizarDispositivos })}>
             <Text style={styles.buttonText}>Añadir</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.buttonClose} onPress={() => closeModal({onClose})}>
+            <Text style={styles.buttonText}>Cancelar</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -241,8 +278,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#ABBF15',
     padding: 10,
     borderRadius: 5,
-    marginBottom: 25,
+    marginBottom: 5,
     marginTop: 10,
+  },
+  buttonClose: {
+    backgroundColor: 'red',
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 25,
+    marginTop: 5,
   },
   buttonText: {
     color: '#fff',

@@ -60,6 +60,8 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
+
+    
     public function logout(){
         $id_usuario = $this->input->post("id_usuario");
         $row = $this->Usuarios_model->logout($id_usuario);
@@ -101,4 +103,48 @@ class Back extends CI_Controller
 
         echo json_encode($obj);
     }
+
+
+    //WERBSERVICES (API REST) PARA WEB
+
+    public function loginWeb()
+    {
+        $correo = $this->input->get("correo");
+        $psw = $this->input->get("psw");
+        $row = $this->Usuarios_model->login($correo, $psw);    
+
+        $obj["resultado"] = $row != NULL;
+        if($obj["resultado"] != NULL){
+        $token = $row->token;
+        if($row->psw == $psw && $row->correo == $correo){
+        if($row->estatus == 0){
+            $obj["mensaje"] = "Cuenta desactivada";
+            $obj["data"] = NULL;
+        } else {
+            if(!$token){
+                $obj["mensaje"] = "Credenciales correctas";
+                $obj["data"] = array(
+                    'id_usuario' => $row->id_usuario,
+                    'tipo_usuario' => $row->tipo_usuario,
+                    'estatus' => $row->estatus
+                ); 
+                $this->Usuarios_model->saveUserToken($row->id_usuario);
+            } else {
+                $obj["mensaje"] = "Ya hay una sesión activa";
+                $obj["data"] = NULL;
+            }
+        }
+    } else {
+        $obj["mensaje"] = "Correo o contraseña incorrecto";
+        $obj["data"] = NULL;
+    }
+    } else {
+    $obj["mensaje"] = "Correo o contraseña incorrecto";
+    $obj["data"] = NULL;
+    }
+
+        echo json_encode($obj);
+    }
+
+
 }

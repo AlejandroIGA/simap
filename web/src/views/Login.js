@@ -11,7 +11,8 @@ function Login() {
 
 //Definición de variables
 const [correo, setCorreo] = useState("");
-const [password, setPassword] = useState("");
+const [psw, setPsw] = useState("");
+const [tipo, setTipo] = useState("");
 const navigate = useNavigate();
 const storedSession = localStorage.getItem('sesion');
 const sesion = JSON.parse(storedSession);
@@ -21,37 +22,38 @@ useEffect(() => {
   if (sesion) {
       if(sesion.tipo === "Pro"){
           navigate('/mainAdmin');
-      } else { 
-          if (sesion.tipo === "Basic"){
-              navigate('/mainAdminBasic')
+      } else if (sesion.tipo === "Basic"){
+              navigate('/mainAdminBasic');
+          }else{
+            alert("Usuario y/o contraseña no corresponten");
           }
       }
-  }
-}, [sesion, navigate]);
+  }, [sesion, navigate]);
 
 //Llamada de la API en el servidor para verificar que los datos ingresados sean correctos
 const login = (e) => {
   e.preventDefault();
-  axios.get(`http://localhost:3001/login/${correo}/${password}`)
+  axios.post('http://127.0.0.1/simap/webservice/loginWeb/', { correo: correo, psw: psw })
     .then((response) => {
-      if (response.data.length > 0) {
-        const user = response.data[0];
-        localStorage.setItem('sesion', JSON.stringify(user));
-        if (user.tipo === "Pro") {
+      const data = response.data;
+      if (data.resultado) {
+        // Inicio de sesión exitoso, redirigir al usuario a la página correspondiente
+        if (data.data.tipo_usuario === "Pro") {
           navigate('/mainAdmin');
-        } else if (user.tipo === "Basic") {
+        } else if (data.data.tipo_usuario === "Basic") {
           navigate('/mainAdminBasic');
         }
       } else {
-        console.log("Error de inicio de sesión");
-        alert("Correo o contraseña incorrectos");
+        // Error en el inicio de sesión, mostrar mensaje de error
+        alert(data.mensaje);
       }
     })
     .catch((error) => {
-      console.log(error);
-      alert("El correo o contraseña no coinciden");
-      });
-  };
+      console.error(error);
+      alert("Hubo un error al iniciar sesión");
+    });
+};
+
 
   return (
     <div>
@@ -75,7 +77,7 @@ const login = (e) => {
       </div>
       <div className="d-flex justify-content-center mt-4">
         <h3 style={{ marginRight: '56px' }}>Contraseña
-          <input className="mx-3" placeholder="Ingresa contraseña" value={password} onChange={(event) => {setPassword(event.target.value);}}/>
+          <input className="mx-3" placeholder="Ingresa contraseña" value={psw} onChange={(event) => {setPsw(event.target.value);}}/>
         </h3>
       </div>
       <div className="d-flex justify-content-center mt-2">

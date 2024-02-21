@@ -1,16 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, Modal, Button, TouchableOpacity } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { Picker } from "@react-native-picker/picker";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import theme from '../../theme';
 import Constants from 'expo-constants';
 import conf from '../../data/conf';
 
-const FormularioEditar = ({ visible, onClose, onCambio, id }) => {
+const FormularioAgregar = ({ visible, onClose, onCambio }) => {
 
     const [nombre, setNombre] = useState("");
-    const [planta, setPlanta] = useState("");
+    const [planta, setPlanta] = useState(1);
     const [siembra, setSiembra] = useState("");
     const [temp_amb_min, setTempAmbMin] = useState("");
     const [temp_amb_max, setTempAmbMax] = useState("");
@@ -20,6 +21,7 @@ const FormularioEditar = ({ visible, onClose, onCambio, id }) => {
     const [hum_sue_max, setHumSueMax] = useState("");
     const [fecha_inicio, setFechaInicio] = useState(new Date());
     const [showDatePicker, setShowDatePicker] = useState(false);
+
     const [plantasData, setPlantasData] = useState([]);
 
 
@@ -35,11 +37,12 @@ const FormularioEditar = ({ visible, onClose, onCambio, id }) => {
     const cerrar = () => {
         onClose();
         borrarDatos();
+        
     }
 
     const borrarDatos = () => {
         setNombre("");
-        setPlanta("");
+        setPlanta(1);
         setSiembra("");
         setTempAmbMin("");
         setTempAmbMax("");
@@ -50,29 +53,6 @@ const FormularioEditar = ({ visible, onClose, onCambio, id }) => {
         setFechaInicio(new Date());
         setShowDatePicker(false);
         setPlantasData([]);
-    }
-
-    //Mandara a llamar un cultivo para editar los valores
-    const getCultivo = async () =>{
-        try{
-            const response = await fetch(conf.url+`/getCultivo/${id}`,{
-                method:'GET',
-            });
-            const data = await response.json();
-            console.log("EDITAR: ",data.data[0]);
-            setNombre(data.data[0].nombre);
-            setPlanta(data.data[0].id_planta);
-            setSiembra(data.data[0].cant_siembra);
-            setFechaInicio(new Date(data.data[0].fecha_inicio));
-            setTempAmbMin(data.data[0].temp_amb_min);
-            setTempAmbMax(data.data[0].temp_amb_max);
-            setHumAmbMin(data.data[0].hum_amb_min);
-            setHumAmbMax(data.data[0].hum_amb_max);
-            setHumSueMin(data.data[0].hum_sue_min);
-            setHumSueMax(data.data[0].hum_sue_max);
-        }catch(error){
-            console.error(error.message);
-        }
     }
 
     //Mandar a llamar plantas para tener los valores en el dropdown
@@ -94,9 +74,9 @@ const FormularioEditar = ({ visible, onClose, onCambio, id }) => {
     };
 
     //Mandar a llamar los valores de una planta en especifico para hacer sugerencia
-    const getPlanta = async (plantaTemp) => {
+    const getPlanta = async () => {
         try {
-            const response = await fetch(conf.url + `/getPlanta/${plantaTemp}`, {
+            const response = await fetch(conf.url + `/getPlanta/${planta}`, {
                 method: 'GET',
             });
 
@@ -112,25 +92,29 @@ const FormularioEditar = ({ visible, onClose, onCambio, id }) => {
             setHumSueMin(data.data[0].hum_sue_min);
             setHumSueMax(data.data[0].hum_sue_max);
         } catch (error) {
-            console.error("ERROR PLANTA:", error.message);
+            console.error("ERROR:", error.message);
         }
     };
 
     //Mandar los datos a la BD
-    const updateCultivo = async () => {
+    const addCultivo = async () => {
         //Validación campos vacios
         if (planta === "" || nombre === "" || siembra === "" || temp_amb_min === "" || temp_amb_max === "" || hum_amb_min === "" || hum_amb_max === "" || hum_sue_min === "" || hum_sue_max === "") {
             alert("No se permiten campos vacios");
         } else {
             try {
+                const userDataJSON = await AsyncStorage.getItem('userData');
+                if (userDataJSON) {
+                    const userData = JSON.parse(userDataJSON);
+                    const id_usuario = userData.id_usuario;
 
                     const formData = new FormData();
-                    formData.append("id_cosecha", id);
+                    formData.append("id_usuario", id_usuario);
                     formData.append("id_planta", planta);
                     formData.append("nombre", nombre);
                     //Se debe mandar en string para que no salte error de red
                     const fechaLocal = new Date(fecha_inicio.getTime() - (fecha_inicio.getTimezoneOffset() * 60000));
-                    const fechaISO = fechaLocal.toISOString();
+                const fechaISO = fechaLocal.toISOString();
                     formData.append("fecha_inicio", fechaISO);
                     formData.append("cant_siembra", siembra);
                     formData.append("temp_amb_min", temp_amb_min);
@@ -141,7 +125,7 @@ const FormularioEditar = ({ visible, onClose, onCambio, id }) => {
                     formData.append("hum_sue_max", hum_sue_max);
 
                     console.log("formdata: ", formData)
-                    const response = await fetch(conf.url + "/updateCultivo/", {
+                    const response = await fetch(conf.url + "/addCultivo/", {
                         method: 'POST',
                         body: formData
                     });
@@ -149,34 +133,28 @@ const FormularioEditar = ({ visible, onClose, onCambio, id }) => {
                     console.log(data);
 
                     if (data.resultado === true) {
-                        alert(data.mensaje);
                         borrarDatos();
                         onCambio();
                         onClose();
                     }
 
-                
+                }
             } catch (error) {
                 console.error("ERROR:", error.message);
             }
         }
         getPlantas();
     }
-
-    
     
     useEffect(() => {
-        if(visible){
-            getCultivo();
-            getPlantas();
-        }
         getPlantas();
-    }, [visible])
+        getPlanta();
+    }, [planta,visible])
 
     return (
         <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
             <View style={style.container} flexDirection="column">
-                <Text style={style.sectionHeader} alignSelf="center">Editar cultivo</Text>
+                <Text style={style.sectionHeader} alignSelf="center">Añadir cultivo</Text>
                 <View>
                     <Text style={style.label}>Nombre</Text>
                     <TextInput
@@ -194,7 +172,7 @@ const FormularioEditar = ({ visible, onClose, onCambio, id }) => {
                         <Picker
                             style={[style.picker, style.pickerInput]}
                             selectedValue={planta}
-                            onValueChange={(itemValue) => {getPlanta(itemValue);setPlanta(itemValue);}}>
+                            onValueChange={(itemValue) => {setPlanta(itemValue)}}>
                             {
                                 plantasData.map((planta) => (
                                     <Picker.Item key={planta.id_planta} label={planta.nombre} value={planta.id_planta} />
@@ -293,7 +271,7 @@ const FormularioEditar = ({ visible, onClose, onCambio, id }) => {
                 </View>
                 <View flexDirection='row' style={style.botones}>
                     <Button color={theme.button.danger} style={style.boton} title="Cancelar" onPress={cerrar} />
-                    <Button color={theme.button.success} title="Guardar"  onPress={updateCultivo}/>
+                    <Button color={theme.button.success} title="Guardar" onPress={addCultivo} />
                 </View>
             </View>
         </Modal>
@@ -371,4 +349,4 @@ const style = StyleSheet.create({
     },
 });
 
-export default FormularioEditar;
+export default FormularioAgregar;

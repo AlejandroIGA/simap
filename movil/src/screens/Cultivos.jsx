@@ -4,9 +4,9 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import theme from '../theme.js'
 import ListaCultivos from "../components/cultivos/ListaCultivos.jsx";
 import FiltroCultivos from "../components/cultivos/FiltroCultivos.jsx";
-//import cultivos from "../data/cultivos.js"
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import conf from '../data/conf.js';
+import FormularioAgregar from '../components/cultivos/FormularioAgregar.jsx';
 
 const style = StyleSheet.create({
     floatingButton: {
@@ -33,10 +33,21 @@ const style = StyleSheet.create({
 const Cultivos = () => {
     const [filtro, setFiltro] = useState('');
     const [responseData, setResponseData] = useState({});
+    const [cambios, setCambios] = useState(false);
+
+    const [agregar, setAgregar] = useState(false);
 
     const handleFilterChange = filtro => {
         setFiltro(filtro);
     };
+
+    //Control del formulario para agregar un cultivo
+    const agregarCultivo = () =>{
+        setAgregar(true);
+    }
+    const cerrarAgregar = () =>{
+        setAgregar(false);
+    }
 
     const getCultivos = async () => {
         try {
@@ -62,9 +73,15 @@ const Cultivos = () => {
             console.error("ERROR:", error.message);
         }
     };
+
     useEffect(() => {
+    if (cambios) {
         getCultivos();
-    }, [])
+        setCambios(false); // Restablecer el estado cambios a false después de actualizar los cultivos
+    }else{
+        getCultivos();
+    }
+}, [cambios]);
 
 
     return (
@@ -73,10 +90,11 @@ const Cultivos = () => {
             {responseData.resultado === true ? (
                 <>
                     <FiltroCultivos onFilter={handleFilterChange} />
-                    <ListaCultivos filtro={filtro} cultivos={responseData.data} />
-                    <TouchableOpacity style={style.floatingButton}>
+                    <ListaCultivos filtro={filtro} cultivos={responseData.data} onCambio={() => setCambios(true)}/>
+                    <TouchableOpacity style={style.floatingButton} onPress={()=>{agregarCultivo()}}>
                         <Icon name="plus" size={30} color={theme.colors.backgroundPrimary} />
                     </TouchableOpacity>
+                    <FormularioAgregar visible={agregar} onClose={cerrarAgregar} onCambio={() => setCambios(true)}/>
                 </>
             ):
             <View>

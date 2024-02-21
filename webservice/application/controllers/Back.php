@@ -12,6 +12,9 @@ class Back extends CI_Controller
 
         $this->output->set_content_type("application/json");
         $this->load->model("Usuarios_model");
+        $this->load->model("Plantas_model");
+        $this->load->model("Cultivo_model");
+        $this->load->model("Dispositivos_model");
     }
 
     public function index()
@@ -105,6 +108,7 @@ class Back extends CI_Controller
     }
 
 
+
     //WERBSERVICES (API REST) PARA WEB
 
     public function loginWeb()
@@ -148,3 +152,232 @@ class Back extends CI_Controller
 
 
 }
+
+    //Obtener la información de un cultivo especifico
+    public function getCultivo($id_cosecha){
+        $row = $this->Cultivo_model->getCultivo($id_cosecha);
+        $obj["resultado"] = $row != NULL;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Cultivo recuperado"
+            : "No hay cultivo";
+        $obj["data"] = $row;
+        echo json_encode($obj);
+    }
+    public function nuevoDispositivo () {
+        $nombre = $this->input->post("nombre");
+        $mac = $this->input->post("mac");
+        $ssid = $this->input->post("ssid");
+        $psw = $this->input->post("psw");
+        $tipo = $this->input->post("tipo");
+        $maestro = $this->input->post("maestro");
+        $id_usuario = $this->input->post("id_usuario");
+
+        if ($maestro > 0) {
+            $data = array(
+                "nombre" => $nombre,
+                "mac" => $mac,
+                "ssid" => $ssid,
+                "psw" => $psw,
+                "tipo" => $tipo,
+                "maestro" => $maestro,
+                "automatizado" => NULL,
+                "id_usuario" => $id_usuario,
+                "id_cosecha" => NULL
+            );
+        } else {
+            $data = array(
+                "nombre" => $nombre,
+                "mac" => $mac,
+                "ssid" => $ssid,
+                "psw" => $psw,
+                "tipo" => $tipo,
+                "automatizado" => NULL,
+                "id_usuario" => $id_usuario
+            );
+        }
+
+        $id_dispositivo = $this->Dispositivos_model->nuevoDispositivo($data);
+
+        $obj["resultado"] = $id_dispositivo != 0;
+        $obj['mensaje'] = $obj["resultado"] ? "Dispositivo nuevo agregado" : "Imposible insertar promocion";
+        $obj["id_dispositivo"] = $id_dispositivo;
+
+        echo json_encode($obj);
+
+    }
+
+    public function dispositivos(){
+
+        $id_usuario = $this->input->post("id_usuario");
+
+        $data = $this->Dispositivos_model->getDispositivos($id_usuario);
+
+            $obj['resultado'] = $data != NULL;
+            $obj['mensaje'] = $obj['resultado'] ? "Se recuperaron " .count($data). " dispositivo(s)" : "No hay nigun dispositivo registrado";
+            $obj['dispositivos'] = $data;
+
+            echo json_encode($obj);
+
+    }
+
+    // Obtener dispisitivos maestros para asignacion de redes a otros dispositivos.
+    public function dispositivosMaestros(){
+
+        $id_usuario = $this->input->post("id_usuario");
+
+        $data = $this->Dispositivos_model->getMaestros($id_usuario);
+
+            $obj['resultado'] = $data != NULL;
+            $obj['mensaje'] = $obj['resultado'] ? "Se recuperaron " .count($data). " dispositivo(s) maestros" : "No hay nigun dispositivo registrado del usuario $id_usuario";
+            $obj['dispositivosMaestro'] = $data;
+
+            echo json_encode($obj);
+
+    }
+
+    //Eliminar dispositivos
+
+    public function borrarDispositivo(){
+
+        $id_dispositivo = $this->input->post("id_dispositivo");
+
+        $obj["resultado"] = $this->Dispositivos_model->deleteDispositivo($id_dispositivo);
+        $obj['mensaje'] = $obj["resultado"] ? "Dispositivo borrado exitosamente" : "Imposible borrar dispositivo, tiene una cosecha en curso";
+
+        echo json_encode($obj);
+    }
+
+    //Obtener las plantas registradas
+    public function getPlantas(){
+        $row = $this->Plantas_model->getPlantas();
+        $obj["resultado"] = $row != NULL;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Plantas recuperadas"
+            : "No hay plantas";
+        $obj["data"] = $row;
+
+        echo json_encode($obj);
+    }
+
+    public function getPlanta($planta){
+        $row = $this->Plantas_model->getPlanta($planta);
+        $obj["resultado"] = $row != NULL;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Planta recuperada"
+            : "No hay planta";
+        $obj["data"] = $row;
+
+        echo json_encode($obj);
+    }
+
+    //Registrar un cultivo/cosecha
+    public function addCultivo(){
+        $data = array(
+            'id_usuario' => $this->input->post("id_usuario"), 
+            'id_planta' => $this->input->post("id_planta"), 
+            'nombre' => $this->input->post("nombre"), 
+            'fecha_inicio' => $this->input->post("fecha_inicio"), 
+            'cant_siembra' => $this->input->post("cant_siembra"), 
+            'temp_amb_min' => $this->input->post("temp_amb_min"), 
+            'temp_amb_max' => $this->input->post("temp_amb_max"), 
+            'hum_amb_min' => $this->input->post("hum_amb_min"), 
+            'hum_amb_max' => $this->input->post("hum_amb_max"), 
+            'hum_sue_min' => $this->input->post("hum_sue_min"), 
+            'hum_sue_max' => $this->input->post("hum_sue_max"),
+        );
+
+        $rs = $this->Cultivo_model->addCultivo($data);
+
+        $obj["resultado"] = $rs != false;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Cultivo guardado"
+            : "Se genero un error";
+
+        echo json_encode($obj);
+
+    }
+
+    //Actualizar un cultivo
+    public function updateCultivo(){
+        $data = array(
+            'id_cosecha' => $this->input->post("id_cosecha"), 
+            'id_planta' => $this->input->post("id_planta"), 
+            'nombre' => $this->input->post("nombre"), 
+            'fecha_inicio' => $this->input->post("fecha_inicio"), 
+            'cant_siembra' => $this->input->post("cant_siembra"), 
+            'temp_amb_min' => $this->input->post("temp_amb_min"), 
+            'temp_amb_max' => $this->input->post("temp_amb_max"), 
+            'hum_amb_min' => $this->input->post("hum_amb_min"), 
+            'hum_amb_max' => $this->input->post("hum_amb_max"), 
+            'hum_sue_min' => $this->input->post("hum_sue_min"), 
+            'hum_sue_max' => $this->input->post("hum_sue_max"),
+        );
+
+        $rs = $this->Cultivo_model->updateCultivo($data);
+        $obj["resultado"] = $rs != false;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Cultivo actualizado"
+            : "No se actualizo o no hay cambios";
+
+        echo json_encode($obj);
+    }
+
+    public function deleteCultivo($id_cultivo){
+        $row = $this->Cultivo_model->deleteCultivo($id_cultivo);
+        $obj["resultado"] = $row != false;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Cultivo eliminado"
+            : "Hay dispositivos conectados";
+        echo json_encode($obj);
+    }
+
+    //Obtener plagas
+    public function getPlagas($id_cosecha){
+        $row = $this->Plantas_model->getPlagas($id_cosecha);
+        $obj["resultado"] = $row != NULL;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Plagas recuperadas"
+            : "No hay plagas registradas";
+        $obj["data"] = $row;
+
+        echo json_encode($obj);
+    }
+
+    //Obtener metodos de combate de plagas
+    public function getMetodos(){
+        $row = $this->Plantas_model->getMetodos();
+        $opciones = explode(",",$row->opciones);
+        foreach ($opciones as &$elemento) {
+            $elemento = trim($elemento, "'");
+        }
+        
+        $obj["resultado"] = $row != NULL;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Metodos recuperados"
+            : "No hay metodos registrados";
+        $obj["data"] =$opciones;
+
+        echo json_encode($obj);
+    }
+
+    //Finalizar un cultivo
+    public function endCultivo(){
+        $data = array(
+            "id_cosecha" => $this->input->post("id_cosecha"),
+            "fecha_fin" => $this->input->post("fecha_fin"),
+            "cant_cosecha" => $this->input->post("cant_cosecha"),
+            "combate" => $this->input->post("combate"),
+            "combate_efectivo" => $this->input->post("combate_efectivo"),
+            "plaga" => $this->input->post("plaga")
+        );
+
+        $rs = $this->Cultivo_model->endCultivo($data);
+        $obj["resultado"] = $rs != false;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Cultivo finalizado"
+            : "Surgio un error";
+
+        echo json_encode($obj);
+    }
+}
+

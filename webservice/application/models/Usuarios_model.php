@@ -76,4 +76,5 @@ class Usuarios_model extends CI_Model
         return $rs->num_rows() > 0 ?
             $rs->result() : NULL;
     }
+
 }

@@ -20,9 +20,9 @@ const sesion = JSON.parse(storedSession);
 //useEffect para saber si iniciamos sesión como administrador pro o administrador basic
 useEffect(() => {
   if (sesion) {
-      if(sesion.tipo === "Pro"){
+      if(sesion.tipo === "propietarioPro"){
           navigate('/mainAdmin');
-      } else if (sesion.tipo === "Basic"){
+      } else if (sesion.tipo === "propietarioBasic"){
               navigate('/mainAdminBasic');
           }else{
             alert("Usuario y/o contraseña no corresponten");

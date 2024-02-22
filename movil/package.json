@@ -24,8 +24,10 @@
     "react-native-datepicker": "^1.7.2",
     "react-native-drawer-layout": "^3.2.2",
     "react-native-gesture-handler": "~2.14.0",
+    "react-native-paypal": "^4.1.0",
     "react-native-reanimated": "~3.6.2",
-    "react-native-web": "~0.19.6"
+    "react-native-web": "~0.19.6",
+    "react-native-webview": "^13.8.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

@@ -20,7 +20,7 @@ class Back extends CI_Controller
 
     public function index()
     {
-        echo "<h1>Controlador Back End</h1>";
+        echo "Controlador Back End";
     }
 
     //WEBSERVICES (API REST)
@@ -64,6 +64,8 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
+
+    
     public function logout(){
         $id_usuario = $this->input->post("id_usuario");
         $row = $this->Usuarios_model->logout($id_usuario);
@@ -105,6 +107,50 @@ class Back extends CI_Controller
 
         echo json_encode($obj);
     }
+
+
+
+    //WERBSERVICES (API REST) PARA WEB
+
+    public function loginWeb()
+    {
+        $correo = $this->input->get("correo");
+        $psw = $this->input->get("psw");
+        $row = $this->Usuarios_model->login($correo, $psw);    
+
+        $obj["resultado"] = $row != NULL;
+        if($obj["resultado"] != NULL){
+        $token = $row->token;
+        if($row->psw == $psw && $row->correo == $correo){
+        if($row->estatus == 0){
+            $obj["mensaje"] = "Cuenta desactivada";
+            $obj["data"] = NULL;
+        } else {
+            if(!$token){
+                $obj["mensaje"] = "Credenciales correctas";
+                $obj["data"] = array(
+                    'id_usuario' => $row->id_usuario,
+                    'tipo_usuario' => $row->tipo_usuario,
+                    'estatus' => $row->estatus
+                ); 
+                $this->Usuarios_model->saveUserToken($row->id_usuario);
+            } else {
+                $obj["mensaje"] = "Ya hay una sesión activa";
+                $obj["data"] = NULL;
+            }
+        }
+    } else {
+        $obj["mensaje"] = "Correo o contraseña incorrecto";
+        $obj["data"] = NULL;
+    }
+    } else {
+    $obj["mensaje"] = "Correo o contraseña incorrecto";
+    $obj["data"] = NULL;
+    }
+
+        echo json_encode($obj);
+    }
+
 
     //Obtener la información de un cultivo especifico
     public function getCultivo($id_cosecha){
@@ -245,6 +291,22 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
+    //Obtener datos de dispositivos
+    
+    public function datosDispositivo(){
+
+        $id_usuario = $this->input->post("id_usuario");
+
+        $data = $this->Dispositivos_model->getDatosDispositivo($id_usuario);
+
+            $obj['resultado'] = $data != NULL;
+            $obj['mensaje'] = $obj['resultado'] ? "Se recuperaron " .count($data). " dispositivo(s)" : "No hay nigun dispositivo registrado del usuario $id_usuario";
+            $obj['Datos del Dispositivo'] = $data;
+
+            echo json_encode($obj);
+
+    }
+
     //Obtener las plantas registradas
     public function getPlantas(){
         $row = $this->Plantas_model->getPlantas();
@@ -378,6 +440,18 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
+    public function suscribirse(){
+        $id_usuario = $this->input->post("id_usuario");
+        $rs = $this->Usuarios_model->suscribirse($id_usuario);
+
+        $obj["resultado"] = $rs != false;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Suscripción actualiza"
+            : "Surgio un error";
+
+        echo json_encode($obj);
+
+    }
     //Obtener notificaciones
     public function notificaciones(){
 
@@ -405,3 +479,6 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 }
+
+
+

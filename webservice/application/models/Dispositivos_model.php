@@ -10,6 +10,16 @@ class Dispositivos_model extends CI_Model
             $this->db->insert_id() : 0;
     }
 
+    //Método para editar un dispositivo
+    public function editDispositivo($data, $id_dispositivo) {
+        $this->db
+            ->where("id_dispositivo", $id_dispositivo)
+            ->update("dispositivo", $data);
+
+        return $this->db->affected_rows() > 0 ? 
+            $id_dispositivo : 0;
+    }
+
     public function getDispositivos($id_usuario) {
 
         $rs = $this->db

@@ -8,12 +8,14 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
   const [nombre, setNombre] = useState('');
   const [direccionMac, setDireccionMac] = useState('');
   const [tipoDispositivo, setTipoDispositivo] = useState('esclavo');
+  const [accion, setAccion] = useState('alta');
   const [nombreRed, setNombreRed] = useState('');
   const [psw, setPsw] = useState('');
   const [dispositivoMaestro, setDispositivoMaestro] = useState('');
   const [dispositivosMaestros, setDispositivosMaestros] = useState([]);
   const [tipoUsuario, setTipoUsuario] = useState('');
   const [idUsuario, setIdUsuario] = useState(0);
+  const [idDispositivo, setIdDispositivo] = useState(0);
 
   // LIMPIAR CAMPODS DEL FORMULARIO
   const limpiarCampos = () => {
@@ -22,6 +24,7 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
     setNombreRed('');
     setPsw('');
     setDispositivoMaestro('');
+    setIdDispositivo(0);
   }
 
   const getUserData = async () => {
@@ -66,7 +69,9 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
       setTipoDispositivo(dispositivoEditar.tipo);
       setNombreRed(dispositivoEditar.ssid);
       setPsw(dispositivoEditar.psw);
-      setDispositivoMaestro(dispositivoEditar.maestro);
+      setDispositivoMaestro(dispositivoEditar.maestro === null ? ' ' : dispositivoEditar.maestro);
+      setIdDispositivo(dispositivoEditar.id_dispositivo);
+      setAccion('editar');
     }
   }, [dispositivoEditar]);
 
@@ -119,6 +124,58 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
     } catch (error) {
       console.error('Error al insetrtar dispositivo:', error);
       alert('Error agregar dispositivo. Por favor, inténtalo de nuevo.');
+    }
+    props.onClose();
+    props.actualizarDispositivos();
+    getDispositivosMaestros();
+    limpiarCampos();
+  };
+  
+  // Editar dispositivo
+  const handleEdit = async (props) => {
+
+    if(tipoDispositivo === "maestro") {
+      if (nombre.trim() === '' || direccionMac.trim() === '' || nombreRed.trim() === '' || psw.trim() === '') {
+        alert('Por favor completa todos los campos.');
+        return;
+      }
+    } else if(tipoDispositivo === "esclavo") {
+      if (nombre.trim() === '' || direccionMac.trim() === '' || dispositivoMaestro.trim()  === '' ) {
+        alert('Por favor completa todos los campos.');
+        return;
+      }
+    }
+
+    const formData = new FormData();
+    formData.append('nombre', nombre);
+    formData.append('mac', direccionMac);
+    formData.append('ssid', nombreRed);
+    formData.append('psw', psw);
+    formData.append('tipo', tipoDispositivo);
+    formData.append('maestro', dispositivoMaestro);
+    formData.append('id_usuario', idUsuario);
+    formData.append('id_dispositivo', idDispositivo);
+
+    try {
+      console.log("editar dispositivo: " + dispositivoMaestro + nombre +  direccionMac + nombreRed + psw+ tipoDispositivo + idUsuario + idDispositivo ); 
+      const response = await fetch(conf.url + '/editarDispositivo', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const dataResponse = await response.json();
+      console.log(dataResponse);
+      //primero comprobar que tengo algo en data, si no, ya se que no se inserto dispositivo
+
+        if (dataResponse.resultado && dataResponse.id_dispositivo > '0') {
+          alert(dataResponse.mensaje);
+          console.log('Id dispositivo editado:', dataResponse.id_dispositivo);
+        } else {
+          alert(dataResponse.mensaje);
+        }
+    } catch (error) {
+      console.error('Error al editar dispositivo:', error);
+      alert('Error al editar dispositivo. Por favor, inténtalo de nuevo.');
     }
     props.onClose();
     props.actualizarDispositivos();
@@ -187,8 +244,14 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
     <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
-          <Text style={styles.title}>Agregar dispositivo</Text>
-
+          {
+            accion === "alta" ? (
+              <Text style={styles.title}>Agregar dispositivo</Text>
+            ) : (
+              <Text style={styles.title}>Editar dispositivo</Text>
+            )
+          }
+          
           {(tipoUsuario === 'propietario') &&
             <View style={styles.pickerContainer}>
               <Picker
@@ -219,9 +282,17 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
             }}
           />
           {renderFields()}
-          <TouchableOpacity style={styles.button} onPress={() => handleSubmit({ onClose, actualizarDispositivos })}>
-            <Text style={styles.buttonText}>Añadir</Text>
-          </TouchableOpacity>
+          {
+            accion === "alta" ? (
+              <TouchableOpacity style={styles.button} onPress={() => handleSubmit({ onClose, actualizarDispositivos })}>
+                <Text style={styles.buttonText}>Añadir</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity style={styles.button} onPress={() => handleEdit({ onClose, actualizarDispositivos })}>
+                <Text style={styles.buttonText}>Confirmar cambios</Text>
+              </TouchableOpacity>
+            )
+          }
           <TouchableOpacity style={styles.buttonClose} onPress={() => closeModal({onClose})}>
             <Text style={styles.buttonText}>Cancelar</Text>
           </TouchableOpacity>

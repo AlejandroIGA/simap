@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import conf from '../data/conf';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
   Text,
@@ -9,21 +11,61 @@ import {
 } from 'react-native';
 
 const MainColaborador = () => {
+
+
+  const [dispositivos, setDispositivos] = useState([]);
   const [conectado, setConectado] = useState(false);
+  const [conectadoBomb, setConectadoBomb] = useState(false);
 
   const handleColor = () => {
     setConectado(!conectado);
   };
 
+  const handleColorBomb = () => {
+    setConectadoBomb(!conectadoBomb);
+  };
+
+
+  const getDatos = async () => {
+    try {
+      const userDataJson = await AsyncStorage.getItem("userData");
+      const userData = JSON.parse(userDataJson);
+      const id_usuario = userData.id_usuario;
+      const formData = new FormData();
+      formData.append('id_usuario', id_usuario);
+      
+      const response = await fetch(conf.url + '/datosDispositivo', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al obtener los datos del dispositivo');
+      }
+
+      const dataResponse = await response.json();
+      console.log(dataResponse);
+      setDispositivos(dataResponse['Datos del Dispositivo']);
+    } catch (error) {
+      console.error('Error al obtener los datos del dispositivo:', error);
+    }
+  };
+  
+  useEffect(() => {
+    getDatos();
+  }, []);
+
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.content}>
-          <Text style={styles.mainText}>Información del cultivo</Text>
-          <View style={styles.formContainer}>
-            <View style={styles.column}>
-              <Text>Nombre de red: Alumnos_UTEQ</Text>
-              <Text>Dispositivo 1</Text>
+    <ScrollView contentContainerStyle={styles.scrollContent}>
+      <View style={styles.content}>
+        <Text style={styles.mainText}>Información del cultivo</Text>
+        <View style={styles.formContainer}>
+          {dispositivos.map((dispositivo, index) => (
+            <View style={styles.column} key={index}>
+              <Text>Master {index + 1}</Text>
+              <Text>Mac: {dispositivo.mac}</Text>
+              <Text>Nombre de red: {dispositivo.ssid}</Text>
               <TouchableOpacity
                 style={[
                   styles.button,
@@ -36,17 +78,29 @@ const MainColaborador = () => {
                 </Text>
               </TouchableOpacity>
             </View>
-            <View style={styles.column}>
-              <Text> Estado de bomba</Text>
-              <Image
-                source={require('../../assets/bomba.png')}
-                style={styles.image}
-              />
-            </View>
+          ))}
+          <View style={styles.column}>
+            <Text style={{ textAlign: 'center' }}>Estado de bomba</Text>
+            <Image
+              source={require('../../assets/bomba.png')}
+              style={styles.image}
+            />
+            <TouchableOpacity
+              style={[
+                styles.buttonBomb,
+                { backgroundColor: conectadoBomb ? 'red' : '#ABBF15' },
+              ]}
+              onPress={handleColorBomb}
+            >
+              <Text style={styles.buttonText}>
+                {conectadoBomb ? 'Apagar' : 'Prender'}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
-      </ScrollView>
-    </View>
+      </View>
+    </ScrollView>
+  </View>
   );
 };
 
@@ -117,7 +171,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 10,
     marginTop: 10,
+    width: 120,
+  },
+  buttonBomb: {
+    padding: 10,
+    alignItems: 'center',
+    borderRadius: 10,
+    marginTop: 10,
     width: 100,
+    marginLeft: 20
   },
   buttonText: {
     color: 'white',

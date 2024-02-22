@@ -1,0 +1,120 @@
+.topbar{
+    padding: 0;
+    background-color: #658C7A;
+    height: 10vh;
+    color: #fff;
+    font-size: 40px;
+    font-weight: bold;
+}
+
+.topbar p {
+    padding-left: 30px;
+}
+
+.titulo p{
+    color: #000;
+    font-size: 42px;
+    text-align: center;
+}
+.buscador{
+    width: 100%;
+    border: 3px solid #658C7A;
+    border-radius: 10px;
+    margin-bottom: 30px; 
+    border-radius: 40px;
+    color: #B3B3B3;
+    font-weight: normal;
+    text-align: left;
+}
+.tarjeta {
+    width: 100%;
+    border: 3px solid #658C7A;
+    border-radius: 10px;
+    margin-bottom: 30px;
+}
+
+.subtitulo{
+    color:#000;
+    font-size: 30px;
+}
+
+.informacion{
+    color:#000;
+    font-size: 30px;
+    font-weight: normal;
+}
+
+.formulario{
+    width: 100%;
+    background-color: #658C7A;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    padding: 15px;
+}
+
+.formulario label,
+.formulario input,
+.formulario select{
+    font-size: 24px;
+}
+
+.boton-flotante {
+    width: 100px;
+    height: 100px;
+    position: fixed; /* Posicionamiento fijo */
+    bottom: 40px; /* Alineación desde la parte inferior */
+    right: 40px; /* Alineación desde la derecha */
+    background-color: #ABBF15; /* Color de fondo del botón */
+    color: white; /* Color del texto del botón */
+    border: none; /* Quitamos el borde */
+    border-radius:100%; /* Añadimos un radio a los bordes */
+    cursor: pointer; /* Cambiamos el cursor al pasar por encima */
+    z-index: 999; /* Aseguramos que esté sobre otros elementos */
+    font-size: 60px;
+    font-weight: bold;
+  }
+
+
+/* The side navigation menu */
+.sidenav {
+    height: 100%; /* 100% Full-height */
+    width: 0; /* 0 width - change this with JavaScript */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Stay on top */
+    top: 0; /* Stay at the top */
+    left: 0;
+    background-color: #658C7A; /* Black*/
+    overflow-x: hidden; /* Disable horizontal scroll */
+    padding-top: 60px; /* Place content 60px from the top */
+    transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
+  }
+  
+  /* The navigation menu links */
+  .sidenav a {
+    padding: 8px 8px 8px 32px;
+    text-decoration: none;
+    font-size: 25px;
+    color: #fff;
+    display: block;
+    transition: 0.3s;
+  }
+  
+  /* When you mouse over the navigation links, change their color */
+  .sidenav a:hover {
+    color: #f9f9f9;
+  }
+  
+  /* Position and style the close button (top right corner) */
+  .sidenav .closebtn {
+    position: absolute;
+    top: 0;
+    right: 25px;
+    font-size: 36px;
+    margin-left: 50px;
+  }
+
+  /* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
+@media screen and (max-height: 450px) {
+    .sidenav {padding-top: 15px;}
+    .sidenav a {font-size: 18px;}
+  }

@@ -4,6 +4,7 @@ import theme from "../theme";
 //import usuario from "../data/usuario";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import conf from "../data/conf";
+import Paypal from "../components/Paypal";
 
 const style = StyleSheet.create({
     fila: {
@@ -26,7 +27,7 @@ const style = StyleSheet.create({
         fontWeight: theme.fontWeights.normal,
     },
     boton: {
-        marginTop: 5,
+        marginTop: 20,
         marginBottom: 10,
         marginHorizontal: 10,
     }
@@ -36,6 +37,8 @@ const Cuenta = ({ onLogout }) => {
     //guardar respuesta de servidor
     const [responseData, setResponseData] = useState({});
     const [tipoUsuario, setTipo] = useState("");
+    const [tipoCuenta, setCuenta] = useState("");
+    const [cambios, setCambios] = useState(false);
 
     //peticion post
     const getUsuario = async () => {
@@ -51,6 +54,7 @@ const Cuenta = ({ onLogout }) => {
                 const formData = new FormData();
                 formData.append("id_usuario", id_usuario);
                 formData.append("tipo_usuario", tipo)
+        
 
                 const response = await fetch(conf.url+"/usuario/", {
                     method: 'POST',
@@ -63,14 +67,21 @@ const Cuenta = ({ onLogout }) => {
                 const data = await response.json();
                 console.log(data)
                 setResponseData(data);
+                setCuenta(data.data.tipo)
             }
         } catch (error) {
             console.error("ERROR:", error.message);
         }
     };
+
+    //Cambiar de suscripción Pro a Free.
+    
     useEffect(() => {
+        if(cambios){
+            getUsuario();
+        }
         getUsuario();
-    }, [])
+    }, [cambios])
 
 
     return (
@@ -104,9 +115,17 @@ const Cuenta = ({ onLogout }) => {
                 tipoUsuario === "propietario" ?
                     (
                         <>
-                            <View style={style.boton}>
+                            
+                            {
+                                tipoCuenta === "Pro" ? 
+                                <View style={style.boton}>
                                 <Button color={theme.button.warnign} title="Cambiar suscripción" />
-                            </View>
+                                </View>
+                                :
+                                <View style={style.boton}>
+                                <Paypal onCambio={() => setCambios(true)}/>
+                                </View>
+                            }
                             <View style={style.boton}>
                                 <Button color={theme.button.danger} title="Cerrar sesión" onPress={onLogout}/>
                             </View>

@@ -7,6 +7,18 @@
     font-weight: bold;
 }
 
+.nav{
+    background-color: #658C7A;
+    height: 10vh;
+    color: #fff;
+    font-weight: bold;
+    font-size: 150%;
+}
+
+.nav a{
+  color: #fff;
+}
+
 .topbar p {
     padding-left: 30px;
 }

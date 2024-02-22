@@ -1,10 +1,10 @@
 import React from 'react';
 import './App.css';
-import Paypal from './components/Paypal.jsx';
+import LandingPage from './views/LandingPage.jsx';
 function App() {
   return (
     <div className='App'>
-      <Paypal />
+      <LandingPage />
     </div>
   );
 }

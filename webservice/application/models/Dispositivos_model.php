@@ -47,6 +47,19 @@ class Dispositivos_model extends CI_Model
         return $this->db->affected_rows() > 0;
     }
     
+
+    public function getDatosDispositivo($id_usuario) {
+        $rs = $this->db
+            ->select('dp.id_dispositivo, dp.mac, dp.ssid, co.nombre')
+            ->from('dispositivo AS dp')
+            ->join('cosecha AS co', 'dp.id_cosecha = co.id_cosecha')
+            ->join('usuario AS us', 'dp.id_usuario = us.id_usuario')
+            ->where('dp.id_usuario', $id_usuario)
+            ->get();
+    
+        return $rs->num_rows() > 0 ?
+            $rs->result() : NULL;
+    }
     
     
 }

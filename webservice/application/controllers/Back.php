@@ -197,7 +197,7 @@ class Back extends CI_Controller
         $id_dispositivo = $this->Dispositivos_model->editDispositivo($data, $id_dispositivo);
 
         $obj["resultado"] = $id_dispositivo != 0;
-        $obj['mensaje'] = $obj["resultado"] ? "Dispositivo editado" : "Imposible editar dispositivo";
+        $obj['mensaje'] = $obj["resultado"] ? "Dispositivo editado" : "Imposible editar dispositivo, tiene una cosecha en curso";
         $obj["id_dispositivo"] = $id_dispositivo;
 
         echo json_encode($obj);

@@ -15,11 +15,12 @@ class Back extends CI_Controller
         $this->load->model("Plantas_model");
         $this->load->model("Cultivo_model");
         $this->load->model("Dispositivos_model");
+        $this->load->model("Notificaciones_model");
     }
 
     public function index()
     {
-        echo "<h1>Controlador Back End</h1>";
+        echo "Controlador Back End";
     }
 
     //WEBSERVICES (API REST)
@@ -63,6 +64,8 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
+
+    
     public function logout(){
         $id_usuario = $this->input->post("id_usuario");
         $row = $this->Usuarios_model->logout($id_usuario);
@@ -105,6 +108,50 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
+
+
+    //WERBSERVICES (API REST) PARA WEB
+
+    public function loginWeb()
+    {
+        $correo = $this->input->get("correo");
+        $psw = $this->input->get("psw");
+        $row = $this->Usuarios_model->login($correo, $psw);    
+
+        $obj["resultado"] = $row != NULL;
+        if($obj["resultado"] != NULL){
+        $token = $row->token;
+        if($row->psw == $psw && $row->correo == $correo){
+        if($row->estatus == 0){
+            $obj["mensaje"] = "Cuenta desactivada";
+            $obj["data"] = NULL;
+        } else {
+            if(!$token){
+                $obj["mensaje"] = "Credenciales correctas";
+                $obj["data"] = array(
+                    'id_usuario' => $row->id_usuario,
+                    'tipo_usuario' => $row->tipo_usuario,
+                    'estatus' => $row->estatus
+                ); 
+                $this->Usuarios_model->saveUserToken($row->id_usuario);
+            } else {
+                $obj["mensaje"] = "Ya hay una sesión activa";
+                $obj["data"] = NULL;
+            }
+        }
+    } else {
+        $obj["mensaje"] = "Correo o contraseña incorrecto";
+        $obj["data"] = NULL;
+    }
+    } else {
+    $obj["mensaje"] = "Correo o contraseña incorrecto";
+    $obj["data"] = NULL;
+    }
+
+        echo json_encode($obj);
+    }
+
+
     //Obtener la información de un cultivo especifico
     public function getCultivo($id_cosecha){
         $row = $this->Cultivo_model->getCultivo($id_cosecha);
@@ -115,6 +162,7 @@ class Back extends CI_Controller
         $obj["data"] = $row;
         echo json_encode($obj);
     }
+
     public function nuevoDispositivo () {
         $nombre = $this->input->post("nombre");
         $mac = $this->input->post("mac");
@@ -151,7 +199,51 @@ class Back extends CI_Controller
         $id_dispositivo = $this->Dispositivos_model->nuevoDispositivo($data);
 
         $obj["resultado"] = $id_dispositivo != 0;
-        $obj['mensaje'] = $obj["resultado"] ? "Dispositivo nuevo agregado" : "Imposible insertar promocion";
+        $obj['mensaje'] = $obj["resultado"] ? "Dispositivo nuevo agregado" : "Imposible insertar dispositivo";
+        $obj["id_dispositivo"] = $id_dispositivo;
+
+        echo json_encode($obj);
+
+    }
+
+    public function editarDispositivo () {
+        $nombre = $this->input->post("nombre");
+        $mac = $this->input->post("mac");
+        $ssid = $this->input->post("ssid");
+        $psw = $this->input->post("psw");
+        $tipo = $this->input->post("tipo");
+        $maestro = $this->input->post("maestro");
+        $id_usuario = $this->input->post("id_usuario");
+        $id_dispositivo = $this->input->post("id_dispositivo");
+
+        if ($maestro > 0) {
+            $data = array(
+                "nombre" => $nombre,
+                "mac" => $mac,
+                "ssid" => $ssid,
+                "psw" => $psw,
+                "tipo" => $tipo,
+                "maestro" => $maestro,
+                "automatizado" => NULL,
+                "id_usuario" => $id_usuario,
+                "id_cosecha" => NULL
+            );
+        } else {
+            $data = array(
+                "nombre" => $nombre,
+                "mac" => $mac,
+                "ssid" => $ssid,
+                "psw" => $psw,
+                "tipo" => $tipo,
+                "automatizado" => NULL,
+                "id_usuario" => $id_usuario
+            );
+        }
+
+        $id_dispositivo = $this->Dispositivos_model->editDispositivo($data, $id_dispositivo);
+
+        $obj["resultado"] = $id_dispositivo != 0;
+        $obj['mensaje'] = $obj["resultado"] ? "Dispositivo editado" : "Imposible editar dispositivo";
         $obj["id_dispositivo"] = $id_dispositivo;
 
         echo json_encode($obj);
@@ -197,6 +289,22 @@ class Back extends CI_Controller
         $obj['mensaje'] = $obj["resultado"] ? "Dispositivo borrado exitosamente" : "Imposible borrar dispositivo, tiene una cosecha en curso";
 
         echo json_encode($obj);
+    }
+
+    //Obtener datos de dispositivos
+    
+    public function datosDispositivo(){
+
+        $id_usuario = $this->input->post("id_usuario");
+
+        $data = $this->Dispositivos_model->getDatosDispositivo($id_usuario);
+
+            $obj['resultado'] = $data != NULL;
+            $obj['mensaje'] = $obj['resultado'] ? "Se recuperaron " .count($data). " dispositivo(s)" : "No hay nigun dispositivo registrado del usuario $id_usuario";
+            $obj['Datos del Dispositivo'] = $data;
+
+            echo json_encode($obj);
+
     }
 
     //Obtener las plantas registradas
@@ -344,4 +452,33 @@ class Back extends CI_Controller
         echo json_encode($obj);
 
     }
+    //Obtener notificaciones
+    public function notificaciones(){
+
+        $id_usuario = $this->input->post("id_usuario");
+
+        $data = $this->Notificaciones_model->getNotificaciones($id_usuario);
+
+            $obj['resultado'] = $data != NULL;
+            $obj['mensaje'] = $obj['resultado'] ? "Se recuperaron " .count($data). " notificacion(es)" : "No hay niguna notificación registrada";
+            $obj['notificaciones'] = $data;
+
+            echo json_encode($obj);
+
+    }
+
+    //Eliminar notificacion
+
+    public function borrarNotificacion(){
+
+        $id_notificacion = $this->input->post("id_notificacion");
+
+        $obj["resultado"] = $this->Notificaciones_model->deleteNotificacion($id_notificacion);
+        $obj['mensaje'] = $obj["resultado"] ? "Notificación borrada exitosamente" : "Imposible borrar notificación";
+
+        echo json_encode($obj);
+    }
 }
+
+
+

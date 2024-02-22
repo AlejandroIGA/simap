@@ -10,6 +10,16 @@ class Dispositivos_model extends CI_Model
             $this->db->insert_id() : 0;
     }
 
+    //Método para editar un dispositivo
+    public function editDispositivo($data, $id_dispositivo) {
+        $this->db
+            ->where("id_dispositivo", $id_dispositivo)
+            ->update("dispositivo", $data);
+
+        return $this->db->affected_rows() > 0 ? 
+            $id_dispositivo : 0;
+    }
+
     public function getDispositivos($id_usuario) {
 
         $rs = $this->db
@@ -47,6 +57,19 @@ class Dispositivos_model extends CI_Model
         return $this->db->affected_rows() > 0;
     }
     
+
+    public function getDatosDispositivo($id_usuario) {
+        $rs = $this->db
+            ->select('dp.id_dispositivo, dp.mac, dp.ssid, co.nombre')
+            ->from('dispositivo AS dp')
+            ->join('cosecha AS co', 'dp.id_cosecha = co.id_cosecha')
+            ->join('usuario AS us', 'dp.id_usuario = us.id_usuario')
+            ->where('dp.id_usuario', $id_usuario)
+            ->get();
+    
+        return $rs->num_rows() > 0 ?
+            $rs->result() : NULL;
+    }
     
     
 }

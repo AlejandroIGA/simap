@@ -1,41 +1,102 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import conf from "../data/conf";
 
 export function Notificaciones() {
+  const [notificaciones, setNotificaciones] = useState([]);
+
+  //OBTENER NOTIFICACIONES
+  const getNotificaciones = async () => {
+    try {
+      const userDataJSON = await AsyncStorage.getItem('userData');
+
+      if (userDataJSON) {
+        const userData = JSON.parse(userDataJSON);
+        const id_usuario = userData.id_usuario;
+        const formData = new FormData();
+        formData.append("id_usuario", id_usuario);
+
+        const response = await fetch(conf.url+"/notificaciones", {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log(data);
+        setNotificaciones(data.notificaciones);
+      }
+    } catch (error) {
+      console.error("ERROR:", error.message);
+    }
+  }
+
+  //ELIMINAR DISPOSITIVO
+  const deleteNotificacion = async (id_notificacion) => {
+    try {
+
+      const formData = new FormData();
+      formData.append("id_notificacion", id_notificacion);
+
+
+      const response = await fetch(conf.url+"/borrarNotificacion", {
+        method: 'POST',
+        body: formData,
+      });
+
+      const dataResponse = await response.json();
+      alert(dataResponse.mensaje);
+
+      getNotificaciones();
+    } catch (error) {
+      console.error("ERROR:", error.message);
+    }
+  };
+
+useEffect(() => {
+  getNotificaciones();
+}, []);
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Notificaciones</Text>
       <ScrollView style={styles.scrollView}>
-        <Notification/>
-        <Notification/>
-        <Notification/>
-        <Notification/>
-        <Notification/>
-        <Notification/>
-        <Notification/>
-        <Notification/>
-        <Notification/>
-        <Notification/>
+        { notificaciones != null ? (
+          notificaciones && notificaciones.map((notificacion, index) => (
+            <Notification key={notificacion.id_notificacion} onDelete={deleteNotificacion}  notificacion={notificacion}/>
+          ))
+        ) : (
+          <Text style={styles.noDevicesText}>No hay ninguna notificación</Text>
+        )
+          
+        }
       </ScrollView>
     </View>
   );
 }
 
-const Notification = () => {
+const Notification = ({notificacion, onDelete}) => {
+
+  const handleDelete = () => {
+    onDelete(notificacion.id_notificacion);
+  };
+
     return (
         <View style={styles.notification}>
         <View style={styles.notificationHeader}>
           <View>
-            <Text style={styles.notificationTitle}>Notificación 1</Text>
-            <Text style={styles.notificationData}>08/02/2024</Text>
+            <Text style={styles.notificationData}>Fecha: {notificacion.fecha} </Text>
           </View>
-          <TouchableOpacity style={[styles.button, { backgroundColor: '#FF0000' }]}>
+          <TouchableOpacity onPress={handleDelete} style={[styles.button, { backgroundColor: '#FF0000' }]}>
           <Icon name="trash" size={20} color="white" />
         </TouchableOpacity>
         </View>
         <View style={styles.notificationData}>
-          <Text>Información de la notificación</Text>
+          <Text>{notificacion.informacion}</Text>
         </View>
       </View>
     );
@@ -82,5 +143,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginHorizontal: 5,
     borderRadius: 5,
+  },
+  noDevicesText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 20,
   },
 });

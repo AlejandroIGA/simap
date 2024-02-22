@@ -19,7 +19,7 @@ class Back extends CI_Controller
 
     public function index()
     {
-        echo "<h1>Controlador Back End</h1>";
+        echo "Controlador Back End";
     }
 
     //WEBSERVICES (API REST)
@@ -151,8 +151,6 @@ class Back extends CI_Controller
     }
 
 
-}
-
     //Obtener la información de un cultivo especifico
     public function getCultivo($id_cosecha){
         $row = $this->Cultivo_model->getCultivo($id_cosecha);
@@ -245,6 +243,22 @@ class Back extends CI_Controller
         $obj['mensaje'] = $obj["resultado"] ? "Dispositivo borrado exitosamente" : "Imposible borrar dispositivo, tiene una cosecha en curso";
 
         echo json_encode($obj);
+    }
+
+    //Obtener datos de dispositivos
+    
+    public function datosDispositivo(){
+
+        $id_usuario = $this->input->post("id_usuario");
+
+        $data = $this->Dispositivos_model->getDatosDispositivo($id_usuario);
+
+            $obj['resultado'] = $data != NULL;
+            $obj['mensaje'] = $obj['resultado'] ? "Se recuperaron " .count($data). " dispositivo(s)" : "No hay nigun dispositivo registrado del usuario $id_usuario";
+            $obj['Datos del Dispositivo'] = $data;
+
+            echo json_encode($obj);
+
     }
 
     //Obtener las plantas registradas
@@ -380,4 +394,3 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 }
-

@@ -331,4 +331,17 @@ class Back extends CI_Controller
 
         echo json_encode($obj);
     }
+
+    public function suscribirse(){
+        $id_usuario = $this->input->post("id_usuario");
+        $rs = $this->Usuarios_model->suscribirse($id_usuario);
+
+        $obj["resultado"] = $rs != false;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Suscripción actualiza"
+            : "Surgio un error";
+
+        echo json_encode($obj);
+
+    }
 }

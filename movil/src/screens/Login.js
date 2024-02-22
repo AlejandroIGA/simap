@@ -63,7 +63,7 @@ export function Login({ onLogin }) {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
           <Image
-            source={require('../../images/Granjero.jpg')}
+            source={require('../../images/Granjero.png')}
             style={styles.imageLogin}
           />
           <Text style={styles.textLogin}>Iniciar sesión</Text>
@@ -103,7 +103,7 @@ export function Login({ onLogin }) {
           </TouchableOpacity>
           <TouchableOpacity style={styles.buttonGoogle} onPress={handleLogin}>
             <Image
-              source={require('../../images/Google.jpg')}
+              source={require('../../images/Google.png')}
               style={styles.image}
             />
             <Text style={styles.buttonTextGoogle}>
@@ -112,7 +112,7 @@ export function Login({ onLogin }) {
           </TouchableOpacity>
           <TouchableOpacity style={styles.buttonFacebook} onPress={handleLogin}>
             <Image
-              source={require('../../images/Facebook.jpg')}
+              source={require('../../images/Facebook.png')}
               style={styles.image}
             />
             <Text style={styles.buttonTextFacebook}>

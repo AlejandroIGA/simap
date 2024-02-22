@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import conf from '../data/conf';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
   Text,
@@ -9,26 +11,56 @@ import {
 } from 'react-native';
 
 const MainColaborador = () => {
-  const [conectado, setConectado] = useState(false);
 
-  const handleColor = () => {
-    setConectado(!conectado);
+  const [dispositivos, setDispositivos] = useState([]);
+
+  const getDatos = async () => {
+    try {
+      const userDataJson = await AsyncStorage.getItem("userData");
+      const userData = JSON.parse(userDataJson);
+      const id_usuario = userData.id_usuario;
+      const formData = new FormData();
+      formData.append('id_usuario', id_usuario);
+      
+      const response = await fetch(conf.url + '/datosDispositivo', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al obtener los datos del dispositivo');
+      }
+
+      const dataResponse = await response.json();
+      console.log(dataResponse);
+      setDispositivos(dataResponse['Datos del Dispositivo']);
+    } catch (error) {
+      console.error('Error al obtener los datos del dispositivo:', error);
+    }
   };
+  
+  useEffect(() => {
+    getDatos();
+  }, []);
 
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
           <Text style={styles.textLogin}>Información del cultivo</Text>
-          <View style={styles.formContainer}>
-            <Text style={styles.label}>Dispositivo 1</Text>
-            <Text style={styles.label}>XXXX-XXXX-XXXX</Text>
-            <Text style={styles.label}>Nombre de red: xxxxx</Text>
-            <Text style={styles.label}>Cultivo: Huerto 1</Text>
-            <Text style={styles.label}>temperatura: 24 C°</Text>
-            <Text style={styles.label}>Humedad/suelo: 18 C°</Text>
-            <Text style={styles.label}>Humedad/ambiente: 20°</Text>
-          </View>
+          {dispositivos.length > 0 ? (
+            dispositivos.map((dispositivo, index) => (
+              <View style={styles.formContainer} key={index}>
+                <Text style={styles.label}>Dispositivo {index + 1}</Text>
+                <Text style={styles.label}>Mac: {dispositivo.mac}</Text>
+                <Text style={styles.label}>ID: {dispositivo.id_dispositivo}</Text>
+                <Text style={styles.label}>Nombre de red: {dispositivo.ssid}</Text>
+                <Text style={styles.label}>Cultivo: {dispositivo.nombre}</Text>
+              </View>
+            ))
+          ) : (
+            <Text>No se encontraron dispositivos</Text>
+          )}
         </View>
       </ScrollView>
     </View>

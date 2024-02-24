@@ -1,10 +1,10 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import granjero from '../images/Granjero.png';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link} from 'react-router-dom';
 
 function Menu(){
 return(
-    <div className='container-fluid p-0'>
+    <div className='container-fluid p-0' style={{ background: '#f2f2f2' }}>
         <nav className="navbar navbar-expand-lg nav">
                 <div className="container">
                     <a className="navbar-brand" href="#inicio">SIMAP</a>

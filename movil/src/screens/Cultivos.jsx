@@ -99,6 +99,9 @@ const Cultivos = () => {
             ):
             <View>
                 <Text alignSelf="center">No hay cultivos registrados</Text>
+                <TouchableOpacity style={style.floatingButton} onPress={()=>{agregarCultivo()}}>
+                        <Icon name="plus" size={30} color={theme.colors.backgroundPrimary} />
+                    </TouchableOpacity>
             </View>
             }
         </View>

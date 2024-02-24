@@ -8,6 +8,7 @@ import {
   Modal,
   TextInput,
   Dimensions,
+  FlatList,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import theme from '../theme.js';
@@ -26,14 +27,16 @@ export function Dispositivos() {
 
   const openEditModal = (dispositivo) => {
     setDispositivoEditar(dispositivo);
-    openModal(); 
+    setShowModal(true);
   };
 
   const openModal = () => {
+    setDispositivoEditar(null);
     setShowModal(true); 
   };
 
   const closeModal = () => {
+    setDispositivoEditar(null);
     setShowModal(false);
   };
 
@@ -101,22 +104,22 @@ export function Dispositivos() {
   return (
     <View style={styles.container}>
       {dispositivos != null ? (
-        <View style={styles.row}>
-          <ScrollView contentContainerStyle={styles.column}>
-            {dispositivos && dispositivos.map((dispositivo, index) => (
-              index % 2 === 0 && (
-                <DeviceItem key={dispositivo.id_dispositivo} dispositivo={dispositivo} width={deviceItemWidth} onDelete={deleteDispositivo} onEdit={openEditModal} />
-              )
-            ))}
-          </ScrollView>
-          <ScrollView contentContainerStyle={styles.column}>
-            {dispositivos && dispositivos.map((dispositivo, index) => (
-              index % 2 !== 0 && (
-                <DeviceItem key={dispositivo.id_dispositivo} dispositivo={dispositivo} width={deviceItemWidth} onDelete={deleteDispositivo} onEdit={openEditModal} />
-              )
-            ))}
-          </ScrollView>
-        </View> 
+        <View style={styles.list}>
+          <FlatList
+            data={dispositivos}
+            renderItem={({ item }) => (
+              <DeviceItem
+                key={item.id_dispositivo}
+                dispositivo={item}
+                width={deviceItemWidth}
+                onDelete={deleteDispositivo}
+                onEdit={openEditModal}
+              />
+            )}
+            keyExtractor={(item) => item.id_dispositivo.toString()}
+            numColumns={2}
+          />
+        </View>
       ) : (
         <Text style={styles.noDevicesText}>No hay dispositivos dados de alta.</Text>
       )}
@@ -179,11 +182,9 @@ const styles = StyleSheet.create({
     flex: 1,
     position: 'relative',
   },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
+  list: {
     marginTop: 15,
+    alignItems: 'center',
   },
   column: {
     flexDirection: 'column',

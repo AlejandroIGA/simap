@@ -89,9 +89,33 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
         alert('Por favor completa todos los campos.');
         return;
       }
+      if (nombre.trim().length < 5) {
+        alert('El nombre debe tener mínimo 5 caracteres.');
+        return;
+      }
+      if (direccionMac.trim().length != 12) {
+        alert('La dirección MAC debe tener exactamente 12 caracteres.');
+        return;
+      }
+      if (nombreRed.trim().length < 5) {
+        alert('El nombre de la red debe tener mínimo 5 caracteres.');
+        return;
+      }
+      if (psw.trim().length < 8) {
+        alert('La contraseña debe tener mínimo 8 caracteres.');
+        return;
+      }
     } else if(tipoDispositivo === "esclavo") {
       if (nombre.trim() === '' || direccionMac.trim() === '' || dispositivoMaestro.trim()  === '' ) {
         alert('Por favor completa todos los campos.');
+        return;
+      }
+      if (nombre.trim().length < 5) {
+        alert('El nombre debe tener mínimo 5 caracteres.');
+        return;
+      }
+      if (direccionMac.trim().length != 12) {
+        alert('La dirección MAC debe tener exactamente 12 caracteres.');
         return;
       }
     }
@@ -187,6 +211,7 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
   const closeModal = async (props) => {
     props.onClose();
     limpiarCampos();
+    setAccion('alta');
   };
 
   const renderFields = () => {
@@ -274,12 +299,7 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
             style={styles.input}
             placeholder="Dirección MAC"
             value={direccionMac}
-            onChangeText={(text) => {
-              text = text.replace(/:/g, '');
-              text = text.replace(/(.{2})/g, '$1:');
-              text = text.replace(/:$/, '');
-              setDireccionMac(text);
-            }}
+            onChangeText={setDireccionMac2}
           />
           {renderFields()}
           {

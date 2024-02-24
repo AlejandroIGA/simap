@@ -14,6 +14,7 @@ class Dispositivos_model extends CI_Model
     public function editDispositivo($data, $id_dispositivo) {
         $this->db
             ->where("id_dispositivo", $id_dispositivo)
+            ->where("(id_cosecha IS NULL OR id_cosecha IN (SELECT id_cosecha FROM cosecha WHERE fecha_fin IS NOT NULL))")
             ->update("dispositivo", $data);
 
         return $this->db->affected_rows() > 0 ? 

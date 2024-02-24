@@ -151,6 +151,42 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
+    public function registroUsuario(){
+        $nombre = $this->input->post("nombre");
+        $apellidos = $this->input->post("apellidos");
+        $correo = $this->input->post("correo");
+        $psw = $this->input->post("psw");
+        $tipo = $this->input->post("tipo");
+
+        $data = array(
+            "nombre" => $nombre,
+            "apellidos" => $apellidos,
+            "correo" => $correo,
+            "psw" => $psw,
+            "estatus" => 1,
+            "tipo_usuario" => $tipo
+        );
+
+        $id_usuario = $this->Usuarios_model->registro($data);
+
+        $suscripcion = array(
+            "id_usuario" => $id_usuario,
+            "fecha_inicio" => date('Y-m-d H:i:s'),
+            "tipo" => "Free",
+            "estatus" => 1
+        );
+
+        $id_suscripcion = $this->Usuarios_model->suscripcion($suscripcion);
+
+        $obj["resultado"] = $id_usuario != 0;
+        $obj['mensaje'] = $obj["resultado"] ? "Usuario registrado exitosamente" : "Imposible registrar usuario, intente de nuevo";
+        $obj["id_usuario"] = $id_usuario;
+        $obj["id_suscripcion"] = $id_suscripcion;
+
+        echo json_encode($obj);
+
+    }
+
 
     //Obtener la información de un cultivo especifico
     public function getCultivo($id_cosecha){
@@ -166,7 +202,7 @@ class Back extends CI_Controller
     public function nuevoDispositivo () {
         $nombre = $this->input->post("nombre");
         $mac = $this->input->post("mac");
-        $ssid = $this->input->post("ssid");
+        $correo = $this->input->post("correo");
         $psw = $this->input->post("psw");
         $tipo = $this->input->post("tipo");
         $maestro = $this->input->post("maestro");
@@ -176,7 +212,7 @@ class Back extends CI_Controller
             $data = array(
                 "nombre" => $nombre,
                 "mac" => $mac,
-                "ssid" => $ssid,
+                "correo" => $correo,
                 "psw" => $psw,
                 "tipo" => $tipo,
                 "maestro" => $maestro,
@@ -188,7 +224,7 @@ class Back extends CI_Controller
             $data = array(
                 "nombre" => $nombre,
                 "mac" => $mac,
-                "ssid" => $ssid,
+                "correo" => $correo,
                 "psw" => $psw,
                 "tipo" => $tipo,
                 "automatizado" => NULL,
@@ -209,7 +245,7 @@ class Back extends CI_Controller
     public function editarDispositivo () {
         $nombre = $this->input->post("nombre");
         $mac = $this->input->post("mac");
-        $ssid = $this->input->post("ssid");
+        $correo = $this->input->post("correo");
         $psw = $this->input->post("psw");
         $tipo = $this->input->post("tipo");
         $maestro = $this->input->post("maestro");
@@ -220,7 +256,7 @@ class Back extends CI_Controller
             $data = array(
                 "nombre" => $nombre,
                 "mac" => $mac,
-                "ssid" => $ssid,
+                "correo" => $correo,
                 "psw" => $psw,
                 "tipo" => $tipo,
                 "maestro" => $maestro,
@@ -232,7 +268,7 @@ class Back extends CI_Controller
             $data = array(
                 "nombre" => $nombre,
                 "mac" => $mac,
-                "ssid" => $ssid,
+                "correo" => $correo,
                 "psw" => $psw,
                 "tipo" => $tipo,
                 "automatizado" => NULL,

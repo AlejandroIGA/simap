@@ -24,7 +24,7 @@ return(
                                 </Link>
                             </li>
                             <li className="nav-item">
-                                <Link type='button' to='/' className='nav-link'>
+                                <Link type='button' to='/dispositivos' className='nav-link'>
                                     Dispositivos
                                 </Link>
                             </li>

@@ -48,7 +48,7 @@ const MainColaborador = () => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
           <Text style={styles.textLogin}>Información del cultivo</Text>
-          {dispositivos.length > 0 ? (
+          {dispositivos != null ? (
             dispositivos.map((dispositivo, index) => (
               <View style={styles.formContainer} key={index}>
                 <Text style={styles.label}>Dispositivo {index + 1}</Text>

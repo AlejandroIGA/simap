@@ -15,6 +15,24 @@ class Usuarios_model extends CI_Model
         $rs->row() : NULL;
     }
 
+    //Método para registrar a un usuario mediante el sistema
+    public function registro($data)
+    {
+        $this->db->insert("usuario", $data);
+
+        return $this->db->affected_rows() > 0 ? 
+        $this->db->insert_id() : 0;
+    }
+
+    //Método para registrar suscripcion de un usuario nuevo
+    public function suscripcion($suscripcion)
+    {
+        $this->db->insert("suscripcion", $suscripcion);
+
+        return $this->db->affected_rows() > 0 ? 
+        $this->db->insert_id() : 0;
+    }
+
     //Método para guardar el token del usuario
     public function saveUserToken($id_usuario)
     {

@@ -10,7 +10,7 @@ function Registro() {
     const [correo, setCorreo] = useState("");
     const [psw, setPsw] = useState("");
     const [pswDos, setPswDos] = useState("");
-    const [tipo, setTipo] = useState("propietaario");
+    const [tipo, setTipo] = useState("propietario");
     const navigate = useNavigate();
     
     const limpiarCampos = () => {

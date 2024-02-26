@@ -30,8 +30,9 @@ CREATE TABLE suscripcion(
     tipo varchar(20),
     estatus int,
     PRIMARY KEY (id_suscripcion),
-    CONSTRAINT FK_Suscripcion_Usurio FOREIGN KEY (id_suscripcion) references usuario(id_usuario)
+    CONSTRAINT FK_Suscripcion_Usurio FOREIGN KEY (id_usuario) references usuario(id_usuario)
 );
+
 
 CREATE TABLE plaga(
     id_plaga int auto_increment,

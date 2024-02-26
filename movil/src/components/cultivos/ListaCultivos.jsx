@@ -115,11 +115,37 @@ const ListaCultivos = ({ cultivos, filtro, onCambio }) => {
                                 <Text style={style.info}>{cultivo.cant_cosecha} Kg</Text>
                             </View>
                         </View>
-                        <View flexDirection='row' style={style.botones}>
+                        {
+                            cultivo.fecha_fin !== null ? 
+                            <>
+                            <View flexDirection='row' >
+                            <View style={style.column}>
+                                <Text style={style.infoFocus}>Plaga:</Text>
+                                <Text style={style.info}>{cultivo.plaga==="0"? "No" :cultivo.plaga }</Text>
+                            </View>
+                            <View style={style.column} justifyContent="flex-start">
+                                <Text style={style.infoFocus}>Efectivo:</Text>
+                                <Text style={style.info}>{cultivo.combate_efectivo===null ? "-" : cultivo.combate_efectivo}</Text>
+                            </View>
+                        </View>
+                        <View flexDirection='row' >
+                            <View style={style.column}>
+                                <Text style={style.infoFocus}>Comabate:</Text>
+                                <Text style={style.info}>{cultivo.combate===null ? "-" :cultivo.combate }</Text>
+                            </View>
+                        </View>
+                            </>
+                            
+                            :
+                            <>
+                            <View flexDirection='row' style={style.botones}>
                             <Button color={theme.button.warnign} title="Editar" onPress={()=>editarCultivo(cultivo.id_cosecha)}/>
                             <Button color={theme.button.success} title="Finalizar" onPress={()=>finalizarCultivo(cultivo.id_cosecha)}/>
                             <Button color={theme.button.danger} title="Eliminar" onPress={()=>deleteCultivo(cultivo.id_cosecha)}/>
                         </View>
+                            </>
+                        }
+                        
                         {formulariosCultivo.editar && <FormularioEditar visible={true} onClose={() => toggleFormulario(idCultivo, 'editar')} onCambio={onCambio} id={idCultivo}/>}
                         {formulariosCultivo.finalizar && <FormularioFinalizar visible={true} onClose={() => toggleFormulario(idCultivo, 'finalizar')} onCambio={onCambio} id={idCultivo}/>}
                     </View>

@@ -9,6 +9,7 @@ function Cultivos() {
     const [responseData, setResponseData] = useState([]);
     const [plantasData, setPlantasData] = useState([]);
     const [editarForm, setEditarForm] = useState(false);
+    const [fechaInicioAux, setFechaInicioAux ] = useState("");
 
     const [cultivoId, setCultivoId] = useState('');
     const [nombre, setNombre] = useState("");
@@ -74,6 +75,7 @@ function Cultivos() {
         setEfectivo("Si");
         setPlagas([]);
         setMetodos([]);
+        setFechaInicioAux("");
     }
 
     //Mandar a llamar plantas para tener los valores en el dropdown
@@ -147,16 +149,21 @@ function Cultivos() {
     //Agregar un cultivo
     const addCultivo = async () => {
         //Validación campos vacios
-        if (planta === "" || nombre === "" || siembra === "" || temp_amb_min === "" || temp_amb_max === "" || hum_amb_min === "" || hum_amb_max === "" || hum_sue_min === "" || hum_sue_max === "") {
+        if (planta === "" || nombre === "" || siembra === "" || temp_amb_min === "" || temp_amb_max === "" || hum_amb_min === "" || hum_amb_max === "" || hum_sue_min === "" || hum_sue_max === "" || fecha_inicio === "") {
+            borrarDatos();
             alert("No se permiten campos vacios");
-        } else {
+            
+        } 
+        else if(temp_amb_min > temp_amb_max || hum_amb_min > hum_amb_max || hum_sue_min > hum_sue_max){
+            borrarDatos();
+            alert("Los valores minimos no pueden ser mayores a los valores maximos");
+        }
+        else {
             try {
                     const formData = new FormData();
                     formData.append("id_usuario", id_usuario);
                     formData.append("id_planta", planta);
                     formData.append("nombre", nombre);
-                    //Se debe mandar en string para que no salte error de red
-                    //const fechaISO = fecha_inicio.toISOString();
                     formData.append("fecha_inicio", fecha_inicio);
                     formData.append("cant_siembra", siembra);
                     formData.append("temp_amb_min", temp_amb_min);
@@ -166,7 +173,6 @@ function Cultivos() {
                     formData.append("hum_sue_min", hum_sue_min);
                     formData.append("hum_sue_max", hum_sue_max);
 
-                    console.log("formdata: ", formData)
                     const response = await fetch(conf.url + "/addCultivo/", {
                         method: 'POST',
                         body: formData
@@ -176,8 +182,13 @@ function Cultivos() {
 
                     if (data.resultado === true) {
                         borrarDatos();
+                        alert(data.mensaje);
+                    }else if(data.resultado === false){
+                        borrarDatos();
+                        alert(data.mensaje);
                     }
             } catch (error) {
+                borrarDatos();
                 console.error("ERROR:", error.message);
             }
         }
@@ -232,8 +243,14 @@ function Cultivos() {
     //Editar cultivo
     const updateCultivo = async () => {
         //Validación campos vacios
-        if (planta === "" || nombre === "" || siembra === "" || temp_amb_min === "" || temp_amb_max === "" || hum_amb_min === "" || hum_amb_max === "" || hum_sue_min === "" || hum_sue_max === "") {
+        if (planta === "" || nombre === "" || siembra === "" || temp_amb_min === "" || temp_amb_max === "" || hum_amb_min === "" || hum_amb_max === "" || hum_sue_min === "" || hum_sue_max === "" || fecha_inicio === "") {
+            borrarDatos();
             alert("No se permiten campos vacios");
+            
+        } 
+        else if(temp_amb_min > temp_amb_max || hum_amb_min > hum_amb_max || hum_sue_min > hum_sue_max){
+            borrarDatos();
+            alert("Los valores minimos no pueden ser mayores a los valores maximos");
         } else {
             try {
                     const formData = new FormData();
@@ -302,9 +319,18 @@ function Cultivos() {
 
     //Finalizar un cultivo
     const endCultivo = async () => {
-        if (fecha_fin === "" || cosechado < 0) {
-            alert("No se permiten campos vacios ni valores negativos");
-        } else {
+        if (fecha_fin === "") {
+            borrarDatos();
+            alert("Falta ingresar fecha");
+        }else if((new Date(fecha_fin)) < (new Date(fechaInicioAux))){
+            borrarDatos();
+            alert("La fecha de cosecha debe ser después de la fecha de inicio")
+        }
+        else if(cosechado<0){
+            borrarDatos();
+            alert("No se aceptan valores negativos")
+        }
+        else {
             try {
                 const formData = new FormData();
                 formData.append("id_cosecha", cultivoId);
@@ -430,10 +456,10 @@ function Cultivos() {
                                             <div class="card h-100" style={{ border: "none", background: '#f2f2f2' }}>
                                                 <div class="card-body">
                                                     <ul class="list-group list-group-flush" >
-                                                        <li class="list-group-item" style={{ background: '#f2f2f2', border: "none" }}><span style={{ fontWeight: "bold" }}>Fecha de inicio:</span> {val.fecha_inicio}</li>
-                                                        <li class="list-group-item" style={{ background: '#f2f2f2', border: "none" }}><span style={{ fontWeight: "bold" }}>Cantidad sembrada:</span> {val.cant_siembra}</li>
-                                                        <li class="list-group-item" style={{ background: '#f2f2f2', border: "none" }}><span style={{ fontWeight: "bold" }}>Fecha de cosecha: </span> {val.fecha_fin}</li>
-                                                        <li class="list-group-item" style={{ background: '#f2f2f2', border: "none" }}><span style={{ fontWeight: "bold" }}>Cantidad cosechada: </span> {val.cant_cosecha}</li>
+                                                        <li class="list-group-item" style={{ background: '#f2f2f2', border: "none" }}><span style={{ fontWeight: "bold" }}>Fecha de inicio:</span> {val.fecha_inicio.split("-")[2]}-{val.fecha_inicio.split("-")[1]}-{val.fecha_inicio.split("-")[0]}</li>
+                                                        <li class="list-group-item" style={{ background: '#f2f2f2', border: "none" }}><span style={{ fontWeight: "bold" }}>Cantidad sembrada:</span> {val.cant_siembra} Kg</li>
+                                                        <li class="list-group-item" style={{ background: '#f2f2f2', border: "none" }}><span style={{ fontWeight: "bold" }}>Fecha de cosecha: </span> {val.fecha_fin === null? val.fecha_fin:`${val.fecha_fin.split("-")[2]}-${val.fecha_fin.split("-")[1]}-${val.fecha_fin.split("-")[0]}`} </li>
+                                                        <li class="list-group-item" style={{ background: '#f2f2f2', border: "none" }}><span style={{ fontWeight: "bold" }}>Cantidad cosechada: </span> {val.cant_cosecha} Kg</li>
                                                     </ul>
                                                 </div>
 
@@ -449,7 +475,7 @@ function Cultivos() {
                                                 <div class="card-body">
                                                     <ul class="list-group list-group-flush" >
                                                         <li class="list-group-item" style={{ background: '#f2f2f2', border: "none" }}><span style={{ fontWeight: "bold" }}>Plaga:</span> {val.plaga==="0" ? "No":val.plaga}</li>
-                                                        <li class="list-group-item" style={{ background: '#f2f2f2', border: "none" }}><span style={{ fontWeight: "bold" }}>Combate:</span> {val.combate}</li>
+                                                        <li class="list-group-item" style={{ background: '#f2f2f2', border: "none" }}><span style={{ fontWeight: "bold" }}>Combate:</span> {val.combate===null?"-":val.combate}</li>
                                                     </ul>
                                                 </div>
 
@@ -459,7 +485,7 @@ function Cultivos() {
                                             <div class="card h-100" style={{ border: "none", background: '#f2f2f2' }}>
                                                 <div class="card-body">
                                                     <ul class="list-group list-group-flush" >
-                                                        <li class="list-group-item" style={{ background: '#f2f2f2', border: "none" }}><span style={{ fontWeight: "bold" }}>Efectivo:</span> {val.efectivo}</li>
+                                                        <li class="list-group-item" style={{ background: '#f2f2f2', border: "none" }}><span style={{ fontWeight: "bold" }}>Efectivo:</span> {val.combate_efectivo===null?"-":val.combate_efectivo}</li>
                                                     </ul>
                                                 </div>
 
@@ -488,6 +514,7 @@ function Cultivos() {
                                             setCultivoId(val.id_cosecha);
                                             getPlagas(val.id_cosecha);
                                             getMetodos();
+                                            setFechaInicioAux(val.fecha_inicio);
                                         
                                         }}
                                         >

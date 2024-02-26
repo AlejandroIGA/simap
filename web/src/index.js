@@ -19,7 +19,7 @@ ReactDOM.render(
     <BrowserRouter>
       <Routes>
         <Route path='/' element={<App />}></Route>
-        <Route path='/paypalMovil' element={<Paypal />}></Route>
+        <Route path='/paypal' element={<Paypal />}></Route>
         <Route path='/cultivos' element={<Cultivos />}></Route>
         <Route path='/cuenta' element={<Cuenta />}></Route>
         <Route path='/inicio' element={<Inicio />}></Route>

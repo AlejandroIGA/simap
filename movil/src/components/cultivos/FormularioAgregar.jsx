@@ -136,6 +136,12 @@ const FormularioAgregar = ({ visible, onClose, onCambio }) => {
                         borrarDatos();
                         onCambio();
                         onClose();
+                        alert(data.mensaje);
+                    }else if(data.resultado === false){
+                        borrarDatos();
+                        onCambio();
+                        onClose();
+                        alert(data.mensaje);
                     }
 
                 }

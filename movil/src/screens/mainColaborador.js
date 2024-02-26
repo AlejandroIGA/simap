@@ -11,17 +11,16 @@ import {
 } from 'react-native';
 
 const MainColaborador = () => {
-
   const [dispositivos, setDispositivos] = useState([]);
 
   const getDatos = async () => {
     try {
-      const userDataJson = await AsyncStorage.getItem("userData");
+      const userDataJson = await AsyncStorage.getItem('userData');
       const userData = JSON.parse(userDataJson);
       const id_usuario = userData.id_usuario;
       const formData = new FormData();
       formData.append('id_usuario', id_usuario);
-      
+
       const response = await fetch(conf.url + '/datosDispositivo', {
         method: 'POST',
         body: formData,
@@ -38,7 +37,7 @@ const MainColaborador = () => {
       console.error('Error al obtener los datos del dispositivo:', error);
     }
   };
-  
+
   useEffect(() => {
     getDatos();
   }, []);
@@ -48,12 +47,14 @@ const MainColaborador = () => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
           <Text style={styles.textLogin}>Información del cultivo</Text>
-          {dispositivos.length > 0 ? (
+          {dispositivos != null ? (
             dispositivos.map((dispositivo, index) => (
               <View style={styles.formContainer} key={index}>
                 <Text style={styles.label}>Dispositivo {index + 1}</Text>
                 <Text style={styles.label}>Mac: {dispositivo.mac}</Text>
-                <Text style={styles.label}>Nombre de red: {dispositivo.ssid}</Text>
+                <Text style={styles.label}>
+                  Nombre de red: {dispositivo.ssid}
+                </Text>
                 <Text style={styles.label}>Cultivo: {dispositivo.nombre}</Text>
                 <Text style={styles.label}>Temperatura: {}</Text>
                 <Text style={styles.label}>Humedad/suelo: {}</Text>

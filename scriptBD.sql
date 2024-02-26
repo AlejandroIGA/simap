@@ -111,3 +111,21 @@ FROM information_schema.columns
 WHERE TABLE_SCHEMA = 'simap' -- Reemplaza 'tu_base_de_datos' con el nombre de tu base de datos
 AND TABLE_NAME = 'cosecha' -- Reemplaza 'tu_tabla' con el nombre de tu tabla
 AND COLUMN_NAME = 'combate'; -- Reemplaza 'opcion' con el nombre de tu columna ENUM
+
+#corregir un fallo de inserción de datos
+CREATE TRIGGER endCosecha before update on cosecha
+FOR EACH ROW
+BEGIN
+    IF new.fecha_fin IS NOT NULL THEN
+        IF new.plaga = "0" THEN
+            SET new.combate = null;
+            SET new.combate_efectivo = null;
+        END IF;
+        update dispositivo set id_cosecha = null where id_cosecha = new.id_cosecha;
+    END IF;    
+END;
+
+drop TRIGGER endCosecha;
+
+#PROCEDIMIENTO ALMACENADO PARA ENCONTRAR UN NOMBRE DUPLICADO de una cosecha activa
+

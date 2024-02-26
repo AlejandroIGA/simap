@@ -347,11 +347,19 @@ class Back extends CI_Controller
         );
 
         $rs = $this->Cultivo_model->addCultivo($data);
+        $mensaje = "";
+        $resultado = null;
 
-        $obj["resultado"] = $rs != false;
-        $obj["mensaje"] = $obj["resultado"] ?
-            "Cultivo guardado"
-            : "Se genero un error";
+        if($rs == false){
+            $mensaje = "Ya hay un cultivo activo con ese nombre";
+            $resultado = false;
+        }else if($rs == true){
+            $mensaje = "Se registro el cultivo";
+            $resultado = true;
+        }
+
+        $obj["resultado"] = $resultado;
+        $obj["mensaje"] = $mensaje;
 
         echo json_encode($obj);
 

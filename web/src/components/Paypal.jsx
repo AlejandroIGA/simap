@@ -63,13 +63,23 @@ function Paypal() {
                             <li className="informacion">Gráficas avanzadas.</li>
                         </ul>
                     </div>
-                    <div className="row justify-content-center align-items-center">
+                    <div className="row" style={{align:"center"}}>
+                        <div className="paypal" style={{align:"center"}}>
                         <PayPalButton
                             createOrder={(data, actions) => createOrder(data, actions)}
                             onApprove={(data, actions) => onApprove(data, actions)}
                             onCancel={() => onError("Canceled")}
                             onError={(err) => onError("ERROE")}
-                        />
+                            style={ {
+                                shape:  'pill',
+                                label:  'pay',
+                                height: 40,
+                                layout: 'horizontal',
+                                align: "center",
+                            }}
+                            />
+                        </div>
+                        
                     </div>
                 </div>
             </div>

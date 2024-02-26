@@ -299,7 +299,7 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
             style={styles.input}
             placeholder="Dirección MAC"
             value={direccionMac}
-            onChangeText={setDireccionMac2}
+            onChangeText={setDireccionMac}
           />
           {renderFields()}
           {

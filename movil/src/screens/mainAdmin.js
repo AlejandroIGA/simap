@@ -61,24 +61,29 @@ const MainColaborador = () => {
       <View style={styles.content}>
         <Text style={styles.mainText}>Información del cultivo</Text>
         <View style={styles.formContainer}>
-          {dispositivos.map((dispositivo, index) => (
-            <View style={styles.column} key={index}>
-              <Text>Master {index + 1}</Text>
-              <Text>Mac: {dispositivo.mac}</Text>
-              <Text>Nombre de red: {dispositivo.ssid}</Text>
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  { backgroundColor: conectado ? 'red' : '#ABBF15' },
-                ]}
-                onPress={handleColor}
-              >
-                <Text style={styles.buttonText}>
-                  {conectado ? 'Desconectar' : 'Conectar'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          ))}
+          {dispositivos != null ? (
+            dispositivos.map((dispositivo, index) => (
+              <View style={styles.column} key={index}>
+                <Text>Master {index + 1}</Text>
+                <Text>Mac: {dispositivo.mac}</Text>
+                <Text>Nombre de red: {dispositivo.ssid}</Text>
+                <TouchableOpacity
+                  style={[
+                    styles.button,
+                    { backgroundColor: conectado ? 'red' : '#ABBF15' },
+                  ]}
+                  onPress={handleColor}
+                >
+                  <Text style={styles.buttonText}>
+                    {conectado ? 'Desconectar' : 'Conectar'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ))
+          ) : (
+            <Text>No se encontraron dispositivos</Text>
+          )
+          }
           <View style={styles.column}>
             <Text style={{ textAlign: 'center' }}>Estado de bomba</Text>
             <Image

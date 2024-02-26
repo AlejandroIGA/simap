@@ -83,7 +83,7 @@ class Usuarios_model extends CI_Model
     public function getCultivos($id_usuario)
     {
         $rs = $this->db
-            ->select("id_cosecha,cant_siembra,fecha_inicio,fecha_fin,cant_cosecha,cosecha.temp_amb_min,cosecha.temp_amb_max,cosecha.hum_amb_min,cosecha.hum_amb_max,cosecha.hum_sue_min,cosecha.hum_sue_max, cosecha.nombre, planta.nombre as planta")
+            ->select("id_cosecha,cant_siembra,fecha_inicio,fecha_fin,cant_cosecha,cosecha.temp_amb_min,cosecha.temp_amb_max,cosecha.hum_amb_min,cosecha.hum_amb_max,cosecha.hum_sue_min,cosecha.hum_sue_max, cosecha.nombre, planta.nombre as planta, combate, combate_efectivo,plaga")
             ->from("cosecha")
             ->join("planta", "planta.id_planta = cosecha.id_planta", "inner join")
             ->join("usuario", "cosecha.id_usuario = usuario.id_usuario", "inner join")

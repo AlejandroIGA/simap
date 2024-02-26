@@ -53,9 +53,11 @@ const MainColaborador = () => {
               <View style={styles.formContainer} key={index}>
                 <Text style={styles.label}>Dispositivo {index + 1}</Text>
                 <Text style={styles.label}>Mac: {dispositivo.mac}</Text>
-                <Text style={styles.label}>ID: {dispositivo.id_dispositivo}</Text>
                 <Text style={styles.label}>Nombre de red: {dispositivo.ssid}</Text>
                 <Text style={styles.label}>Cultivo: {dispositivo.nombre}</Text>
+                <Text style={styles.label}>Temperatura: {}</Text>
+                <Text style={styles.label}>Humedad/suelo: {}</Text>
+                <Text style={styles.label}>Humedad/ambiente: {}</Text>
               </View>
             ))
           ) : (

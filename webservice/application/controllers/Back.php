@@ -202,6 +202,7 @@ class Back extends CI_Controller
     public function nuevoDispositivo () {
         $nombre = $this->input->post("nombre");
         $mac = $this->input->post("mac");
+        $ssid = $this->input->post("ssid");
         $psw = $this->input->post("psw");
         $tipo = $this->input->post("tipo");
         $maestro = $this->input->post("maestro");
@@ -211,6 +212,7 @@ class Back extends CI_Controller
             $data = array(
                 "nombre" => $nombre,
                 "mac" => $mac,
+                "ssid" => $ssid,
                 "psw" => $psw,
                 "tipo" => $tipo,
                 "maestro" => $maestro,
@@ -222,6 +224,7 @@ class Back extends CI_Controller
             $data = array(
                 "nombre" => $nombre,
                 "mac" => $mac,
+                "ssid" => $ssid,
                 "psw" => $psw,
                 "tipo" => $tipo,
                 "automatizado" => NULL,
@@ -242,6 +245,7 @@ class Back extends CI_Controller
     public function editarDispositivo () {
         $nombre = $this->input->post("nombre");
         $mac = $this->input->post("mac");
+        $ssid = $this->input->post("ssid");
         $psw = $this->input->post("psw");
         $tipo = $this->input->post("tipo");
         $maestro = $this->input->post("maestro");
@@ -252,6 +256,7 @@ class Back extends CI_Controller
             $data = array(
                 "nombre" => $nombre,
                 "mac" => $mac,
+                "ssid" => $ssid,
                 "psw" => $psw,
                 "tipo" => $tipo,
                 "maestro" => $maestro,
@@ -263,6 +268,7 @@ class Back extends CI_Controller
             $data = array(
                 "nombre" => $nombre,
                 "mac" => $mac,
+                "ssid" => $ssid,
                 "psw" => $psw,
                 "tipo" => $tipo,
                 "automatizado" => NULL,

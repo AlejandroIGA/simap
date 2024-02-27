@@ -13,6 +13,9 @@ import Cuenta from './views/Cuenta';
 import Inicio from './views/Inicio';
 import Dispositivos from './views/Dispositivos';
 import Registro from './views/Registro';
+import Login from './views/Login';
+import MainAdmin from './views/mainAdmin';
+import MainAdminFree from './views/mainAdminFree';
 
 ReactDOM.render(
   <React.StrictMode>
@@ -25,6 +28,9 @@ ReactDOM.render(
         <Route path='/inicio' element={<Inicio />}></Route>
         <Route path='/dispositivos' element={<Dispositivos />}></Route>
         <Route path='/registro' element={<Registro />}></Route>
+        <Route path='/login' element={<Login />}></Route>
+        <Route path='/mainAdmin' element={<MainAdmin />}></Route>
+        <Route path='/mainAdminFree' element={<MainAdminFree />}></Route>
       </Routes>
     </BrowserRouter>
   </React.StrictMode>,

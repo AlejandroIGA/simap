@@ -1,13 +1,15 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "./css/style.css";
+import "../views/style.css";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Dropdown } from 'react-bootstrap';
-import agricultor from './css/img/agricultor.png';
+import agricultor from '../images/Granjero.png';
 
-function MainAdminBasic() {
+function MainAdminFree() {
 
-    const handleLogout = () => { localStorage.clear(); window.location.href = "/"; };
+    const handleLogout = () => { 
+
+     };
 
 
     return (
@@ -105,4 +107,4 @@ function MainAdminBasic() {
     );
 }
 
-export default MainAdminBasic;
+export default MainAdminFree;

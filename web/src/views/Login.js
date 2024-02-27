@@ -1,68 +1,63 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "./css/style.css";
-import 'bootstrap/dist/css/bootstrap.min.css';
-import axios from 'axios';
-import agricultor from './css/img/agricultor.png';
-import google from './css/img/google.png';
-import facebbok from './css/img/facebook.png';
+import conf from '../conf';
+import agricultor from '../images/Granjero.png';
+import google from '../images/google.png';
+import facebbok from '../images/facebook.png';
 
 function Login() {
 
-//Definición de variables
-const [correo, setCorreo] = useState("");
-const [psw, setPsw] = useState("");
-const [tipo, setTipo] = useState("");
-const navigate = useNavigate();
-const storedSession = localStorage.getItem('sesion');
-const sesion = JSON.parse(storedSession);
+  const [correo, setCorreo] = useState("");
+  const [psw, setPsw] = useState("");
+  const [tipo, setTipo] = useState("propietario");
+  const navigate = useNavigate();
 
-//useEffect para saber si iniciamos sesión como administrador pro o administrador basic
-useEffect(() => {
-  if (sesion) {
-      if(sesion.tipo === "propietarioPro"){
-          navigate('/mainAdmin');
-      } else if (sesion.tipo === "propietarioBasic"){
-              navigate('/mainAdminBasic');
-          }else{
-            alert("Usuario y/o contraseña no corresponten");
+  const login = async () => {
+    if (!correo || !psw) {
+      alert("Por favor, complete todos los campos");
+      return;
+    }
+  
+    const formData = new FormData();
+    formData.append('correo', correo);
+    formData.append('psw', psw);
+    formData.append('tipo', tipo);
+  
+    try {
+      const response = await fetch(conf.url + '/login', {
+        method: 'POST',
+        body: formData,
+      });
+  
+      if (response.ok) {
+        const dataResponse = await response.json();
+        console.log(dataResponse);
+  
+        if (dataResponse.resultado) {
+          if (dataResponse.data.tipo === "propietario") {
+            navigate('/mainAdmin');
+          } else if (dataResponse.data.tipo === "Free") {
+            navigate('/mainAdminFree');
           }
-      }
-  }, [sesion, navigate]);
-
-//Llamada de la API en el servidor para verificar que los datos ingresados sean correctos
-const login = (e) => {
-  e.preventDefault();
-  axios.post('http://127.0.0.1/simap/webservice/loginWeb/', { correo: correo, psw: psw })
-    .then((response) => {
-      const data = response.data;
-      if (data.resultado) {
-        // Inicio de sesión exitoso, redirigir al usuario a la página correspondiente
-        if (data.data.tipo_usuario === "Pro") {
-          navigate('/mainAdmin');
-        } else if (data.data.tipo_usuario === "Basic") {
-          navigate('/mainAdminBasic');
+        } else {
+          alert(dataResponse.mensaje);
         }
       } else {
-        // Error en el inicio de sesión, mostrar mensaje de error
-        alert(data.mensaje);
+        console.error('Error al iniciar sesión: ', response.statusText);
+        alert('Error al iniciar sesión');
       }
-    })
-    .catch((error) => {
-      console.error(error);
-      alert("Hubo un error al iniciar sesión");
-    });
-};
-
+    } catch (error) {
+      console.error('Error al iniciar sesión: ', error);
+      alert('Error al iniciar sesión');
+    }
+  };
+  
 
   return (
     <div>
       <nav className="navbar">
         <div>
           <h1 className="text-white mx-4">SIMAP</h1>
-        </div>
-        <div>
-
         </div>
       </nav>
       <div className="d-flex justify-content-center mt-4">
@@ -71,26 +66,26 @@ const login = (e) => {
       <div className="d-flex justify-content-center mt-4">
         <div>
           <h3>Correo
-            <input className="mx-3" placeholder="Ingresa correo" value={correo} onChange={(event) => {setCorreo(event.target.value);}} />
+            <input className="mx-3" placeholder="Ingresa correo" value={correo} onChange={(event) => { setCorreo(event.target.value); }} required />
           </h3>
         </div>
       </div>
       <div className="d-flex justify-content-center mt-4">
         <h3 style={{ marginRight: '56px' }}>Contraseña
-          <input className="mx-3" placeholder="Ingresa contraseña" value={psw} onChange={(event) => {setPsw(event.target.value);}}/>
+          <input className="mx-3" placeholder="Ingresa contraseña" type="password" value={psw} onChange={(event) => { setPsw(event.target.value); }} required />
         </h3>
       </div>
       <div className="d-flex justify-content-center mt-2">
-        <Link to="/mainAdmin" className="btn btn-primary">Iniciar Sesión</Link>
+        <button onClick={login} className="btn btn-primary">Iniciar Sesión</button>
       </div>
       <div className="d-flex justify-content-center mt-3">
         <p>¿No tienes cuenta? Crea una
-          <a href="#"> aquí</a>
+          <Link to="/registro"> aquí</Link>
         </p>
       </div>
       <div className="d-flex justify-content-center mt-3">
         <img src={google} style={{ width: '40px' }} alt="Imagen agricultor" />
-         <button type="button" className="btn btn-outline-danger mx-3">Inicio de sesión rápido con Google</button>
+        <button type="button" className="btn btn-outline-danger mx-3">Inicio de sesión rápido con Google</button>
       </div>
       <div className="d-flex justify-content-center mt-3">
         <img src={facebbok} style={{ width: '40px' }} alt="Imagen agricultor" />

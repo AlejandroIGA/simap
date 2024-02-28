@@ -56,6 +56,7 @@ const Paypal = ({onCambio}) => {
         if (payment.status === 'COMPLETED') {
             //Se hace llamado a API para cambiar el tipo de suscripción
             suscribirse();
+            setShowGateway(false);
             onCambio();
           alert("Suscripción actualizada");
         } else {

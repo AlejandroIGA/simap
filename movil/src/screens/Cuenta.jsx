@@ -65,7 +65,7 @@ const Cuenta = ({ onLogout }) => {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
                 const data = await response.json();
-                console.log(data)
+                //console.log(data)
                 setResponseData(data);
                 setCuenta(data.data.tipo)
             }
@@ -74,11 +74,16 @@ const Cuenta = ({ onLogout }) => {
         }
     };
 
+    //Cambiar suscripcion
+    const cambiarSus = () =>{
+        alert("Su sucripción cambiara a Free cuando termine el periodo de la suscripción actual");
+    }
     //Cambiar de suscripción Pro a Free.
     
     useEffect(() => {
         if(cambios){
             getUsuario();
+            console.log("cambios", cambios)
         }
         getUsuario();
     }, [cambios])
@@ -119,7 +124,7 @@ const Cuenta = ({ onLogout }) => {
                             {
                                 tipoCuenta === "Pro" ? 
                                 <View style={style.boton}>
-                                <Button color={theme.button.warnign} title="Cambiar suscripción" />
+                                <Button color={theme.button.warnign} onPress={cambiarSus} title="Cambiar suscripción" />
                                 </View>
                                 :
                                 <View style={style.boton}>

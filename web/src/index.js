@@ -13,6 +13,7 @@ import Cuenta from './views/Cuenta';
 import Inicio from './views/Inicio';
 import Dispositivos from './views/Dispositivos';
 import Registro from './views/Registro';
+import PaypalWeb from './components/PaypalWeb';
 
 ReactDOM.render(
   <React.StrictMode>
@@ -20,6 +21,7 @@ ReactDOM.render(
       <Routes>
         <Route path='/' element={<App />}></Route>
         <Route path='/paypal' element={<Paypal />}></Route>
+        <Route path='/paypalWeb' element={<PaypalWeb />}></Route>
         <Route path='/cultivos' element={<Cultivos />}></Route>
         <Route path='/cuenta' element={<Cuenta />}></Route>
         <Route path='/inicio' element={<Inicio />}></Route>

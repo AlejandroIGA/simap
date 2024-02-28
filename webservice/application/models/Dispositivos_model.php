@@ -67,10 +67,14 @@ class Dispositivos_model extends CI_Model
             ->join('usuario AS us', 'dp.id_usuario = us.id_usuario')
             ->where('dp.id_usuario', $id_usuario)
             ->get();
-            die($this->db->last_query());
-        return $rs->num_rows() > 0 ?
-            $rs->result() : NULL;
+    
+        if ($rs->num_rows() > 0) {
+            return $rs->result();
+        } else {
+            return NULL;
+        }
     }
+    
     
     
 }

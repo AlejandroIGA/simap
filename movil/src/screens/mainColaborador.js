@@ -12,6 +12,7 @@ import {
 
 const MainColaborador = () => {
   const [dispositivos, setDispositivos] = useState([]);
+  const [mostrarTarjeta, setMostrarTarjeta] = useState(false);
 
   const getDatos = async () => {
     try {
@@ -33,21 +34,34 @@ const MainColaborador = () => {
       const dataResponse = await response.json();
       console.log(dataResponse);
       setDispositivos(dataResponse['Datos del Dispositivo']);
+      setMostrarTarjeta(dataResponse['Datos del Dispositivo'] !== null && dataResponse['Datos del Dispositivo'].length > 0);
     } catch (error) {
       console.error('Error al obtener los datos del dispositivo:', error);
     }
   };
 
   useEffect(() => {
-    getDatos();
+    const intervalId = setInterval(() => {
+      getDatos();
+    }, 20000); 
+
+    return () => clearInterval(intervalId);
   }, []);
+
+  useEffect(() => {
+    if (dispositivos && dispositivos.length > 0) {
+      setMostrarTarjeta(true);
+    } else {
+      setMostrarTarjeta(false);
+    }
+  }, [dispositivos]);
 
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
           <Text style={styles.textLogin}>Información del cultivo</Text>
-          {dispositivos != null ? (
+          {mostrarTarjeta && dispositivos ? (
             dispositivos.map((dispositivo, index) => (
               <View style={styles.formContainer} key={index}>
                 <Text style={styles.label}>Dispositivo {index + 1}</Text>
@@ -108,6 +122,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   formContainer: {
+    marginTop: 20,
     borderWidth: 2,
     borderColor: '#ABBF15',
     borderRadius: 10,

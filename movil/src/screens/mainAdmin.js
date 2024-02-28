@@ -12,10 +12,10 @@ import {
 
 const MainColaborador = () => {
 
-
   const [dispositivos, setDispositivos] = useState([]);
   const [conectado, setConectado] = useState(false);
   const [conectadoBomb, setConectadoBomb] = useState(false);
+  const [tarjeta, setTarjeta] = useState(false);
 
   const handleColor = () => {
     setConectado(!conectado);
@@ -24,7 +24,6 @@ const MainColaborador = () => {
   const handleColorBomb = () => {
     setConectadoBomb(!conectadoBomb);
   };
-
 
   const getDatos = async () => {
     try {
@@ -44,8 +43,9 @@ const MainColaborador = () => {
       }
 
       const dataResponse = await response.json();
-      console.log(dataResponse);
       setDispositivos(dataResponse['Datos del Dispositivo']);
+      setTarjeta(dataResponse['Datos del Dispositivo'] !== null && dataResponse['Datos del Dispositivo'].length > 0);
+      console.log(dataResponse);
     } catch (error) {
       console.error('Error al obtener los datos del dispositivo:', error);
     }
@@ -55,58 +55,65 @@ const MainColaborador = () => {
     getDatos();
   }, []);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      getDatos();
+    }, 20000); 
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <View style={styles.container}>
-    <ScrollView contentContainerStyle={styles.scrollContent}>
-      <View style={styles.content}>
-        <Text style={styles.mainText}>Información del cultivo</Text>
-        <View style={styles.formContainer}>
-          {dispositivos != null ? (
-            dispositivos.map((dispositivo, index) => (
-              <View style={styles.column} key={index}>
-                <Text>Master {index + 1}</Text>
-                <Text>Mac: {dispositivo.mac}</Text>
-                <Text>Nombre de red: {dispositivo.ssid}</Text>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.content}>
+          <Text style={styles.mainText}>Información del cultivo</Text>
+          {tarjeta && dispositivos && dispositivos.length > 0 ? (
+            <View style={styles.formContainer}>
+              {dispositivos.map((dispositivo, index) => (
+                <View style={styles.column} key={index}>
+                  <Text>Master {index + 1}</Text>
+                  <Text>Mac: {dispositivo.mac}</Text>
+                  <Text>Nombre de red: {dispositivo.ssid}</Text>
+                  <TouchableOpacity
+                    style={[
+                      styles.button,
+                      { backgroundColor: conectado ? 'red' : '#ABBF15' },
+                    ]}
+                    onPress={handleColor}
+                  >
+                    <Text style={styles.buttonText}>
+                      {conectado ? 'Desconectar' : 'Conectar'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+              <View style={styles.column}>
+                <Text style={{ textAlign: 'center' }}>Estado de bomba</Text>
+                <Image
+                  source={require('../../assets/bomba.png')}
+                  style={styles.image}
+                />
                 <TouchableOpacity
                   style={[
-                    styles.button,
-                    { backgroundColor: conectado ? 'red' : '#ABBF15' },
+                    styles.buttonBomb,
+                    { backgroundColor: conectadoBomb ? 'red' : '#ABBF15' },
                   ]}
-                  onPress={handleColor}
+                  onPress={handleColorBomb}
                 >
                   <Text style={styles.buttonText}>
-                    {conectado ? 'Desconectar' : 'Conectar'}
+                    {conectadoBomb ? 'Apagar' : 'Prender'}
                   </Text>
                 </TouchableOpacity>
               </View>
-            ))
+            </View>
           ) : (
             <Text>No se encontraron dispositivos</Text>
-          )
-          }
-          <View style={styles.column}>
-            <Text style={{ textAlign: 'center' }}>Estado de bomba</Text>
-            <Image
-              source={require('../../assets/bomba.png')}
-              style={styles.image}
-            />
-            <TouchableOpacity
-              style={[
-                styles.buttonBomb,
-                { backgroundColor: conectadoBomb ? 'red' : '#ABBF15' },
-              ]}
-              onPress={handleColorBomb}
-            >
-              <Text style={styles.buttonText}>
-                {conectadoBomb ? 'Apagar' : 'Prender'}
-              </Text>
-            </TouchableOpacity>
-          </View>
+          )}
         </View>
-      </View>
-    </ScrollView>
-  </View>
+      </ScrollView>
+    </View>
   );
+    
 };
 
 const styles = StyleSheet.create({
@@ -120,28 +127,6 @@ const styles = StyleSheet.create({
     marginRight: 10,
     marginHorizontal: 50,
   },
-  header: {
-    backgroundColor: '#658C7A',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 30,
-    paddingHorizontal: 20,
-  },
-  headerText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  dropdownButton: {
-    backgroundColor: 'white',
-    padding: 5,
-    borderRadius: 5,
-  },
-  dropdownText: {
-    fontSize: 18,
-    color: '#ABBF15',
-  },
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'flex-start',
@@ -153,6 +138,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   formContainer: {
+    marginTop: 20,
     borderWidth: 2,
     borderColor: '#ABBF15',
     borderRadius: 10,

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import './css/style.css';
+import axios from 'axios';
+import '../views/style.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Dropdown } from 'react-bootstrap';
 import Swal from 'sweetalert2';
-import agricultor from './css/img/agricultor.png';
+import agricultor from '../images/Granjero.png';
 
 function MainAdmin() {
   const handleLogout = () => {
@@ -30,16 +31,15 @@ function MainAdmin() {
       if (sesion.tipo === 'Pro') {
         navigate('/mainAdmin');
       } else {
-        if (sesion.tipo === 'Basic') {
-          navigate('/mainAdminBasic');
+        if (sesion.tipo === 'Free') {
+          navigate('/mainAdminFree');
         }
       }
     }
   }, [sesion, navigate]);
 
   const add = () => {
-    axios
-      .post('http://localhost:3001/create', {
+    axios.post('http://localhost:3001/create', {
         nombre: nombre,
         correo: correo,
         tel: tel,
@@ -62,8 +62,7 @@ function MainAdmin() {
   };
 
   const update = () => {
-    axios
-      .put('http://localhost:3001/update', {
+    axios.put('http://localhost:3001/update', {
         idUsuario: idUsuario,
         nombre: nombre,
         correo: correo,
@@ -100,8 +99,7 @@ function MainAdmin() {
       confirmButtonText: 'Sí, ¡Eliminarlo!',
     }).then((result) => {
       if (result.isConfirmed) {
-        axios
-          .delete(`http://localhost:3001/delete/${val.Idusuario}`)
+        axios.delete(`http://localhost:3001/delete/${val.Idusuario}`)
           .then(() => {
             getEmpleados();
             limpiarCampos();

@@ -24,5 +24,13 @@ class Notificaciones_model extends CI_Model
         
         return $this->db->affected_rows() > 0;
     }
+
+    public function nuevaNotificacion($data) {
+
+        $this->db->where('notificaciones', $data);
+        
+        return $this->db->affected_rows() > 0 ? 
+        $this->db->insert_id() : 0;
+    }
     
 }

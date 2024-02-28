@@ -522,7 +522,27 @@ class Back extends CI_Controller
 
         echo json_encode($obj);
     }
-}
 
+    public function insertNotification() {
+
+        $id_usuario = $this->input->post('id_usuario');
+        $informacion = $this->input->post('informacion');
+        $fecha = $this->input->post('fecha');
+    
+        $data = array(
+            'id_usuario' => $id_usuario,
+            'informacion' => $informacion,
+            'fecha' => $fecha
+        );
+        
+        $id_notificacion = $this->Notificaciones_model->nuevaNotificacion($data);
+    
+        $obj['resultado'] = $id_notificacion != NULL;
+        $obj['mensaje'] = $obj['resultado'] ? "Se registro nueva notificación" : "No se pudo registrar notificación";
+        $obj['id_notificacion'] = $id_notificacion;
+    
+        echo json_encode($obj);
+    }
+}
 
 

@@ -56,7 +56,7 @@ class Back extends CI_Controller
                 $obj["data"] = NULL;
             }
         }else{
-            $obj["mensaje"] = "Correo o contraseña incorrecto";
+            $obj["mensaje"] = "No se encontro al usuario";
             $obj["data"] = NULL;
         }
         

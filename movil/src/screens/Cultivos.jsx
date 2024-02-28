@@ -66,7 +66,7 @@ const Cultivos = () => {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
             const data = await response.json();
-            console.log(data)
+            //console.log(data)
             setResponseData(data)
             }
         } catch (error) {
@@ -102,6 +102,7 @@ const Cultivos = () => {
                 <TouchableOpacity style={style.floatingButton} onPress={()=>{agregarCultivo()}}>
                         <Icon name="plus" size={30} color={theme.colors.backgroundPrimary} />
                     </TouchableOpacity>
+                    <FormularioAgregar visible={agregar} onClose={cerrarAgregar} onCambio={() => setCambios(true)}/>
             </View>
             }
         </View>

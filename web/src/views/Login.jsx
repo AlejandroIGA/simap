@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import conf from '../conf';
 import agricultor from '../images/Granjero.png';
@@ -7,10 +7,14 @@ import facebbok from '../images/facebook.png';
 
 function Login() {
 
+  const [id_usuario, setId_usuario] = useState('');
   const [correo, setCorreo] = useState("");
   const [psw, setPsw] = useState("");
-  const [tipo, setTipo] = useState("propietario");
+  const [cuenta, setCuenta] = useState("");
+  const sesion = localStorage.setItem('id_usuario', JSON.stringify(id_usuario));
+  const tipoCuenta = localStorage.setItem('cuenta', JSON.stringify(cuenta));
   const navigate = useNavigate();
+
 
   const login = async () => {
     if (!correo || !psw) {
@@ -21,10 +25,9 @@ function Login() {
     const formData = new FormData();
     formData.append('correo', correo);
     formData.append('psw', psw);
-    formData.append('tipo', tipo);
   
     try {
-      const response = await fetch(conf.url + '/login', {
+      const response = await fetch(conf.url + '/loginWeb', {
         method: 'POST',
         body: formData,
       });
@@ -34,12 +37,20 @@ function Login() {
         console.log(dataResponse);
   
         if (dataResponse.resultado) {
-          if (dataResponse.data.tipo === "propietario") {
-            navigate('/mainAdmin');
-          } else if (dataResponse.data.tipo === "Free") {
-            navigate('/mainAdminFree');
+          // Obtener el tipo de cuenta (tipo de usuario) de la respuesta
+          const tipoCuenta = dataResponse.data.tipo;
+          // Almacenar el tipo de cuenta en el estado cuenta
+          setCuenta(tipoCuenta);
+          // Almacenar el id_usuario en localStorage
+          localStorage.setItem('id_usuario', dataResponse.data.id_usuario);
+          // Redirigir según el tipo de cuenta
+          if (tipoCuenta === "Pro") {
+              navigate('/mainAdmin');
+          } else if (tipoCuenta === "Free") {
+              navigate('/mainAdminFree');
           }
-        } else {
+      }
+       else {
           alert(dataResponse.mensaje);
         }
       } else {
@@ -47,8 +58,8 @@ function Login() {
         alert('Error al iniciar sesión');
       }
     } catch (error) {
-      console.error('Error al iniciar sesión: ', error);
-      alert('Error al iniciar sesión');
+      console.error('Sesión activa');
+      alert('Ya existe una cuenta iniciada con este usuario');
     }
   };
   
@@ -77,6 +88,9 @@ function Login() {
       </div>
       <div className="d-flex justify-content-center mt-2">
         <button onClick={login} className="btn btn-primary">Iniciar Sesión</button>
+      </div>
+      <div className="d-flex justify-content-center mt-2 ">
+        <Link className="btn btn-danger" to="/">Volver</Link>
       </div>
       <div className="d-flex justify-content-center mt-3">
         <p>¿No tienes cuenta? Crea una

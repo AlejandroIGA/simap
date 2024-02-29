@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text, Button, TouchableOpacity } from 'react-native'
+import {useFocusEffect} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import theme from '../theme.js'
 import ListaCultivos from "../components/cultivos/ListaCultivos.jsx";
@@ -66,13 +67,21 @@ const Cultivos = () => {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
             const data = await response.json();
-            //console.log(data)
+            console.log(data)
             setResponseData(data)
             }
         } catch (error) {
             console.error("ERROR:", error.message);
         }
     };
+
+    //Manda a llamar a un metodo cuando se hace navegación por el menú
+    useFocusEffect(
+        React.useCallback(() => {
+            getCultivos();
+            console.log("use focus");
+        }, [])
+    );
 
     useEffect(() => {
     if (cambios) {

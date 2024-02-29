@@ -1,19 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import '../views/style.css';
+import conf from '../conf';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Dropdown } from 'react-bootstrap';
 import Swal from 'sweetalert2';
 import agricultor from '../images/Granjero.png';
 
 function MainAdmin() {
-  const handleLogout = () => {
-    localStorage.clear();
-    window.location.href = '/';
-  };
 
-  const [idUsuario, setIdUsuario] = '';
+  const [id_usuario, setId_usuario] = useState('');
   const [nombre, setNombre] = useState('');
   const [correo, setCorreo] = useState('');
   const [tel, setTel] = useState('');
@@ -21,96 +17,58 @@ function MainAdmin() {
   const [tipoLogin, setTipoLogin] = useState('');
   const [empleadosList, setEmpleados] = useState([]);
   const [editar, setEditar] = useState(false);
-  const storedSession = localStorage.getItem('sesion');
-  const sesion = JSON.parse(storedSession);
   const navigate = useNavigate();
+  const storedSession = localStorage.getItem('id_usuario');
+  const sesion = JSON.parse(storedSession);
 
-  //useEffect para saber si iniciamos sesión como administrador pro o administrador basic
   useEffect(() => {
-    if (sesion) {
-      if (sesion.tipo === 'Pro') {
-        navigate('/mainAdmin');
-      } else {
-        if (sesion.tipo === 'Free') {
-          navigate('/mainAdminFree');
-        }
-      }
+    if (!sesion) {
+      alert("Debes iniciar sesión primero");
+      navigate('/login');
+    } else if (sesion) {
+      navigate('/mainAdmin');
     }
   }, [sesion, navigate]);
 
-  const add = () => {
-    axios.post('http://localhost:3001/create', {
-        nombre: nombre,
-        correo: correo,
-        tel: tel,
-        tipoUsuario: tipoUsuario,
-        tipoLogin: tipoLogin,
-      })
-      .then(() => {
-        getEmpleados();
-        limpiarCampos();
-        Swal.fire({
-          title: '<strong>¡Registro exitoso!</strong>',
-          html:
-            '<i>El empleado <strong>' +
-            nombre +
-            '</strong> fue registrado con éxito</i>',
-          icon: 'success',
-          timer: 3000,
-        });
+
+  const handleLogout = async () => {
+    const id_usuario = localStorage.getItem('id_usuario');
+    const formData = new FormData();
+    formData.append('id_usuario', id_usuario);
+
+    try {
+      const response = await fetch(conf.url + '/logout', {
+        method: 'POST',
+        body: formData
       });
+
+      if (response.ok) {
+        localStorage.removeItem('id_usuario');
+        console.log("Sesión terminada, id_usuario: " + id_usuario)
+        alert("¡Cerraste sesión!");
+        navigate("/");
+      } else {
+        console.error('Error al cerrar sesión:', response.statusText);
+        alert('Error al cerrar sesión. Por favor, inténtalo de nuevo más tarde.');
+      }
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+      alert("Error al cerrar sesión. Por favor, inténtalo de nuevo más tarde.");
+    }
+  };
+
+
+
+  const add = () => {
+
   };
 
   const update = () => {
-    axios.put('http://localhost:3001/update', {
-        idUsuario: idUsuario,
-        nombre: nombre,
-        correo: correo,
-        tel: tel,
-        tipoUsuario: tipoUsuario,
-        tipoLogin: tipoLogin,
-      })
-      .then(() => {
-        getEmpleados();
-        limpiarCampos();
-        Swal.fire({
-          title: '<strong>¡Actualización exitosa!</strong>',
-          html:
-            '<i>El empleado <strong>' +
-            nombre +
-            '</strong> fue actualizado con éxito</i>',
-          icon: 'success',
-          timer: 3000,
-        });
-      });
+
   };
 
   const deleteEmple = (val) => {
-    Swal.fire({
-      title: 'Confirmar eliminación',
-      html:
-        '<i>¿Realmente deseas eliminar a <strong>' +
-        val.nombre +
-        '</strong>?</i>',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Sí, ¡Eliminarlo!',
-    }).then((result) => {
-      if (result.isConfirmed) {
-        axios.delete(`http://localhost:3001/delete/${val.Idusuario}`)
-          .then(() => {
-            getEmpleados();
-            limpiarCampos();
-            Swal.fire({
-              text: val.nombre + ' fue eliminado',
-              icon: 'success',
-              timer: 3000,
-            });
-          });
-      }
-    });
+
   };
 
   const limpiarCampos = () => {
@@ -123,7 +81,6 @@ function MainAdmin() {
 
   const editarEmpleado = (val) => {
     setEditar(true);
-    setIdUsuario(val.idUsuario);
     setNombre(val.nombre);
     setCorreo(val.correo);
     setTipoUsuario(val.tipoUsuario);
@@ -145,36 +102,58 @@ function MainAdmin() {
   const empleadosConCamposVacios = filterEmpleados();
 
   const getEmpleados = () => {
-    axios.get('http://localhost:3001/empleados').then((response) => {
-      setEmpleados(response.data);
-    });
+
   };
 
   return (
-    <div>
-      <nav className='navbar'>
-        <div className='container-fluid d-flex justify-content-between align-items-center'>
-          <Link className='navbar-brand text-white' to='/'>
-            <h1 className='mx-3'>SIMAP</h1>
-          </Link>
-          <div className='ml-auto'>
-            <Dropdown>
-              <Dropdown.Toggle variant='link' id='dropdown-basic'>
-                <img
-                  className='mx-4'
-                  src={agricultor}
-                  style={{ width: '50px' }}
-                  alt='Usuario'
-                />
-              </Dropdown.Toggle>
-
-              <Dropdown.Menu>
-                <Dropdown.Item href='#'>Perfil</Dropdown.Item>
-                <Dropdown.Item onClick={handleLogout}>
-                  Cerrar Sesión
-                </Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown>
+    <div className='container-fluid p-0' style={{ background: '#f2f2f2' }}>
+      <nav className="navbar navbar-expand-lg nav">
+        <div className="container">
+          <a className="navbar-brand" href="#inicio">SIMAP</a>
+          <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span className="navbar-toggler-icon"></span>
+          </button>
+          <div className="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul className="navbar-nav">
+              <li className="nav-item">
+                <Link type='button' to='/inicio' className='nav-link'>
+                  Inicio
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link type='button' to='/mainAdmin' className='nav-link'>
+                  Usuarios
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link type='button' to='/dispositivos' className='nav-link'>
+                  Dispositivos
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link type='button' to='/cultivos' className='nav-link'>
+                  Cultivos
+                </Link>
+              </li>
+              <div className='ml-auto'>
+                <Dropdown>
+                  <Dropdown.Toggle variant='link' id='dropdown-basic'>
+                    <img
+                      className='mx-4'
+                      src={agricultor}
+                      style={{ width: '50px' }}
+                      alt='Usuario'
+                    />
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu style={{ backgroundColor: '#658C7A', boxShadow: 'none' }}>
+                    <Dropdown.Item href='/cuenta'>Perfil</Dropdown.Item>
+                    <Dropdown.Item onClick={handleLogout}>
+                      Cerrar Sesión
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
+              </div>
+            </ul>
           </div>
         </div>
       </nav>
@@ -286,9 +265,6 @@ function MainAdmin() {
                     Registrar
                   </button>
                 )}
-                <Link className='btn btn-danger mx-2 text-white' to='/'>
-                  Volver
-                </Link>
               </div>
             </div>
           </div>

@@ -22,7 +22,7 @@ function LandingPage() {
                                 <a className="nav-link" href="#suscripciones">Suscripciones</a>
                             </li>
                             <li className="nav-item">
-                                <a className="nav-link" href="#">Ingresar</a>
+                                <a className="nav-link" href="/login">Ingresar</a>
                             </li>
                         </ul>
                     </div>

@@ -19,7 +19,7 @@ return(
                                 </Link>
                             </li>
                             <li className="nav-item">
-                                <Link type='button' to='/' className='nav-link'>
+                                <Link type='button' to='/mainAdmin' className='nav-link'>
                                     Usuarios
                                 </Link>
                             </li>

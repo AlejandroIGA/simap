@@ -15,6 +15,21 @@ class Usuarios_model extends CI_Model
         $rs->row() : NULL;
     }
 
+
+    public function login_Web($correo, $psw)
+    {
+        $rs = $this->db
+            ->select("us.id_usuario,us.tipo_usuario,us.estatus,us.correo,us.psw,us.token,su.tipo")
+            ->from("usuario AS us")
+            ->join("suscripcion AS su", "su.id_usuario = us.id_usuario")
+            ->where("correo", $correo)
+            ->where("psw", $psw)
+            ->get();
+        //die($this->db->last_query());
+        return $rs->num_rows() > 0 ?
+        $rs->row() : NULL;
+    }
+
     //Método para registrar a un usuario mediante el sistema
     public function registro($data)
     {

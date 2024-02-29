@@ -11,8 +11,10 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
   const [accion, setAccion] = useState('alta');
   const [nombreRed, setNombreRed] = useState('');
   const [psw, setPsw] = useState('');
+  const [idCosecha, setIdCosecha] = useState(0);
   const [dispositivoMaestro, setDispositivoMaestro] = useState('');
   const [dispositivosMaestros, setDispositivosMaestros] = useState([]);
+  const [cosechas, setCosechas] = useState([]);
   const [tipoUsuario, setTipoUsuario] = useState('');
   const [idUsuario, setIdUsuario] = useState(0);
   const [idDispositivo, setIdDispositivo] = useState(0);
@@ -25,6 +27,7 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
     setPsw('');
     setDispositivoMaestro('');
     setIdDispositivo(0);
+    setIdCosecha(0);
   }
 
   const getUserData = async () => {
@@ -61,6 +64,24 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
     }
   };
 
+  // Obtener cosechas
+  const getCosechas = async () => {
+    const formData = new FormData();
+    formData.append('id_usuario', idUsuario);
+
+    try {
+      const response = await fetch(conf.url + '/getCultivos', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const dataResponse = await response.json();
+      setCosechas(dataResponse.data);
+    } catch (error) {
+      console.error('Error al obtener dispositivos maestros del usuario :' + idUsuario + error);
+    }
+  };
+
   useEffect(() => {
     getUserData();
     if (dispositivoEditar) {
@@ -71,6 +92,7 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
       setPsw(dispositivoEditar.psw);
       setDispositivoMaestro(dispositivoEditar.maestro === null ? ' ' : dispositivoEditar.maestro);
       setIdDispositivo(dispositivoEditar.id_dispositivo);
+      setIdCosecha(dispositivoEditar.id_cosecha);
       setAccion('editar');
     }
   }, [dispositivoEditar]);
@@ -78,6 +100,7 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
   useEffect(() => {
     if (idUsuario !== 0) {
       getDispositivosMaestros();
+      getCosechas();
     }
   }, [idUsuario]);
 
@@ -85,7 +108,7 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
   const handleSubmit = async (props) => {
 
     if(tipoDispositivo === "maestro") {
-      if (nombre.trim() === '' || direccionMac.trim() === '' || nombreRed.trim() === '' || psw.trim() === '') {
+      if (nombre.trim() === '' || direccionMac.trim() === '' || nombreRed.trim() === '' || psw.trim() === '' || idCosecha.trim() === '') {
         alert('Por favor completa todos los campos.');
         return;
       }
@@ -128,6 +151,7 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
     formData.append('tipo', tipoDispositivo);
     formData.append('maestro', dispositivoMaestro);
     formData.append('id_usuario', idUsuario);
+    formData.append('id_cosecha', idCosecha);
 
     try {
       const response = await fetch(conf.url + '/nuevoDispositivo', {
@@ -159,7 +183,7 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
   const handleEdit = async (props) => {
 
     if(tipoDispositivo === "maestro") {
-      if (nombre.trim() === '' || direccionMac.trim() === '' || nombreRed.trim() === '' || psw.trim() === '') {
+      if (nombre.trim() === '' || direccionMac.trim() === '' || nombreRed.trim() === '' || psw.trim() === '' || idCosecha.trim() === '') {
         alert('Por favor completa todos los campos.');
         return;
       }
@@ -179,26 +203,22 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
     formData.append('maestro', dispositivoMaestro);
     formData.append('id_usuario', idUsuario);
     formData.append('id_dispositivo', idDispositivo);
+    formData.append('id_cosecha', idCosecha);
 
     try {
-      console.log("editar dispositivo: " + dispositivoMaestro + nombre +  direccionMac + nombreRed + psw+ tipoDispositivo + idUsuario + idDispositivo ); 
       const response = await fetch(conf.url + '/editarDispositivo', {
         method: 'POST',
         body: formData,
       });
 
       const dataResponse = await response.json();
-      console.log(dataResponse);
-      //primero comprobar que tengo algo en data, si no, ya se que no se inserto dispositivo
 
         if (dataResponse.resultado && dataResponse.id_dispositivo > '0') {
           alert(dataResponse.mensaje);
-          console.log('Id dispositivo editado:', dataResponse.id_dispositivo);
         } else {
           alert(dataResponse.mensaje);
         }
     } catch (error) {
-      console.error('Error al editar dispositivo:', error);
       alert('Error al editar dispositivo. Por favor, inténtalo de nuevo.');
     }
     props.onClose();
@@ -230,6 +250,23 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
             value={psw}
             onChangeText={setPsw}
           />
+          <View style={styles.pickerContainer}>
+          <Picker
+            style={styles.picker}
+            selectedValue={idCosecha}
+            onValueChange={(itemValue) => {
+              setIdCosecha(itemValue);
+            }}>
+              <Picker.Item label="Seleccione una cosecha" value={''} />
+              {cosechas != null ? (
+                cosechas.map((cosecha) => (
+                <Picker.Item key={cosecha.id_cosecha} label={cosecha.nombre} value={cosecha.id_cosecha} />
+              ))
+            ) : (
+              <Picker.Item label="No hay cosechas dadas de alta" value="" />
+            )}
+          </Picker>
+        </View>
         </>
       );
     } else if (tipoDispositivo === "esclavo") {
@@ -245,9 +282,11 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
               if (dispositivoMaestroSeleccionado) {
                 setNombreRed(dispositivoMaestroSeleccionado.ssid);
                 setPsw(dispositivoMaestroSeleccionado.psw);
+                setIdCosecha(dispositivoMaestroSeleccionado.id_cosecha);
               } else {
                 setNombreRed('');
                 setPsw('');
+                setIdCosecha(0);
               }
             }}>
               <Picker.Item label="Seleccione un dispositivo maestro" value={''} />
@@ -299,7 +338,7 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
             style={styles.input}
             placeholder="Dirección MAC"
             value={direccionMac}
-            onChangeText={setDireccionMac}
+            onChangeText={text => setDireccionMac(text.toUpperCase())}
           />
           {renderFields()}
           {

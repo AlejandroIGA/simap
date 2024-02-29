@@ -37,7 +37,7 @@ class Dispositivos_model extends CI_Model
     public function getMaestros($id_usuario) {
 
         $rs = $this->db
-            ->select("dp.id_dispositivo, dp.nombre, dp.ssid, dp.psw")
+            ->select("dp.id_dispositivo, dp.nombre, dp.ssid, dp.psw, dp.id_cosecha")
             ->from("dispositivo AS dp")
             ->where("id_usuario", "IFNULL((SELECT cuenta_main FROM usuario WHERE id_usuario = $id_usuario), $id_usuario)", FALSE)
             ->where("dp.tipo", "maestro")

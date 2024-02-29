@@ -41,12 +41,12 @@ function Paypal() {
     }
 
     return (
-        <div className="container-fluid topbar p-0 m-0">
-            <div className="row h-100 m-0 align-content-start">
-                <div>
-                    <p className="m-0">SIMAP</p>
+        <div className='container-fluid p-0' style={{ background: '#f2f2f2' }}>
+            <nav className="navbar navbar-expand-lg nav">
+                <div className="container">
+                    <a className="navbar-brand" href="#inicio">SIMAP</a>
                 </div>
-            </div>
+            </nav >
             <div className="container-fluid w-100 h-100">
                 <div className="container tarjeta p-0 mt-5">
                     <div className="titulo">
@@ -63,23 +63,28 @@ function Paypal() {
                             <li className="informacion">Gráficas avanzadas.</li>
                         </ul>
                     </div>
-                    <div className="row" style={{align:"center"}}>
-                        <div className="paypal" style={{align:"center"}}>
+                    <div className="row" style={{ align: "center" }}>
+                        <div className="col">
+                            <button hidden></button>
+                        </div>
+                        <div className="col">
                         <PayPalButton
-                            createOrder={(data, actions) => createOrder(data, actions)}
-                            onApprove={(data, actions) => onApprove(data, actions)}
-                            onCancel={() => onError("Canceled")}
-                            onError={(err) => onError("ERROE")}
-                            style={ {
-                                shape:  'pill',
-                                label:  'pay',
-                                height: 40,
-                                layout: 'horizontal',
-                                align: "center",
-                            }}
+                                createOrder={(data, actions) => createOrder(data, actions)}
+                                onApprove={(data, actions) => onApprove(data, actions)}
+                                onCancel={() => onError("Canceled")}
+                                onError={(err) => onError("ERROR")}
+                                style={{
+                                    shape: 'pill',
+                                    label: 'pay',
+                                    height: 40,
+                                    layout: 'horizontal',
+                                    align: "center",
+                                }}
                             />
                         </div>
-                        
+                        <div className="col">
+                            <button hidden></button>
+                        </div>
                     </div>
                 </div>
             </div>

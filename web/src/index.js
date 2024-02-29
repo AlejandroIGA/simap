@@ -16,6 +16,7 @@ import Registro from './views/Registro';
 import Login from './views/Login';
 import MainAdmin from './views/mainAdmin';
 import MainAdminFree from './views/mainAdminFree';
+import PaypalWeb from './components/PaypalWeb';
 
 ReactDOM.render(
   <React.StrictMode>
@@ -23,6 +24,7 @@ ReactDOM.render(
       <Routes>
         <Route path='/' element={<App />}></Route>
         <Route path='/paypal' element={<Paypal />}></Route>
+        <Route path='/paypalWeb' element={<PaypalWeb />}></Route>
         <Route path='/cultivos' element={<Cultivos />}></Route>
         <Route path='/cuenta' element={<Cuenta />}></Route>
         <Route path='/inicio' element={<Inicio />}></Route>

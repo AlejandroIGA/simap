@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import conf from '../data/conf';
+import { useFocusEffect } from '@react-navigation/native';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
@@ -34,19 +36,22 @@ const MainColaborador = () => {
       const dataResponse = await response.json();
       console.log(dataResponse);
       setDispositivos(dataResponse['Datos del Dispositivo']);
-      setMostrarTarjeta(dataResponse['Datos del Dispositivo'] !== null && dataResponse['Datos del Dispositivo'].length > 0);
+      setMostrarTarjeta(
+        dataResponse['Datos del Dispositivo'] !== null &&
+          dataResponse['Datos del Dispositivo'].length > 0
+      );
     } catch (error) {
       console.error('Error al obtener los datos del dispositivo:', error);
     }
   };
 
-  useEffect(() => {
-    const intervalId = setInterval(() => {
+  //Manda a llamar a un metodo cuando se hace navegación por el menú
+  useFocusEffect(
+    React.useCallback(() => {
       getDatos();
-    }, 20000); 
-
-    return () => clearInterval(intervalId);
-  }, []);
+      console.log('use focus');
+    }, [])
+  );
 
   useEffect(() => {
     if (dispositivos && dispositivos.length > 0) {

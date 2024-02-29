@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Button } from "react-native";
+import {useFocusEffect} from '@react-navigation/native';
+ 
 import theme from "../theme";
 //import usuario from "../data/usuario";
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -80,6 +82,14 @@ const Cuenta = ({ onLogout }) => {
     }
     //Cambiar de suscripción Pro a Free.
     
+    //Manda a llamar a un metodo cuando se hace navegación por el menú
+    useFocusEffect(
+        React.useCallback(() => {
+            getUsuario();
+            console.log("use focus");
+        }, [])
+    );
+
     useEffect(() => {
         if(cambios){
             getUsuario();

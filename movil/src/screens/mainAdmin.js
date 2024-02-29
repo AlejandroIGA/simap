@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import conf from '../data/conf';
+import { useFocusEffect } from '@react-navigation/native';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
@@ -11,7 +13,6 @@ import {
 } from 'react-native';
 
 const MainColaborador = () => {
-
   const [dispositivos, setDispositivos] = useState([]);
   const [conectado, setConectado] = useState(false);
   const [conectadoBomb, setConectadoBomb] = useState(false);
@@ -27,12 +28,12 @@ const MainColaborador = () => {
 
   const getDatos = async () => {
     try {
-      const userDataJson = await AsyncStorage.getItem("userData");
+      const userDataJson = await AsyncStorage.getItem('userData');
       const userData = JSON.parse(userDataJson);
       const id_usuario = userData.id_usuario;
       const formData = new FormData();
       formData.append('id_usuario', id_usuario);
-      
+
       const response = await fetch(conf.url + '/datosDispositivo', {
         method: 'POST',
         body: formData,
@@ -44,13 +45,24 @@ const MainColaborador = () => {
 
       const dataResponse = await response.json();
       setDispositivos(dataResponse['Datos del Dispositivo']);
-      setTarjeta(dataResponse['Datos del Dispositivo'] !== null && dataResponse['Datos del Dispositivo'].length > 0);
+      setTarjeta(
+        dataResponse['Datos del Dispositivo'] !== null &&
+          dataResponse['Datos del Dispositivo'].length > 0
+      );
       console.log(dataResponse);
     } catch (error) {
       console.error('Error al obtener los datos del dispositivo:', error);
     }
   };
-  
+
+  //Manda a llamar a un metodo cuando se hace navegación por el menú
+  useFocusEffect(
+    React.useCallback(() => {
+      getDatos();
+      console.log('use focus');
+    }, [])
+  );
+
   useEffect(() => {
     getDatos();
   }, []);
@@ -58,7 +70,7 @@ const MainColaborador = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       getDatos();
-    }, 20000); 
+    }, 20000);
     return () => clearInterval(interval);
   }, []);
 
@@ -113,7 +125,6 @@ const MainColaborador = () => {
       </ScrollView>
     </View>
   );
-    
 };
 
 const styles = StyleSheet.create({
@@ -170,7 +181,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginTop: 10,
     width: 100,
-    marginLeft: 20
+    marginLeft: 20,
   },
   buttonText: {
     color: 'white',

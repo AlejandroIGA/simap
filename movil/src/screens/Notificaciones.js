@@ -1,8 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import conf from "../data/conf";
+import conf from '../data/conf';
 
 export function Notificaciones() {
   const [notificaciones, setNotificaciones] = useState([]);
@@ -16,11 +24,11 @@ export function Notificaciones() {
         const userData = JSON.parse(userDataJSON);
         const id_usuario = userData.id_usuario;
         const formData = new FormData();
-        formData.append("id_usuario", id_usuario);
+        formData.append('id_usuario', id_usuario);
 
-        const response = await fetch(conf.url+"/notificaciones", {
+        const response = await fetch(conf.url + '/notificaciones', {
           method: 'POST',
-          body: formData
+          body: formData,
         });
 
         if (!response.ok) {
@@ -31,19 +39,17 @@ export function Notificaciones() {
         setNotificaciones(data.notificaciones);
       }
     } catch (error) {
-      console.error("ERROR:", error.message);
+      console.error('ERROR:', error.message);
     }
-  }
+  };
 
   //ELIMINAR DISPOSITIVO
   const deleteNotificacion = async (id_notificacion) => {
     try {
-
       const formData = new FormData();
-      formData.append("id_notificacion", id_notificacion);
+      formData.append('id_notificacion', id_notificacion);
 
-
-      const response = await fetch(conf.url+"/borrarNotificacion", {
+      const response = await fetch(conf.url + '/borrarNotificacion', {
         method: 'POST',
         body: formData,
       });
@@ -53,54 +59,69 @@ export function Notificaciones() {
 
       getNotificaciones();
     } catch (error) {
-      console.error("ERROR:", error.message);
+      console.error('ERROR:', error.message);
     }
   };
 
-useEffect(() => {
-  getNotificaciones();
-}, []);
+  //Manda a llamar a un metodo cuando se hace navegación por el menú
+  useFocusEffect(
+    React.useCallback(() => {
+      getNotificaciones();
+      console.log('use focus');
+    }, [])
+  );
+
+  useEffect(() => {
+    getNotificaciones();
+  }, []);
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Notificaciones</Text>
       <ScrollView style={styles.scrollView}>
-        { notificaciones != null ? (
-          notificaciones && notificaciones.map((notificacion, index) => (
-            <Notification key={notificacion.id_notificacion} onDelete={deleteNotificacion}  notificacion={notificacion}/>
+        {notificaciones != null ? (
+          notificaciones &&
+          notificaciones.map((notificacion, index) => (
+            <Notification
+              key={notificacion.id_notificacion}
+              onDelete={deleteNotificacion}
+              notificacion={notificacion}
+            />
           ))
         ) : (
           <Text style={styles.noDevicesText}>No hay ninguna notificación</Text>
-        )
-          
-        }
+        )}
       </ScrollView>
     </View>
   );
 }
 
-const Notification = ({notificacion, onDelete}) => {
-
+const Notification = ({ notificacion, onDelete }) => {
   const handleDelete = () => {
     onDelete(notificacion.id_notificacion);
   };
 
-    return (
-        <View style={styles.notification}>
-        <View style={styles.notificationHeader}>
-          <View>
-            <Text style={styles.notificationData}>Fecha: {notificacion.fecha} </Text>
-          </View>
-          <TouchableOpacity onPress={handleDelete} style={[styles.button, { backgroundColor: '#FF0000' }]}>
-          <Icon name="trash" size={20} color="white" />
+  return (
+    <View style={styles.notification}>
+      <View style={styles.notificationHeader}>
+        <View>
+          <Text style={styles.notificationData}>
+            Fecha: {notificacion.fecha}{' '}
+          </Text>
+        </View>
+        <TouchableOpacity
+          onPress={handleDelete}
+          style={[styles.button, { backgroundColor: '#FF0000' }]}
+        >
+          <Icon name='trash' size={20} color='white' />
         </TouchableOpacity>
-        </View>
-        <View style={styles.notificationData}>
-          <Text>{notificacion.informacion}</Text>
-        </View>
       </View>
-    );
-  };
+      <View style={styles.notificationData}>
+        <Text>{notificacion.informacion}</Text>
+      </View>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {

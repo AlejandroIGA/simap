@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import Menu from '../components/Menu';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Dropdown } from 'react-bootstrap';
+import agricultor from '../images/Granjero.png';
 import conf from '../conf';
 
 function Cultivos() {
@@ -30,8 +32,11 @@ function Cultivos() {
     const [plagas, setPlagas] = useState([]);
     const [metodos, setMetodos] = useState([]);
     
+    const navigate = useNavigate();
 
-    let id_usuario = 1;
+    
+    let id_usuario = sessionStorage.getItem('id_usuario');
+
 
     const filteredResponseData = responseData.filter((val) => {
         if (parametro === 'nombre') {
@@ -78,6 +83,32 @@ function Cultivos() {
         setFechaInicioAux("");
     }
 
+    //Logout
+    const handleLogout = async () => {
+        const id_usuario = sessionStorage.getItem('id_usuario');
+        const formData = new FormData();
+        formData.append('id_usuario', id_usuario);
+        try {
+          const response = await fetch(conf.url + '/logout', {
+            method: 'POST',
+            body: formData
+          });
+    
+          if (response.ok) {
+            sessionStorage.clear()
+            console.log("Sesión terminada, id_usuario: " + id_usuario)
+            alert("¡Cerraste sesión!");
+            navigate("/");
+          } else {
+            console.error('Error al cerrar sesión:', response.statusText);
+            alert('Error al cerrar sesión. Por favor, inténtalo de nuevo más tarde.');
+          }
+        } catch (error) {
+          console.error("Error al cerrar sesión:", error);
+          alert("Error al cerrar sesión. Por favor, inténtalo de nuevo más tarde.");
+        }
+      };
+    
     //Mandar a llamar plantas para tener los valores en el dropdown
     const getPlantas = async () => {
         try {
@@ -196,9 +227,9 @@ function Cultivos() {
     }
 
     //Eliminar un cultivo
-    const deleteCultivo = async ($id_cultivo) => {
+    const deleteCultivo = async (id_cultivo) => {
         try {
-            const response = await fetch(conf.url + `/deleteCultivo/${$id_cultivo}`, {
+            const response = await fetch(conf.url + `/deleteCultivo/${id_cultivo}`, {
                 method: 'GET',
             });
             const data = await response.json();
@@ -217,10 +248,10 @@ function Cultivos() {
 
     //Obtener los datos del cultivo a modificar
     //Mandara a llamar un cultivo para editar los valores
-    const getCultivo = async ($id_cultivo) =>{
-        console.log("$id_cultivo: ",$id_cultivo)
+    const getCultivo = async (id_cultivo) =>{
+        console.log("id_cultivo: ",id_cultivo)
         try{
-            const response = await fetch(conf.url+`/getCultivo/${$id_cultivo}`,{
+            const response = await fetch(conf.url+`/getCultivo/${id_cultivo}`,{
                 method:'GET',
             });
             const data = await response.json();
@@ -358,12 +389,67 @@ function Cultivos() {
     }
 
     useEffect(() => {
-        getCultivos();
-    }, [])
+        if (!id_usuario) {
+            alert("Debes iniciar sesión primero");
+            navigate('/login');
+          } else if (id_usuario) {
+            navigate('/cultivos');
+            getCultivos();
+          }
+    }, [navigate])
 
     return (
         <div className="container-fluid p-0 m-0" style={{ background: '#f2f2f2', height: '100%' }}>
-            <Menu />
+            <nav className="navbar navbar-expand-lg nav">
+        <div className="container">
+          <a className="navbar-brand" href="#inicio">SIMAP</a>
+          <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span className="navbar-toggler-icon"></span>
+          </button>
+          <div className="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul className="navbar-nav">
+              <li className="nav-item">
+                <Link type='button' to='/inicio' className='nav-link'>
+                  Inicio
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link type='button' to='/mainAdmin' className='nav-link'>
+                  Usuarios
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link type='button' to='/dispositivos' className='nav-link'>
+                  Dispositivos
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link type='button' to='/cultivos' className='nav-link'>
+                  Cultivos
+                </Link>
+              </li>
+              <div className='ml-auto'>
+                <Dropdown>
+                  <Dropdown.Toggle variant='link' id='dropdown-basic'>
+                    <img
+                      className='mx-4'
+                      src={agricultor}
+                      style={{ width: '50px' }}
+                      alt='Usuario'
+                    />
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu style={{ backgroundColor: '#658C7A', boxShadow: 'none' }}>
+                    <Dropdown.Item href='/cuenta'>Perfil</Dropdown.Item>
+                    <Dropdown.Item onClick={handleLogout}>
+                      Cerrar Sesión
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
+              </div>
+            </ul>
+          </div>
+        </div>
+      </nav>
             <div className='container pt-3 pb-3'>
                 <div className='row'>
                     <div className='col-6'>

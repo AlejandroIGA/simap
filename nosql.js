@@ -30,6 +30,18 @@ const dispositivos = [
   },
 ];
 
+const dispositivos2 = [
+  {
+    id_dispositivo: 'id_dispositivo',
+    id_master: 'id_master',
+    id_cultivo: 'id_cultivo',
+    dispositivo: 'nombre_dispositivo',
+    fecha: 'fecha y hora medicion',
+    temp_amb: 'valor',
+    hum_amb: 'valor',
+    hum_sue: 'valor',
+  },
+];
 /*
   Con el documento cultivos se tiene la información general del cultivo,
   con esta información se realizan los procesos estadisticos en la web.

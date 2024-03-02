@@ -17,7 +17,7 @@ function MainAdminFree() {
     const [empleadosList, setEmpleados] = useState([]);
     const [editar, setEditar] = useState(false);
     const navigate = useNavigate();
-    const storedSession = localStorage.getItem('id_usuario');
+    const storedSession = sessionStorage.getItem('id_usuario');
     const sesion = JSON.parse(storedSession);
 
     useEffect(() => {
@@ -29,32 +29,30 @@ function MainAdminFree() {
         }
     }, [sesion, navigate]);
 
-
     const handleLogout = async () => {
-        const id_usuario = localStorage.getItem('id_usuario');
+        const id_usuario = sessionStorage.getItem('id_usuario');
         const formData = new FormData();
         formData.append('id_usuario', id_usuario);
-
         try {
-            const response = await fetch(conf.url + '/logout', {
-                method: 'POST',
-                body: formData
-            });
-
-            if (response.ok) {
-                localStorage.removeItem('id_usuario');
-                console.log("Sesión terminada, id_usuario: " + id_usuario)
-                alert("¡Cerraste sesión!");
-                navigate("/");
-            } else {
-                console.error('Error al cerrar sesión:', response.statusText);
-                alert('Error al cerrar sesión. Por favor, inténtalo de nuevo más tarde.');
-            }
+          const response = await fetch(conf.url + '/logout', {
+            method: 'POST',
+            body: formData
+          });
+    
+          if (response.ok) {
+            sessionStorage.clear()
+            console.log("Sesión terminada, id_usuario: " + id_usuario)
+            alert("¡Cerraste sesión!");
+            navigate("/");
+          } else {
+            console.error('Error al cerrar sesión:', response.statusText);
+            alert('Error al cerrar sesión. Por favor, inténtalo de nuevo más tarde.');
+          }
         } catch (error) {
-            console.error("Error al cerrar sesión:", error);
-            alert("Error al cerrar sesión. Por favor, inténtalo de nuevo más tarde.");
+          console.error("Error al cerrar sesión:", error);
+          alert("Error al cerrar sesión. Por favor, inténtalo de nuevo más tarde.");
         }
-    };
+      };
 
     const add = () => {
 

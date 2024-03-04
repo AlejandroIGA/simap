@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+
 import {
   View,
   Text,
@@ -15,7 +17,7 @@ import theme from '../theme.js';
 import Formulario from '../components/dispositivos/formulario.jsx';
 import Borrar from '../components/dispositivos/borrar.jsx';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import conf from "../data/conf";
+import conf from '../data/conf';
 
 export function Dispositivos() {
   const [showModal, setShowModal] = useState(false);
@@ -24,7 +26,6 @@ export function Dispositivos() {
   const screenWidth = Dimensions.get('window').width;
   const deviceItemWidth = (screenWidth - 40 - 20) / 2;
 
-
   const openEditModal = (dispositivo) => {
     setDispositivoEditar(dispositivo);
     setShowModal(true);
@@ -32,7 +33,7 @@ export function Dispositivos() {
 
   const openModal = () => {
     setDispositivoEditar(null);
-    setShowModal(true); 
+    setShowModal(true);
   };
 
   const closeModal = () => {
@@ -53,11 +54,11 @@ export function Dispositivos() {
         const userData = JSON.parse(userDataJSON);
         const id_usuario = userData.id_usuario;
         const formData = new FormData();
-        formData.append("id_usuario", id_usuario);
+        formData.append('id_usuario', id_usuario);
 
-        const response = await fetch(conf.url+"/dispositivos", {
+        const response = await fetch(conf.url + '/dispositivos', {
           method: 'POST',
-          body: formData
+          body: formData,
         });
 
         if (!response.ok) {
@@ -69,19 +70,17 @@ export function Dispositivos() {
         console.log(dispositivos);
       }
     } catch (error) {
-      console.error("ERROR:", error.message);
+      console.error('ERROR:', error.message);
     }
   };
 
   //ELIMINAR DISPOSITIVO
   const deleteDispositivo = async (id_dispositivo) => {
     try {
-
       const formData = new FormData();
-      formData.append("id_dispositivo", id_dispositivo);
+      formData.append('id_dispositivo', id_dispositivo);
 
-
-      const response = await fetch(conf.url+"/borrarDispositivo", {
+      const response = await fetch(conf.url + '/borrarDispositivo', {
         method: 'POST',
         body: formData,
       });
@@ -93,9 +92,17 @@ export function Dispositivos() {
 
       await actualizarDispositivos();
     } catch (error) {
-      console.error("ERROR:", error.message);
+      console.error('ERROR:', error.message);
     }
   };
+
+  //Manda a llamar a un metodo cuando se hace navegación por el menú
+  useFocusEffect(
+    React.useCallback(() => {
+      getDispositivos();
+      console.log('use focus');
+    }, [])
+  );
 
   useEffect(() => {
     getDispositivos();
@@ -121,21 +128,25 @@ export function Dispositivos() {
           />
         </View>
       ) : (
-        <Text style={styles.noDevicesText}>No hay dispositivos dados de alta.</Text>
+        <Text style={styles.noDevicesText}>
+          No hay dispositivos dados de alta.
+        </Text>
       )}
       <TouchableOpacity style={styles.floatingButton} onPress={openModal}>
         <Icon name='plus' size={30} color={theme.colors.backgroundPrimary} />
       </TouchableOpacity>
-        <Formulario visible={showModal} onClose={closeModal} actualizarDispositivos={actualizarDispositivos} dispositivoEditar={dispositivoEditar} />
+      <Formulario
+        visible={showModal}
+        onClose={closeModal}
+        actualizarDispositivos={actualizarDispositivos}
+        dispositivoEditar={dispositivoEditar}
+      />
     </View>
   );
-  
 }
-
 
 // CONSTRUCTOR DISPOSITIVO
 const DeviceItem = ({ dispositivo, width, onDelete, onEdit }) => {
-
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const handleDelete = () => {
@@ -150,18 +161,20 @@ const DeviceItem = ({ dispositivo, width, onDelete, onEdit }) => {
   };
 
   const handleEdit = () => {
-    onEdit(dispositivo); 
+    onEdit(dispositivo);
   };
 
   return (
-    <View style={[styles.deviceItem, styles.deviceItemMargin, { width: width }]}>
+    <View
+      style={[styles.deviceItem, styles.deviceItemMargin, { width: width }]}
+    >
       <Text style={styles.deviceText}>Nombre: {dispositivo.nombre}</Text>
       <Text style={styles.deviceTextInfo}>MAC: {dispositivo.mac}</Text>
       <Text style={styles.deviceTextInfo}>Red: {dispositivo.ssid}</Text>
       <Text style={styles.deviceTextInfo}>Contraseña: {dispositivo.psw}</Text>
       <Text style={styles.deviceTextInfo}>Tipo: {dispositivo.tipo}</Text>
       <View style={styles.btnCenter}>
-        <TouchableOpacity style={styles.button} onPress={handleEdit} >
+        <TouchableOpacity style={styles.button} onPress={handleEdit}>
           <Icon name='edit' size={20} color='white' />
         </TouchableOpacity>
         <TouchableOpacity

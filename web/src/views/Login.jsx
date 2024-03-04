@@ -34,20 +34,24 @@ function Login() {
   
       if (response.ok) {
         const dataResponse = await response.json();
-        console.log(dataResponse);
   
         if (dataResponse.resultado) {
+          console.log("OK: ",dataResponse);
           // Obtener el tipo de cuenta (tipo de usuario) de la respuesta
           const tipoCuenta = dataResponse.data.tipo;
           // Almacenar el tipo de cuenta en el estado cuenta
           setCuenta(tipoCuenta);
           // Almacenar el id_usuario en localStorage
-          localStorage.setItem('id_usuario', dataResponse.data.id_usuario);
+          sessionStorage.setItem('id_usuario', dataResponse.data.id_usuario);
+          // Almacenar tipo de usuario
+          sessionStorage.setItem('tipo_usuario', dataResponse.data.tipo_usuario);
           // Redirigir según el tipo de cuenta
-          if (tipoCuenta === "Pro") {
+          if (dataResponse.data.tipo === "Pro") {
               navigate('/mainAdmin');
-          } else if (tipoCuenta === "Free") {
+          } else if (dataResponse.data.tipo === "Free") {
               navigate('/mainAdminFree');
+          }else if (dataResponse.data.tipo_usuario === "colaborador"){
+            alert("Acceso único a usuarios propietarios");
           }
       }
        else {
@@ -60,6 +64,8 @@ function Login() {
     } catch (error) {
       console.error('Error');
       alert('Error al iniciar sesión, intenta de nuevo');
+      console.error(error.message);
+      alert('Ya existe una cuenta iniciada con este usuario');
     }
   };
   

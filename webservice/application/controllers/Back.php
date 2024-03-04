@@ -274,6 +274,7 @@ class Back extends CI_Controller
         $psw = $this->input->post("psw");
         $tipo = $this->input->post("tipo");
         $maestro = $this->input->post("maestro");
+        $id_cosecha = $this->input->post("id_cosecha");
         $id_usuario = $this->input->post("id_usuario");
 
         if ($maestro > 0) {
@@ -286,7 +287,7 @@ class Back extends CI_Controller
                 "maestro" => $maestro,
                 "automatizado" => NULL,
                 "id_usuario" => $id_usuario,
-                "id_cosecha" => NULL
+                "id_cosecha" => $id_cosecha
             );
         } else {
             $data = array(
@@ -296,7 +297,8 @@ class Back extends CI_Controller
                 "psw" => $psw,
                 "tipo" => $tipo,
                 "automatizado" => NULL,
-                "id_usuario" => $id_usuario
+                "id_usuario" => $id_usuario,
+                "id_cosecha" => $id_cosecha
             );
         }
 
@@ -319,6 +321,7 @@ class Back extends CI_Controller
         $maestro = $this->input->post("maestro");
         $id_usuario = $this->input->post("id_usuario");
         $id_dispositivo = $this->input->post("id_dispositivo");
+        $id_cosecha = $this->input->post("id_cosecha");
 
         if ($maestro > 0) {
             $data = array(
@@ -330,7 +333,7 @@ class Back extends CI_Controller
                 "maestro" => $maestro,
                 "automatizado" => NULL,
                 "id_usuario" => $id_usuario,
-                "id_cosecha" => NULL
+                "id_cosecha" => $id_cosecha
             );
         } else {
             $data = array(
@@ -340,7 +343,8 @@ class Back extends CI_Controller
                 "psw" => $psw,
                 "tipo" => $tipo,
                 "automatizado" => NULL,
-                "id_usuario" => $id_usuario
+                "id_usuario" => $id_usuario,
+                "id_cosecha" => $id_cosecha
             );
         }
 
@@ -590,7 +594,27 @@ class Back extends CI_Controller
 
         echo json_encode($obj);
     }
-}
 
+    public function insertNotification() {
+
+        $id_usuario = $this->input->post('id_usuario');
+        $informacion = $this->input->post('informacion');
+        $fecha = $this->input->post('fecha');
+    
+        $data = array(
+            'id_usuario' => $id_usuario,
+            'informacion' => $informacion,
+            'fecha' => $fecha
+        );
+        
+        $id_notificacion = $this->Notificaciones_model->nuevaNotificacion($data);
+    
+        $obj['resultado'] = $id_notificacion != NULL;
+        $obj['mensaje'] = $obj['resultado'] ? "Se registro nueva notificación" : "No se pudo registrar notificación";
+        $obj['id_notificacion'] = $id_notificacion;
+    
+        echo json_encode($obj);
+    }
+}
 
 

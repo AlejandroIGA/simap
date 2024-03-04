@@ -19,7 +19,7 @@ function MainAdmin() {
   const [empleadosList, setEmpleadosList] = useState([]);
   const [editar, setEditar] = useState(false);
   const navigate = useNavigate();
-  const storedSession = localStorage.getItem('id_usuario');
+  const storedSession = sessionStorage.getItem('id_usuario');
   const sesion = JSON.parse(storedSession);
 
   useEffect(() => {
@@ -33,10 +33,9 @@ function MainAdmin() {
 
 
   const handleLogout = async () => {
-    const id_usuario = localStorage.getItem('id_usuario');
+    const id_usuario = sessionStorage.getItem('id_usuario');
     const formData = new FormData();
     formData.append('id_usuario', id_usuario);
-
     try {
       const response = await fetch(conf.url + '/logout', {
         method: 'POST',
@@ -44,7 +43,7 @@ function MainAdmin() {
       });
 
       if (response.ok) {
-        localStorage.removeItem('id_usuario');
+        sessionStorage.clear()
         console.log("Sesión terminada, id_usuario: " + id_usuario)
         alert("¡Cerraste sesión!");
         navigate("/");

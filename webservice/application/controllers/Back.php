@@ -135,6 +135,76 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
+    //CRUD Usuarios
+
+    public function insertUser(){
+
+        $nombre = $this->input->post("nombre");
+        $apellidos = $this->input->post("apellidos");
+        $correo = $this->input->post("correo");
+        $tel = $this->input->post("tel");
+        $tipo_usuario = $this->input->post("tipo_usuario");
+        $tipo_login = $this->input->post("tipo_login");
+        $row = $this->Usuarios_model->insert($nombre, $apellidos, $correo, $tel, $tipo_usuario, $tipo_login);
+
+        $obj["resultado"] = $row != NULL;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Usuario agregado"
+            : "Error: usuario no agregado";
+        $obj["data"] = $row;
+
+        echo json_encode($obj);
+    }
+
+    public function updateUser(){
+
+        $nombre = $this->input->post("nombre");
+        $apellidos = $this->input->post("apellidos");
+        $correo = $this->input->post("correo");
+        $tel = $this->input->post("tel");
+        $tipo_usuario = $this->input->post("tipo_usuario");
+        $tipo_login = $this->input->post("tipo_login");
+        $row = $this->Usuarios_model->update($nombre, $apellidos, $correo, $tel, $tipo_usuario, $tipo_login);
+
+        $obj["resultado"] = $row != NULL;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Usuario actualizado"
+            : "Error: usuario no actualizado";
+        $obj["data"] = $row;
+
+        echo json_encode($obj);
+    }
+
+    public function deleteUser (){
+
+        $id_usuario = $this->input->post("id_usuario");
+        $row = $this->Usuarios_model->delete($id_usuario);
+
+        $obj["resultado"] = $row != NULL;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Usuario eliminado"
+            : "Error: usuario no eliminado";
+        $obj["data"] = $row;
+
+        echo json_encode($obj);
+
+    }
+    //Consulta empleados
+    public function getEmpleados(){
+        $id_usuario = $this->input->post("id_usuario");
+        $row = $this->Usuarios_model->empleados($id_usuario);
+
+        $obj["resultado"] = $row != NULL;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Usuarios obtenidos"
+            : "Error: usuarios no obtenidos";
+        $obj["data"] = $row;
+
+        echo json_encode($obj);
+
+    }
+    //Fin de CRUD
+
     public function getCultivos(){
         $id_usuario = $this->input->post("id_usuario");
         $row = $this->Usuarios_model->getCultivos($id_usuario);

@@ -121,6 +121,55 @@ class Usuarios_model extends CI_Model
         return $this->db->affected_rows()>0;
     }
     
+    //CRUD Usuarios
+
+    public function insert($nombre, $apellidos, $correo, $tel, $tipo_usuario, $tipo_login){
+        $data = array(
+            'nombre' => $nombre,
+            'apellidos' => $apellidos,
+            'correo' => $correo,
+            'tel' => $tel,
+            'tipo_usuario' => $tipo_usuario,
+            'tipo_login' => $tipo_login
+        );
+    
+        $this->db->insert('usuario', $data);
+    
+        return $this->db->affected_rows() > 0;
+    }
     
 
+    public function update($id_usuario, $nombre, $apellidos, $correo, $tel, $tipo_usuario, $tipo_login){
+        $data = array(
+            'nombre' => $nombre,
+            'apellido' => $apellidos,
+            'correo' => $correo,
+            'tel' => $tel,
+            'tipo_usuario' => $tipo_usuario,
+            'tipo_login' => $tipo_login
+        );
+    
+        $this->db->where('id_usuario', $id_usuario);
+        $this->db->update('usuario', $data);
+    
+        return $this->db->affected_rows() > 0;
+    }
+    
+    public function delete( $id_usuario ) {
+		$this->db
+				->where( "usuario", $id_usuario )
+				->delete( "usuario" );
+		return $this->db->affected_rows() > 0;
+	}
+
+    //Consulta de usuarios
+    public function empleados($id_usuario){
+        $rs = $this->db
+        ->select('nombre, apellidos, correo, tel, tipo_usuario, tipo_login')
+        ->get("usuario");
+
+        return $rs->num_rows() > 0 ?
+            $rs->row() : NULL;
+    }
+    //Fin CRUD Usuarios
 }

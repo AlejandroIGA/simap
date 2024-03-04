@@ -58,8 +58,8 @@ function Login() {
         alert('Error al iniciar sesión');
       }
     } catch (error) {
-      console.error('Sesión activa');
-      alert('Ya existe una cuenta iniciada con este usuario');
+      console.error('Error');
+      alert('Error al iniciar sesión, intenta de nuevo');
     }
   };
   

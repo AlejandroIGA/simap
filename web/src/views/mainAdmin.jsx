@@ -11,11 +11,12 @@ function MainAdmin() {
 
   const [id_usuario, setId_usuario] = useState('');
   const [nombre, setNombre] = useState('');
+  const [apellidos, setApellidos] = useState('');
   const [correo, setCorreo] = useState('');
   const [tel, setTel] = useState('');
-  const [tipoUsuario, setTipoUsuario] = useState('');
-  const [tipoLogin, setTipoLogin] = useState('');
-  const [empleadosList, setEmpleados] = useState([]);
+  const [tipo_usuario, setTipo_usuario] = useState('');
+  const [tipo_login, setTipo_login] = useState('');
+  const [empleadosList, setEmpleadosList] = useState([]);
   const [editar, setEditar] = useState(false);
   const navigate = useNavigate();
   const storedSession = localStorage.getItem('id_usuario');
@@ -28,7 +29,7 @@ function MainAdmin() {
     } else if (sesion) {
       navigate('/mainAdmin');
     }
-  }, [sesion, navigate]);
+  }, [sesion, navigate]());
 
 
   const handleLogout = async () => {
@@ -59,9 +60,55 @@ function MainAdmin() {
 
 
 
-  const add = () => {
+  const add = async () => {
+    const formData = new FormData();
+    formData.append('nombre', nombre);
+    formData.append('apellidos', apellidos);
+    formData.append('correo', correo);
+    formData.append('tel', tel);
+    formData.append('tipo_usuario', tipo_usuario);
+    formData.append('tipo_login', tipo_login);
 
-  };
+    try {
+        const response = await fetch(conf.url + '/insertUser', {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (response.ok) {
+            const dataResponse = await response.json();
+            console.log(dataResponse);
+
+            if (dataResponse.resultado) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: 'Usuario insertado correctamente'
+                },limpiarCampos());
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: dataResponse.mensaje
+                });
+            }
+        } else {
+            console.error('Error al insertar usuario: ', response.statusText);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al insertar usuario'
+            });
+        }
+    } catch (error) {
+        console.error('Error: ', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Error al insertar usuario'
+        });
+    }
+};
 
   const update = () => {
 
@@ -73,18 +120,20 @@ function MainAdmin() {
 
   const limpiarCampos = () => {
     setNombre('');
+    setApellidos('');
     setCorreo('');
     setTel('');
-    setTipoUsuario('');
-    setTipoLogin('');
+    setTipo_usuario('');
+    setTipo_login('');
   };
 
   const editarEmpleado = (val) => {
     setEditar(true);
     setNombre(val.nombre);
+    setApellidos(val.apellidos);
     setCorreo(val.correo);
-    setTipoUsuario(val.tipoUsuario);
-    setTipoLogin(val.tipoLogin);
+    setTipo_usuario(val.tipoUsuario);
+    setTipo_login(val.tipoLogin);
   };
 
   const filterEmpleados = () => {
@@ -92,17 +141,39 @@ function MainAdmin() {
       return (
         empleado.nombre === '' ||
         empleado.correo === '' ||
+        empleado.apellidos === '' ||
         empleado.tel === '' ||
-        empleado.tipoUsuario === '' ||
-        empleado.tipoLogin === ''
+        empleado.tipo_usuario === '' ||
+        empleado.tipo_login === ''
       );
     });
   };
 
-  const empleadosConCamposVacios = filterEmpleados();
+  const getEmpleados = async () => {
+    const formData = new FormData();
+    formData.append('id_usuario', id_usuario);
+  
+    try {
+      const response = await fetch(conf.url + '/getEmpleados', {
+          method: 'POST',
+          body: formData,
+      });
 
-  const getEmpleados = () => {
-
+      if (response.ok) {
+          const dataResponse = await response.json();
+          console.log(dataResponse);
+          setEmpleadosList();
+      } else {
+          console.error('Error al obtener empleados: ', response.statusText);
+      }
+  } catch (error) {
+      console.error('Error: ', error);
+      Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Error al obtener empleados'
+      });
+  }
   };
 
   return (
@@ -168,7 +239,7 @@ function MainAdmin() {
             <div className='box card-body'>
               <div className='input-group mb-3'>
                 <span className='input-group-text' id='basic-addon1'>
-                  Nombre completo:
+                  Nombre:
                 </span>
                 <input
                   type='text'
@@ -179,6 +250,22 @@ function MainAdmin() {
                   value={nombre}
                   onChange={(event) => {
                     setNombre(event.target.value);
+                  }}
+                />
+              </div>
+              <div className='input-group mb-3'>
+                <span className='input-group-text' id='basic-addon1'>
+                  Apellidos:
+                </span>
+                <input
+                  type='text'
+                  className='form-control'
+                  placeholder='Ingrese apellidos'
+                  aria-label='Username'
+                  aria-describedby='basic-addon1'
+                  value={apellidos}
+                  onChange={(event) => {
+                    setApellidos(event.target.value);
                   }}
                 />
               </div>
@@ -219,14 +306,14 @@ function MainAdmin() {
                   Tipo de usuario:
                 </span>
                 <input
-                  type='password'
+                  type='text'
                   className='form-control'
-                  placeholder='Ingrese tipo (Admin/Colab)'
+                  placeholder='Ingrese tipo (Administrador/Colaborador)'
                   aria-label='Username'
                   aria-describedby='basic-addon1'
-                  value={tipoUsuario}
+                  value={tipo_usuario}
                   onChange={(event) => {
-                    setTipoUsuario(event.target.value);
+                    setTipo_usuario(event.target.value);
                   }}
                 />
               </div>
@@ -240,9 +327,9 @@ function MainAdmin() {
                   placeholder='Ingrese tipo de login'
                   aria-label='Username'
                   aria-describedby='basic-addon1'
-                  value={tipoLogin}
+                  value={tipo_login}
                   onChange={(event) => {
-                    setTipoLogin(event.target.value);
+                    setTipo_login(event.target.value);
                   }}
                 />
               </div>
@@ -273,6 +360,7 @@ function MainAdmin() {
               <tr>
                 <th scope='col'>#</th>
                 <th scope='col'>Nombre</th>
+                <th scope='col'>Apellidos</th>
                 <th scope='col'>Correo</th>
                 <th scope='col'>Tel.</th>
                 <th scope='col'>Tipo usuario</th>
@@ -281,13 +369,14 @@ function MainAdmin() {
               </tr>
             </thead>
             <tbody>
-              {empleadosConCamposVacios.map((val, key) => (
+              {filterEmpleados.map((val, key) => (
                 <tr key={val.idUsuario}>
                   <td>{val.nombre}</td>
+                  <td>{val.apellidos}</td>
                   <td>{val.correo}</td>
                   <td>{val.tel}</td>
-                  <td>{val.tipoUsuario}</td>
-                  <td>{val.tipoLogin}</td>
+                  <td>{val.tipo_usuario}</td>
+                  <td>{val.tipo_login}</td>
                   <td>
                     <div
                       className='btn-group'

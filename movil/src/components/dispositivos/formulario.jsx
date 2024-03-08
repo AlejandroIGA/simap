@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, Modal} from 'react
 import {Picker} from "@react-native-picker/picker";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import conf from '../../data/conf';
+import { useFocusEffect } from '@react-navigation/native';
 
 const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEditar }) => {
   const [nombre, setNombre] = useState('');
@@ -97,6 +98,13 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
     }
   }, [dispositivoEditar]);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      getCosechas();
+      console.log('use focus');
+    }, [])
+  );
+
   useEffect(() => {
     if (idUsuario !== 0) {
       getDispositivosMaestros();
@@ -108,8 +116,12 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
   const handleSubmit = async (props) => {
 
     if(tipoDispositivo === "maestro") {
-      if (nombre.trim() === '' || direccionMac.trim() === '' || nombreRed.trim() === '' || psw.trim() === '' || idCosecha.trim() === '') {
+      if (nombre.trim() === '' || direccionMac.trim() === '' || nombreRed.trim() === '' || psw.trim() === '') {
         alert('Por favor completa todos los campos.');
+        return;
+      }
+      if (idCosecha.trim() === '') {
+        alert('Debe dar de alta una cosecha o seleccionar una existente.');
         return;
       }
       if (nombre.trim().length < 5) {
@@ -129,8 +141,12 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
         return;
       }
     } else if(tipoDispositivo === "esclavo") {
-      if (nombre.trim() === '' || direccionMac.trim() === '' || dispositivoMaestro.trim()  === '' ) {
+      if (nombre.trim() === '' || direccionMac.trim() === '') {
         alert('Por favor completa todos los campos.');
+        return;
+      }
+      if (dispositivoMaestro.trim()  === '') {
+        alert('Debe seleccionar un dispositivo maestro o dar uno de alta.');
         return;
       }
       if (nombre.trim().length < 5) {

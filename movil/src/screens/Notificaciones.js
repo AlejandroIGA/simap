@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 
 import {
@@ -12,8 +12,10 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import conf from '../data/conf';
 
+
 export function Notificaciones() {
   const [notificaciones, setNotificaciones] = useState([]);
+
 
   //OBTENER NOTIFICACIONES
   const getNotificaciones = async () => {

@@ -28,24 +28,26 @@ class Back extends CI_Controller
     {
         $correo = $this->input->post("correo");
         $psw = $this->input->post("psw");
+        $token = $this->input->post("token");
+
         $row = $this->Usuarios_model->login($correo, $psw);
 
         $obj["resultado"] = $row != NULL;
         if($obj["resultado"]!=NULL){
-            $token = $row->token;
+            $tokenU = $row->token;
             if($row->psw == $psw and $row->correo == $correo){
                 if($row->estatus == 0){
                     $obj["mensaje"] = "Cuenta desactivada";
                     $obj["data"] = NULL;
                 }else{
-                    if(!$token){
+                    if(!$tokenU){
                         $obj["mensaje"] = "Credenciales correctas";
                         $obj["data"] = array(
                             'id_usuario' => $row->id_usuario,
                             'tipo_usuario' => $row->tipo_usuario,
                             'estatus' => $row->estatus
                         ); 
-                        $this->Usuarios_model->saveUserToken($row->id_usuario);
+                        $this->Usuarios_model->saveUserToken($row->id_usuario, $token);
                     }else{
                         $obj["mensaje"] = "Ya hay una sesión activa";
                         $obj["data"] = NULL;
@@ -69,17 +71,19 @@ class Back extends CI_Controller
     {
         $correo = $this->input->post("correo");
         $psw = $this->input->post("psw");
+        $token = bin2hex(random_bytes(32));
+
         $row = $this->Usuarios_model->login_Web($correo, $psw);
 
         $obj["resultado"] = $row != NULL;
         if($obj["resultado"]!=NULL){
-            $token = $row->token;
+            $tokenU = $row->token;
             if($row->psw == $psw and $row->correo == $correo){
                 if($row->estatus == 0){
                     $obj["mensaje"] = "Cuenta desactivada";
                     $obj["data"] = NULL;
                 }else{
-                    if(!$token){
+                    if(!$tokenU){
                         $obj["mensaje"] = "Credenciales correctas";
                         $obj["data"] = array(
                             'id_usuario' => $row->id_usuario,
@@ -87,7 +91,7 @@ class Back extends CI_Controller
                             'tipo' => $row->tipo,
                             'estatus' => $row->estatus
                         ); 
-                        $this->Usuarios_model->saveUserToken($row->id_usuario);
+                        $this->Usuarios_model->saveUserToken($row->id_usuario, $token);
                     }else{
                         $obj["mensaje"] = "Ya hay una sesión activa";
                         $obj["data"] = NULL;
@@ -526,11 +530,10 @@ class Back extends CI_Controller
     }
 
     public function insertNotification() {
-
         $id_usuario = $this->input->post('id_usuario');
         $informacion = $this->input->post('informacion');
         $fecha = $this->input->post('fecha');
-    
+        
         $data = array(
             'id_usuario' => $id_usuario,
             'informacion' => $informacion,
@@ -538,13 +541,35 @@ class Back extends CI_Controller
         );
         
         $id_notificacion = $this->Notificaciones_model->nuevaNotificacion($data);
+        $token = $this->Notificaciones_model->getTokenUsuario($id_usuario);
+    
+        $expoPushEndpoint = "https://exp.host/--/api/v2/push/send";
+        $expoPushData = [
+            'to' => $token,
+            'title' => 'Nueva notificación - SIMAP',
+            'body' => $informacion,
+        ];
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $expoPushEndpoint);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Accept: application/json',
+            'Content-Type: application/json',
+        ));
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($expoPushData));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch);
+        curl_close($ch);
     
         $obj['resultado'] = $id_notificacion != NULL;
-        $obj['mensaje'] = $obj['resultado'] ? "Se registro nueva notificación" : "No se pudo registrar notificación";
+        $obj['mensaje'] = $obj['resultado'] ? "Se registró nueva notificación" : "No se pudo registrar notificación";
         $obj['id_notificacion'] = $id_notificacion;
     
         echo json_encode($obj);
     }
+    
+    
 }
 
 

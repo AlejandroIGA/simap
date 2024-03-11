@@ -34,8 +34,10 @@ const dispositivos2 = [
   {
     id_dispositivo: 'id_dispositivo',
     id_master: 'id_master',
+    master: 'nombre_master',
     id_cultivo: 'id_cultivo',
-    dispositivo: 'nombre_dispositivo',
+    cultivo: 'nombre_cultivo',
+    esclavo: 'nombre_dispositivo',
     fecha: 'fecha y hora medicion',
     temp_amb: 'valor',
     hum_amb: 'valor',

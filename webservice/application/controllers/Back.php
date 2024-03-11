@@ -16,6 +16,7 @@ class Back extends CI_Controller
         $this->load->model("Cultivo_model");
         $this->load->model("Dispositivos_model");
         $this->load->model("Notificaciones_model");
+        $this->load->model("Sensor_model");
     }
 
     public function index()
@@ -31,35 +32,35 @@ class Back extends CI_Controller
         $row = $this->Usuarios_model->login($correo, $psw);
 
         $obj["resultado"] = $row != NULL;
-        if($obj["resultado"]!=NULL){
+        if ($obj["resultado"] != NULL) {
             $token = $row->token;
-            if($row->psw == $psw and $row->correo == $correo){
-                if($row->estatus == 0){
+            if ($row->psw == $psw and $row->correo == $correo) {
+                if ($row->estatus == 0) {
                     $obj["mensaje"] = "Cuenta desactivada";
                     $obj["data"] = NULL;
-                }else{
-                    if(!$token){
+                } else {
+                    if (!$token) {
                         $obj["mensaje"] = "Credenciales correctas";
                         $obj["data"] = array(
                             'id_usuario' => $row->id_usuario,
                             'tipo_usuario' => $row->tipo_usuario,
                             'estatus' => $row->estatus
-                        ); 
+                        );
                         $this->Usuarios_model->saveUserToken($row->id_usuario);
-                    }else{
+                    } else {
                         $obj["mensaje"] = "Ya hay una sesión activa";
                         $obj["data"] = NULL;
                     }
                 }
-            }else{
+            } else {
                 $obj["mensaje"] = "Correo o contraseña incorrecto";
                 $obj["data"] = NULL;
             }
-        }else{
+        } else {
             $obj["mensaje"] = "No se encontro al usuario";
             $obj["data"] = NULL;
         }
-        
+
 
         echo json_encode($obj);
     }
@@ -72,70 +73,71 @@ class Back extends CI_Controller
         $row = $this->Usuarios_model->login_Web($correo, $psw);
 
         $obj["resultado"] = $row != NULL;
-        if($obj["resultado"]!=NULL){
+        if ($obj["resultado"] != NULL) {
             $token = $row->token;
-            if($row->psw == $psw and $row->correo == $correo){
-                if($row->estatus == 0){
+            if ($row->psw == $psw and $row->correo == $correo) {
+                if ($row->estatus == 0) {
                     $obj["mensaje"] = "Cuenta desactivada";
                     $obj["data"] = NULL;
-                }else{
-                    if(!$token){
+                } else {
+                    if (!$token) {
                         $obj["mensaje"] = "Credenciales correctas";
                         $obj["data"] = array(
                             'id_usuario' => $row->id_usuario,
                             'tipo_usuario' => $row->tipo_usuario,
                             'tipo' => $row->tipo,
                             'estatus' => $row->estatus
-                        ); 
+                        );
                         $this->Usuarios_model->saveUserToken($row->id_usuario);
-                    }else{
+                    } else {
                         $obj["mensaje"] = "Ya hay una sesión activa";
                         $obj["data"] = NULL;
                     }
                 }
-            }else{
+            } else {
                 $obj["mensaje"] = "Correo o contraseña incorrecto";
                 $obj["data"] = NULL;
             }
-        }else{
+        } else {
             $obj["mensaje"] = "Correo o contraseña incorrecto";
             $obj["data"] = NULL;
         }
-        
+
 
         echo json_encode($obj);
     }
 
-    public function logout(){
+    public function logout()
+    {
         $id_usuario = $this->input->post("id_usuario");
         $row = $this->Usuarios_model->logout($id_usuario);
 
         $obj["resultado"] = $row != false;
         $obj["mensaje"] = $obj["resultado"] ?
             "Usuario actualizado"
-            : "Usuario no encontrado ->" .json_encode($_POST)."<-";
+            : "Usuario no encontrado ->" . json_encode($_POST) . "<-";
         $obj["data"] = $row;
 
         echo json_encode($obj);
-
     }
 
     public function usuario()
     {
         $id = $this->input->post("id_usuario");
         $tipo = $this->input->post("tipo_usuario");
-        $row = $this->Usuarios_model->getInfoUsuario($id,$tipo);
+        $row = $this->Usuarios_model->getInfoUsuario($id, $tipo);
 
         $obj["resultado"] = $row != NULL;
         $obj["mensaje"] = $obj["resultado"] ?
             "Usuario encontrado"
-            : "Usuario no encontrado ->" .json_encode($_POST)."<-";
+            : "Usuario no encontrado ->" . json_encode($_POST) . "<-";
         $obj["data"] = $row;
 
         echo json_encode($obj);
     }
 
-    public function getCultivos(){
+    public function getCultivos()
+    {
         $id_usuario = $this->input->post("id_usuario");
         $row = $this->Usuarios_model->getCultivos($id_usuario);
 
@@ -148,8 +150,9 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
-   
-    public function registroUsuario(){
+
+    public function registroUsuario()
+    {
         $nombre = $this->input->post("nombre");
         $apellidos = $this->input->post("apellidos");
         $correo = $this->input->post("correo");
@@ -182,12 +185,12 @@ class Back extends CI_Controller
         $obj["id_suscripcion"] = $id_suscripcion;
 
         echo json_encode($obj);
-
     }
 
 
     //Obtener la información de un cultivo especifico
-    public function getCultivo($id_cosecha){
+    public function getCultivo($id_cosecha)
+    {
         $row = $this->Cultivo_model->getCultivo($id_cosecha);
         $obj["resultado"] = $row != NULL;
         $obj["mensaje"] = $obj["resultado"] ?
@@ -197,7 +200,8 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
-    public function nuevoDispositivo () {
+    public function nuevoDispositivo()
+    {
         $nombre = $this->input->post("nombre");
         $mac = $this->input->post("mac");
         $ssid = $this->input->post("ssid");
@@ -239,10 +243,10 @@ class Back extends CI_Controller
         $obj["id_dispositivo"] = $id_dispositivo;
 
         echo json_encode($obj);
-
     }
 
-    public function editarDispositivo () {
+    public function editarDispositivo()
+    {
         $nombre = $this->input->post("nombre");
         $mac = $this->input->post("mac");
         $ssid = $this->input->post("ssid");
@@ -285,41 +289,41 @@ class Back extends CI_Controller
         $obj["id_dispositivo"] = $id_dispositivo;
 
         echo json_encode($obj);
-
     }
 
-    public function dispositivos(){
+    public function dispositivos()
+    {
 
         $id_usuario = $this->input->post("id_usuario");
 
         $data = $this->Dispositivos_model->getDispositivos($id_usuario);
 
-            $obj['resultado'] = $data != NULL;
-            $obj['mensaje'] = $obj['resultado'] ? "Se recuperaron " .count($data). " dispositivo(s)" : "No hay nigun dispositivo registrado";
-            $obj['dispositivos'] = $data;
+        $obj['resultado'] = $data != NULL;
+        $obj['mensaje'] = $obj['resultado'] ? "Se recuperaron " . count($data) . " dispositivo(s)" : "No hay nigun dispositivo registrado";
+        $obj['dispositivos'] = $data;
 
-            echo json_encode($obj);
-
+        echo json_encode($obj);
     }
 
     // Obtener dispisitivos maestros para asignacion de redes a otros dispositivos.
-    public function dispositivosMaestros(){
+    public function dispositivosMaestros()
+    {
 
         $id_usuario = $this->input->post("id_usuario");
 
         $data = $this->Dispositivos_model->getMaestros($id_usuario);
 
-            $obj['resultado'] = $data != NULL;
-            $obj['mensaje'] = $obj['resultado'] ? "Se recuperaron " .count($data). " dispositivo(s) maestros" : "No hay nigun dispositivo registrado del usuario $id_usuario";
-            $obj['dispositivosMaestro'] = $data;
+        $obj['resultado'] = $data != NULL;
+        $obj['mensaje'] = $obj['resultado'] ? "Se recuperaron " . count($data) . " dispositivo(s) maestros" : "No hay nigun dispositivo registrado del usuario $id_usuario";
+        $obj['dispositivosMaestro'] = $data;
 
-            echo json_encode($obj);
-
+        echo json_encode($obj);
     }
 
     //Eliminar dispositivos
 
-    public function borrarDispositivo(){
+    public function borrarDispositivo()
+    {
 
         $id_dispositivo = $this->input->post("id_dispositivo");
 
@@ -330,23 +334,24 @@ class Back extends CI_Controller
     }
 
     //Obtener datos de dispositivos
-    
-    public function datosDispositivo(){
+
+    public function datosDispositivo()
+    {
 
         $id_usuario = $this->input->post("id_usuario");
 
         $data = $this->Dispositivos_model->getDatosDispositivo($id_usuario);
 
-            $obj['resultado'] = $data != NULL;
-            $obj['mensaje'] = $obj['resultado'] ? "Se recuperaron " .count($data). " dispositivo(s)" : "No hay nigun dispositivo registrado del usuario $id_usuario";
-            $obj['Datos del Dispositivo'] = $data;
+        $obj['resultado'] = $data != NULL;
+        $obj['mensaje'] = $obj['resultado'] ? "Se recuperaron " . count($data) . " dispositivo(s)" : "No hay nigun dispositivo registrado del usuario $id_usuario";
+        $obj['Datos del Dispositivo'] = $data;
 
-            echo json_encode($obj);
-
+        echo json_encode($obj);
     }
 
     //Obtener las plantas registradas
-    public function getPlantas(){
+    public function getPlantas()
+    {
         $row = $this->Plantas_model->getPlantas();
         $obj["resultado"] = $row != NULL;
         $obj["mensaje"] = $obj["resultado"] ?
@@ -357,7 +362,8 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
-    public function getPlanta($planta){
+    public function getPlanta($planta)
+    {
         $row = $this->Plantas_model->getPlanta($planta);
         $obj["resultado"] = $row != NULL;
         $obj["mensaje"] = $obj["resultado"] ?
@@ -369,18 +375,19 @@ class Back extends CI_Controller
     }
 
     //Registrar un cultivo/cosecha
-    public function addCultivo(){
+    public function addCultivo()
+    {
         $data = array(
-            'id_usuario' => $this->input->post("id_usuario"), 
-            'id_planta' => $this->input->post("id_planta"), 
-            'nombre' => $this->input->post("nombre"), 
-            'fecha_inicio' => $this->input->post("fecha_inicio"), 
-            'cant_siembra' => $this->input->post("cant_siembra"), 
-            'temp_amb_min' => $this->input->post("temp_amb_min"), 
-            'temp_amb_max' => $this->input->post("temp_amb_max"), 
-            'hum_amb_min' => $this->input->post("hum_amb_min"), 
-            'hum_amb_max' => $this->input->post("hum_amb_max"), 
-            'hum_sue_min' => $this->input->post("hum_sue_min"), 
+            'id_usuario' => $this->input->post("id_usuario"),
+            'id_planta' => $this->input->post("id_planta"),
+            'nombre' => $this->input->post("nombre"),
+            'fecha_inicio' => $this->input->post("fecha_inicio"),
+            'cant_siembra' => $this->input->post("cant_siembra"),
+            'temp_amb_min' => $this->input->post("temp_amb_min"),
+            'temp_amb_max' => $this->input->post("temp_amb_max"),
+            'hum_amb_min' => $this->input->post("hum_amb_min"),
+            'hum_amb_max' => $this->input->post("hum_amb_max"),
+            'hum_sue_min' => $this->input->post("hum_sue_min"),
             'hum_sue_max' => $this->input->post("hum_sue_max"),
         );
 
@@ -388,10 +395,10 @@ class Back extends CI_Controller
         $mensaje = "";
         $resultado = null;
 
-        if($rs == false){
+        if ($rs == false) {
             $mensaje = "Ya hay un cultivo activo con ese nombre";
             $resultado = false;
-        }else if($rs == true){
+        } else if ($rs == true) {
             $mensaje = "Se registro el cultivo";
             $resultado = true;
         }
@@ -400,22 +407,22 @@ class Back extends CI_Controller
         $obj["mensaje"] = $mensaje;
 
         echo json_encode($obj);
-
     }
 
     //Actualizar un cultivo
-    public function updateCultivo(){
+    public function updateCultivo()
+    {
         $data = array(
-            'id_cosecha' => $this->input->post("id_cosecha"), 
-            'id_planta' => $this->input->post("id_planta"), 
-            'nombre' => $this->input->post("nombre"), 
-            'fecha_inicio' => $this->input->post("fecha_inicio"), 
-            'cant_siembra' => $this->input->post("cant_siembra"), 
-            'temp_amb_min' => $this->input->post("temp_amb_min"), 
-            'temp_amb_max' => $this->input->post("temp_amb_max"), 
-            'hum_amb_min' => $this->input->post("hum_amb_min"), 
-            'hum_amb_max' => $this->input->post("hum_amb_max"), 
-            'hum_sue_min' => $this->input->post("hum_sue_min"), 
+            'id_cosecha' => $this->input->post("id_cosecha"),
+            'id_planta' => $this->input->post("id_planta"),
+            'nombre' => $this->input->post("nombre"),
+            'fecha_inicio' => $this->input->post("fecha_inicio"),
+            'cant_siembra' => $this->input->post("cant_siembra"),
+            'temp_amb_min' => $this->input->post("temp_amb_min"),
+            'temp_amb_max' => $this->input->post("temp_amb_max"),
+            'hum_amb_min' => $this->input->post("hum_amb_min"),
+            'hum_amb_max' => $this->input->post("hum_amb_max"),
+            'hum_sue_min' => $this->input->post("hum_sue_min"),
             'hum_sue_max' => $this->input->post("hum_sue_max"),
         );
 
@@ -428,7 +435,8 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
-    public function deleteCultivo($id_cultivo){
+    public function deleteCultivo($id_cultivo)
+    {
         $row = $this->Cultivo_model->deleteCultivo($id_cultivo);
         $obj["resultado"] = $row != false;
         $obj["mensaje"] = $obj["resultado"] ?
@@ -438,7 +446,8 @@ class Back extends CI_Controller
     }
 
     //Obtener plagas
-    public function getPlagas($id_cosecha){
+    public function getPlagas($id_cosecha)
+    {
         $row = $this->Plantas_model->getPlagas($id_cosecha);
         $obj["resultado"] = $row != NULL;
         $obj["mensaje"] = $obj["resultado"] ?
@@ -450,24 +459,26 @@ class Back extends CI_Controller
     }
 
     //Obtener metodos de combate de plagas
-    public function getMetodos(){
+    public function getMetodos()
+    {
         $row = $this->Plantas_model->getMetodos();
-        $opciones = explode(",",$row->opciones);
+        $opciones = explode(",", $row->opciones);
         foreach ($opciones as &$elemento) {
             $elemento = trim($elemento, "'");
         }
-        
+
         $obj["resultado"] = $row != NULL;
         $obj["mensaje"] = $obj["resultado"] ?
             "Metodos recuperados"
             : "No hay metodos registrados";
-        $obj["data"] =$opciones;
+        $obj["data"] = $opciones;
 
         echo json_encode($obj);
     }
 
     //Finalizar un cultivo
-    public function endCultivo(){
+    public function endCultivo()
+    {
         $data = array(
             "id_cosecha" => $this->input->post("id_cosecha"),
             "fecha_fin" => $this->input->post("fecha_fin"),
@@ -486,7 +497,8 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
-    public function suscribirse(){
+    public function suscribirse()
+    {
         $id_usuario = $this->input->post("id_usuario");
         $rs = $this->Usuarios_model->suscribirse($id_usuario);
 
@@ -496,26 +508,26 @@ class Back extends CI_Controller
             : "Surgio un error";
 
         echo json_encode($obj);
-
     }
     //Obtener notificaciones
-    public function notificaciones(){
+    public function notificaciones()
+    {
 
         $id_usuario = $this->input->post("id_usuario");
 
         $data = $this->Notificaciones_model->getNotificaciones($id_usuario);
 
-            $obj['resultado'] = $data != NULL;
-            $obj['mensaje'] = $obj['resultado'] ? "Se recuperaron " .count($data). " notificacion(es)" : "No hay niguna notificación registrada";
-            $obj['notificaciones'] = $data;
+        $obj['resultado'] = $data != NULL;
+        $obj['mensaje'] = $obj['resultado'] ? "Se recuperaron " . count($data) . " notificacion(es)" : "No hay niguna notificación registrada";
+        $obj['notificaciones'] = $data;
 
-            echo json_encode($obj);
-
+        echo json_encode($obj);
     }
 
     //Eliminar notificacion
 
-    public function borrarNotificacion(){
+    public function borrarNotificacion()
+    {
 
         $id_notificacion = $this->input->post("id_notificacion");
 
@@ -525,26 +537,51 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
-    public function insertNotification() {
+    public function insertNotification()
+    {
 
         $id_usuario = $this->input->post('id_usuario');
         $informacion = $this->input->post('informacion');
         $fecha = $this->input->post('fecha');
-    
+
         $data = array(
             'id_usuario' => $id_usuario,
             'informacion' => $informacion,
             'fecha' => $fecha
         );
-        
+
         $id_notificacion = $this->Notificaciones_model->nuevaNotificacion($data);
-    
+
         $obj['resultado'] = $id_notificacion != NULL;
         $obj['mensaje'] = $obj['resultado'] ? "Se registro nueva notificación" : "No se pudo registrar notificación";
         $obj['id_notificacion'] = $id_notificacion;
-    
+
+        echo json_encode($obj);
+    }
+
+    //TEST ESP32
+    public function test()
+    {
+        // Verificar si raw_input_stream está presente y no está vacío
+        /*
+    if (isset($this->input->raw_input_stream) && strlen($this->input->raw_input_stream) > 0 && $this->input->raw_input_stream[0] == "{") {
+        $input = json_decode($this->input->raw_input_stream);
+        //$matricula = $input->matricula;
+    } else {
+        $input = $this->input->post("msg");
+    }*/
+        //$input = $this->input->post("nombre");
+        if($this->input->raw_input_stream[0] == "{"){
+            $input = json_decode($this->input->raw_input_stream);
+            $valor = $input->nombre; 
+        }else{
+            $valor = $this->input->post("valor");
+        }
+        
+        $fecha = $this->Sensor_model->test();
+        $obj["fecha"] = $fecha;
+        $obj["data"] = $valor;
+        //$obj["datos"] = $input;
         echo json_encode($obj);
     }
 }
-
-

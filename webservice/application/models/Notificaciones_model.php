@@ -3,6 +3,17 @@ class Notificaciones_model extends CI_Model
 {
 
     // Obtener notificaciones
+    public function getTokenUsuario($id_usuario) {
+        $rs = $this->db
+            ->select("token")
+            ->where("id_usuario", $id_usuario)
+            ->from("usuario")
+            ->get();
+    
+        return $rs->num_rows() > 0 ?
+            $rs->row()->token : NULL;
+    }
+    
     public function getNotificaciones($id_usuario) {
 
         $rs = $this->db
@@ -27,7 +38,7 @@ class Notificaciones_model extends CI_Model
 
     public function nuevaNotificacion($data) {
 
-        $this->db->where('notificaciones', $data);
+        $this->db->insert('notificaciones', $data);
         
         return $this->db->affected_rows() > 0 ? 
         $this->db->insert_id() : 0;

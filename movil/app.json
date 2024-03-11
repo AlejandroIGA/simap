@@ -18,6 +18,9 @@
       "supportsTablet": true
     },
     "android": {
+      "permissions": [
+        "NOTIFICATIONS"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -25,6 +28,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "3d8c0a6e-b84d-4c7d-a111-7ae87e1f59c2"
+      }
+    },
+    "owner": "leonardomontero"
   }
 }

@@ -49,9 +49,9 @@ class Usuarios_model extends CI_Model
     }
 
     //Método para guardar el token del usuario
-    public function saveUserToken($id_usuario)
+    public function saveUserToken($id_usuario, $token)
     {
-        $token = bin2hex(random_bytes(32));
+
         $this->db
             ->set("token", $token)
             ->where("id_usuario", $id_usuario)

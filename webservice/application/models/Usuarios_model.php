@@ -142,7 +142,7 @@ class Usuarios_model extends CI_Model
     public function update($id_usuario, $nombre, $apellidos, $correo, $tel, $tipo_usuario, $tipo_login){
         $data = array(
             'nombre' => $nombre,
-            'apellido' => $apellidos,
+            'apellidos' => $apellidos,
             'correo' => $correo,
             'tel' => $tel,
             'tipo_usuario' => $tipo_usuario,
@@ -157,19 +157,19 @@ class Usuarios_model extends CI_Model
     
     public function delete( $id_usuario ) {
 		$this->db
-				->where( "usuario", $id_usuario )
+				->where( "id_usuario", $id_usuario )
 				->delete( "usuario" );
 		return $this->db->affected_rows() > 0;
 	}
 
     //Consulta de usuarios
-    public function empleados($id_usuario){
+    public function empleados(){
         $rs = $this->db
-        ->select('nombre, apellidos, correo, tel, tipo_usuario, tipo_login')
-        ->get("usuario");
-
+            ->select('id_usuario, nombre, apellidos, correo, tel, tipo_usuario, tipo_login')
+            ->get("usuario");
+    
         return $rs->num_rows() > 0 ?
-            $rs->row() : NULL;
-    }
+            $rs->result_array() : NULL;
+    }    
     //Fin CRUD Usuarios
 }

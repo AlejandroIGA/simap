@@ -24,12 +24,16 @@ function MainAdmin() {
 
   useEffect(() => {
     if (!sesion) {
-      alert("Debes iniciar sesión primero");
+      alert("Inicia sesión primero");
       navigate('/login');
-    } else if (sesion) {
-      navigate('/mainAdmin');
+    } else if (sesion.tipo === 'Cliente') {
+      navigate('/catalogoCliente');
     }
-  }, [sesion, navigate]());
+  }, [sesion, navigate]);
+
+  useEffect(() => {
+    getEmpleados();
+  }, []);
 
 
   const handleLogout = async () => {
@@ -69,52 +73,159 @@ function MainAdmin() {
     formData.append('tipo_login', tipo_login);
 
     try {
-        const response = await fetch(conf.url + '/insertUser', {
-            method: 'POST',
-            body: formData,
-        });
+      const response = await fetch(conf.url + '/insertUser', {
+        method: 'POST',
+        body: formData,
+      });
 
-        if (response.ok) {
-            const dataResponse = await response.json();
-            console.log(dataResponse);
+      if (response.ok) {
+        const dataResponse = await response.json();
+        console.log(dataResponse);
 
-            if (dataResponse.resultado) {
-                Swal.fire({
-                    icon: 'success',
-                    title: '¡Éxito!',
-                    text: 'Usuario insertado correctamente'
-                },limpiarCampos());
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: dataResponse.mensaje
-                });
-            }
+        if (dataResponse.resultado) {
+          Swal.fire({
+            title: "<strong>¡Registro exitoso!</strong>",
+            html: "<i>El empleado <strong>" + nombre + "</strong> fue registrado con éxito</i>",
+            icon: 'success',
+            timer: 3000
+          },
+            getEmpleados(),
+            limpiarCampos());
         } else {
-            console.error('Error al insertar usuario: ', response.statusText);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error al insertar usuario'
-            });
-        }
-    } catch (error) {
-        console.error('Error: ', error);
-        Swal.fire({
+          Swal.fire({
             icon: 'error',
             title: 'Error',
-            text: 'Error al insertar usuario'
+            text: dataResponse.mensaje
+          });
+        }
+      } else {
+        console.error('Error al insertar usuario: ', response.statusText);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Error al insertar usuario'
         });
+      }
+    } catch (error) {
+      console.error('Error: ', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Error al insertar usuario'
+      });
     }
-};
-
-  const update = () => {
-
   };
 
-  const deleteEmple = (val) => {
+  const update = async () => {
+    const formData = new FormData();
+    formData.append('id_usuario', id_usuario);
+    formData.append('nombre', nombre);
+    formData.append('apellidos', apellidos);
+    formData.append('correo', correo);
+    formData.append('tel', tel);
+    formData.append('tipo_usuario', tipo_usuario);
+    formData.append('tipo_login', tipo_login);
 
+    try {
+      const response = await fetch(conf.url + '/updateUser', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const dataResponse = await response.json();
+        console.log(dataResponse);
+
+        if (dataResponse.resultado) {
+          Swal.fire({
+            title: "<strong>¡Actualización exitosa!</strong>",
+            html: "<i>El empleado <strong>" + nombre + "</strong> fue actualizado con éxito</i>",
+            icon: 'success',
+            timer: 3000
+          },
+            getEmpleados(),
+            limpiarCampos());
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: dataResponse.mensaje
+          });
+        }
+      } else {
+        console.error('Error al actualizar usuario: ', response.statusText);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Error al actualizar usuario'
+        });
+      }
+    } catch (error) {
+      console.error('Error: ', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Error al actualizar usuario'
+      });
+    }
+  };
+
+  const deleteEmple = async (val) => {
+    const formData = new FormData();
+    formData.append('id_usuario', val.id_usuario);
+    try {
+      const response = await fetch(conf.url + '/deleteUser', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const dataResponse = await response.json();
+        console.log(dataResponse);
+
+        if (dataResponse.resultado) {
+          Swal.fire({
+            title: 'Confirmar eliminación',
+            html: "<i>¿Realmente deseas eliminar a <strong>" + val.nombre + "</strong>?</i>",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, ¡Eliminarlo!'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              getEmpleados();
+              limpiarCampos();
+              Swal.fire({
+                text: val.nombre + ' fue eliminado',
+                icon: 'success',
+                timer: 3000
+              });
+            }
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: dataResponse.mensaje
+          });
+        }
+      } else {
+        console.error('Error al eliminar usuario: ', response.statusText);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Error al eliminar usuario'
+        });
+      }
+    } catch (error) {
+      console.error('Error: ', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Error al eliminar usuario'
+      });
+    }
   };
 
   const limpiarCampos = () => {
@@ -128,52 +239,50 @@ function MainAdmin() {
 
   const editarEmpleado = (val) => {
     setEditar(true);
+    setId_usuario(val.id_usuario);
     setNombre(val.nombre);
     setApellidos(val.apellidos);
     setCorreo(val.correo);
-    setTipo_usuario(val.tipoUsuario);
-    setTipo_login(val.tipoLogin);
+    setTel(val.tel);
+    setTipo_usuario(val.tipo_usuario);
+    setTipo_login(val.tipo_login);
   };
 
   const filterEmpleados = () => {
-    return empleadosList.filter((empleado) => {
-      return (
-        empleado.nombre === '' ||
-        empleado.correo === '' ||
-        empleado.apellidos === '' ||
-        empleado.tel === '' ||
-        empleado.tipo_usuario === '' ||
-        empleado.tipo_login === ''
-      );
-    });
+    return empleadosList;
   };
 
   const getEmpleados = async () => {
-    const formData = new FormData();
-    formData.append('id_usuario', id_usuario);
-  
     try {
       const response = await fetch(conf.url + '/getEmpleados', {
-          method: 'POST',
-          body: formData,
+        method: 'GET',
       });
 
       if (response.ok) {
-          const dataResponse = await response.json();
-          console.log(dataResponse);
-          setEmpleadosList();
+        const dataResponse = await response.json();
+        console.log(dataResponse);
+        // Accede a la clave "data" para obtener los detalles de los empleados
+        const empleadosData = dataResponse.data;
+        // Verifica si hay datos de empleados antes de establecer el estado
+        if (empleadosData && Array.isArray(empleadosData)) {
+          // Establece el estado con los datos de los empleados
+          setEmpleadosList(empleadosData);
+        } else {
+          console.error('Error: Datos de empleados no válidos');
+        }
       } else {
-          console.error('Error al obtener empleados: ', response.statusText);
+        console.error('Error al obtener empleados: ', response.statusText);
       }
-  } catch (error) {
+    } catch (error) {
       console.error('Error: ', error);
       Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Error al obtener empleados'
+        icon: 'error',
+        title: 'Error',
+        text: 'Error al obtener empleados'
       });
-  }
+    }
   };
+
 
   return (
     <div className='container-fluid p-0' style={{ background: '#f2f2f2' }}>
@@ -289,6 +398,7 @@ function MainAdmin() {
                   Tel.:
                 </span>
                 <input
+                  maxLength={10}
                   type='text'
                   className='form-control'
                   placeholder='Ingrese número'
@@ -307,7 +417,7 @@ function MainAdmin() {
                 <input
                   type='text'
                   className='form-control'
-                  placeholder='Ingrese tipo (Administrador/Colaborador)'
+                  placeholder='Ingrese tipo (Propietario/Colaborador)'
                   aria-label='Username'
                   aria-describedby='basic-addon1'
                   value={tipo_usuario}
@@ -336,12 +446,15 @@ function MainAdmin() {
               <div className='mx-4'>
                 {editar ? (
                   <div>
-                    <button className='btn btn-warning m-2' onClick={update}>
+                    <button className='btn btn-warning m-2 text-white' onClick={update}>
                       Actualizar
                     </button>
                     <button
-                      className='btn btn-info m-2'
-                      onClick={limpiarCampos}
+                      className='btn btn-info m-2 text-white'
+                      onClick={() => {
+                        limpiarCampos();
+                        setEditar(false);
+                      }}
                     >
                       Cancelar
                     </button>
@@ -368,8 +481,9 @@ function MainAdmin() {
               </tr>
             </thead>
             <tbody>
-              {filterEmpleados.map((val, key) => (
-                <tr key={val.idUsuario}>
+              {filterEmpleados().map((val, key) => (
+                <tr key={key}>
+                  <td>{val.id_usuario}</td>
                   <td>{val.nombre}</td>
                   <td>{val.apellidos}</td>
                   <td>{val.correo}</td>
@@ -377,11 +491,7 @@ function MainAdmin() {
                   <td>{val.tipo_usuario}</td>
                   <td>{val.tipo_login}</td>
                   <td>
-                    <div
-                      className='btn-group'
-                      role='group'
-                      aria-label='Basic example'
-                    >
+                    <div className='btn-group' role='group' aria-label='Basic example'>
                       <button
                         type='button'
                         className='btn btn-danger text-white'
@@ -405,6 +515,7 @@ function MainAdmin() {
                 </tr>
               ))}
             </tbody>
+
           </table>
         </div>
       </div>

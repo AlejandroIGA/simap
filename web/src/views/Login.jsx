@@ -152,6 +152,8 @@ function Login() {
         alert('Error al iniciar sesión');
       }
     } catch (error) {
+      console.error('Error');
+      alert('Error al iniciar sesión, intenta de nuevo');
       console.error(error.message);
       alert('Ya existe una cuenta iniciada con este usuario');
     }

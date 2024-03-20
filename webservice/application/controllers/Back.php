@@ -34,22 +34,22 @@ class Back extends CI_Controller
         $row = $this->Usuarios_model->login($correo, $psw);
 
         $obj["resultado"] = $row != NULL;
-        if($obj["resultado"]!=NULL){
+        if ($obj["resultado"] != NULL) {
             $tokenU = $row->token;
-            if($row->psw == $psw and $row->correo == $correo){
-                if($row->estatus == 0){
+            if ($row->psw == $psw and $row->correo == $correo) {
+                if ($row->estatus == 0) {
                     $obj["mensaje"] = "Cuenta desactivada";
                     $obj["data"] = NULL;
-                }else{
-                    if(!$tokenU){
+                } else {
+                    if (!$tokenU) {
                         $obj["mensaje"] = "Credenciales correctas";
                         $obj["data"] = array(
                             'id_usuario' => $row->id_usuario,
                             'tipo_usuario' => $row->tipo_usuario,
                             'estatus' => $row->estatus
-                        ); 
+                        );
                         $this->Usuarios_model->saveUserToken($row->id_usuario, $token);
-                    }else{
+                    } else {
                         $obj["mensaje"] = "Ya hay una sesión activa";
                         $obj["data"] = NULL;
                     }
@@ -119,14 +119,14 @@ class Back extends CI_Controller
         $row = $this->Usuarios_model->login_Web($correo, $psw);
 
         $obj["resultado"] = $row != NULL;
-        if($obj["resultado"]!=NULL){
+        if ($obj["resultado"] != NULL) {
             $tokenU = $row->token;
-            if($row->psw == $psw and $row->correo == $correo){
-                if($row->estatus == 0){
+            if ($row->psw == $psw and $row->correo == $correo) {
+                if ($row->estatus == 0) {
                     $obj["mensaje"] = "Cuenta desactivada";
                     $obj["data"] = NULL;
-                }else{
-                    if(!$tokenU){
+                } else {
+                    if (!$tokenU) {
 
                         $obj["mensaje"] = "Credenciales correctas";
                         $obj["data"] = array(
@@ -134,9 +134,9 @@ class Back extends CI_Controller
                             'tipo_usuario' => $row->tipo_usuario,
                             'tipo' => $row->tipo,
                             'estatus' => $row->estatus
-                        ); 
+                        );
                         $this->Usuarios_model->saveUserToken($row->id_usuario, $token);
-                    }else{
+                    } else {
 
                         $obj["mensaje"] = "Ya hay una sesión activa";
                         $obj["data"] = NULL;
@@ -585,11 +585,12 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
-    public function insertNotification() {
+    public function insertNotification()
+    {
         $id_usuario = $this->input->post('id_usuario');
         $informacion = $this->input->post('informacion');
         $fecha = $this->input->post('fecha');
-        
+
         $data = array(
             'id_usuario' => $id_usuario,
             'informacion' => $informacion,
@@ -598,7 +599,7 @@ class Back extends CI_Controller
 
         $id_notificacion = $this->Notificaciones_model->nuevaNotificacion($data);
         $token = $this->Notificaciones_model->getTokenUsuario($id_usuario);
-    
+
         $expoPushEndpoint = "https://exp.host/--/api/v2/push/send";
         $expoPushData = [
             'to' => $token,
@@ -617,7 +618,7 @@ class Back extends CI_Controller
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $response = curl_exec($ch);
         curl_close($ch);
-    
+
         $obj['resultado'] = $id_notificacion != NULL;
         $obj['mensaje'] = $obj['resultado'] ? "Se registró nueva notificación" : "No se pudo registrar notificación";
         $obj['id_notificacion'] = $id_notificacion;
@@ -625,29 +626,132 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
+    public function simulacionDispositivos($mac)
+    {
+        $data = $this->Sensor_model->simulacionDispositivos($mac);
+        if ($data !== NULL) {
+            foreach ($data as $row) {
+                echo "MAC: " . $row->mac . "<br>";
+            }
+        } else {
+            echo "No se encontraron dispositivos asociados.";
+        }
+    }
+
+    public function test2()
+    {
+        $variacion = 0;
+        if ($this->input->raw_input_stream[0] == "{") {
+            $input = json_decode($this->input->raw_input_stream);
+            $mac = $input->mac_esclavo;
+            $dispositivos = $this->Sensor_model->simulacionDispositivos($mac);
+        } else {
+            $mac = $this->input->post("mac_esclavo");
+        }
+
+        foreach ($dispositivos as $row) {
+            $data = $this->Sensor_model->test($row->mac); //Se obtienen datos de la BD SQL
+            if ($data == null) {
+                echo 'No se encontro la tarjeta';
+                return;
+            }
+            $fecha = new DateTime();
+            $nueva_zona_horaria = new DateTimeZone('America/Mexico_City');
+            $fecha->setTimezone($nueva_zona_horaria);
+            // Configura los datos que deseas enviar en el cuerpo de la solicitud POST
+            $iot = array(
+                "fields" => array(
+                    "id_maestro" => array("integerValue" => $data->maestro),
+                    "id_esclavo" => array("integerValue" => $data->id_dispositivo),
+                    "id_cosecha" => array("integerValue" => $data->id_cosecha),
+                    "cosecha" =>  array("stringValue" => $data->cosecha),
+                    "dispositivo" => array("stringValue" => $data->nombre),
+                    "fecha" => array("stringValue" => $fecha->format("Y-m-d H:i:s")),
+                    "temp_amb" => array("doubleValue" => $input->temp_amb+$variacion),
+                    "hum_amb" => array("doubleValue" => $input->hum_amb+$variacion),
+                    "hum_sue" => array("doubleValue" => $input->hum_sue+$variacion),
+                )
+            );
+            //Madar datos al firebase
+            $firestore_url = "https://firestore.googleapis.com/v1/projects/testesp-36e82/databases/(default)/documents/pruebas";
+
+            // Configura las opciones de la solicitud POST
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $firestore_url);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                'Accept: application/json',
+                'Content-Type: application/json',
+            ));
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($iot));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_close($ch);
+
+            // Realiza la solicitud POST a Firestore
+            if (!$response = curl_exec($ch)) {
+                echo $response;
+            } else {
+                echo $response;
+            }
+            $random_valor = rand(0, 8) / 10;
+            $variacion = $variacion + $random_valor;
+        }
+    }
+
     //TEST ESP32
     public function test()
     {
-        // Verificar si raw_input_stream está presente y no está vacío
-        /*
-    if (isset($this->input->raw_input_stream) && strlen($this->input->raw_input_stream) > 0 && $this->input->raw_input_stream[0] == "{") {
-        $input = json_decode($this->input->raw_input_stream);
-        //$matricula = $input->matricula;
-    } else {
-        $input = $this->input->post("msg");
-    }*/
-        //$input = $this->input->post("nombre");
-        if($this->input->raw_input_stream[0] == "{"){
+        if ($this->input->raw_input_stream[0] == "{") {
             $input = json_decode($this->input->raw_input_stream);
-            $valor = $input->nombre; 
-        }else{
-            $valor = $this->input->post("valor");
+            $mac = $input->mac_esclavo;
+        } else {
+            $mac = $this->input->post("mac_esclavo");
         }
-        
-        $fecha = $this->Sensor_model->test();
-        $obj["fecha"] = $fecha;
-        $obj["data"] = $valor;
-        //$obj["datos"] = $input;
-        echo json_encode($obj);
+
+        $data = $this->Sensor_model->test($mac); //Se obtienen datos de la BD SQL
+        if ($data == null) {
+            echo 'No se encontro la tarjeta';
+            return;
+        }
+        $fecha = new DateTime();
+        $nueva_zona_horaria = new DateTimeZone('America/Mexico_City');
+        $fecha->setTimezone($nueva_zona_horaria);
+
+        // Configura los datos que deseas enviar en el cuerpo de la solicitud POST
+        $iot = array(
+            "fields" => array(
+                "id_maestro" => array("integerValue" => $data->maestro),
+                "id_esclavo" => array("integerValue" => $data->id_dispositivo),
+                "id_cosecha" => array("integerValue" => $data->id_cosecha),
+                "cosecha" =>  array("stringValue" => $data->cosecha),
+                "dispositivo" => array("stringValue" => $data->nombre),
+                "fecha" => array("stringValue" => $fecha->format("Y-m-d H:i:s")),
+                "hora" => array("stringValue" => $fecha->format("H:i:s")),
+                "temp_amb" => array("doubleValue" => $input->temp_amb),
+                "hum_amb" => array("doubleValue" => $input->hum_amb),
+                "hum_sue" => array("doubleValue" => $input->hum_sue),
+            )
+        );
+        //Madar datos al firebase
+        $firestore_url = "https://firestore.googleapis.com/v1/projects/testesp-36e82/databases/(default)/documents/pruebas";
+
+        // Configura las opciones de la solicitud POST
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $firestore_url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Accept: application/json',
+            'Content-Type: application/json',
+        ));
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($iot));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_close($ch);
+
+        // Realiza la solicitud POST a Firestore
+        if (!$response = curl_exec($ch)) {
+            echo $response;
+        } else {
+            echo $response;
+        }
     }
 }

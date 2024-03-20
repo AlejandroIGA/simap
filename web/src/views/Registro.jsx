@@ -11,6 +11,7 @@ function Registro() {
     const [psw, setPsw] = useState("");
     const [pswDos, setPswDos] = useState("");
     const [tipo, setTipo] = useState("propietario");
+    const [tipoLogin, setTipoLogin] = useState("sistema");
     const navigate = useNavigate();
 
     const limpiarCampos = () => {
@@ -33,6 +34,7 @@ function Registro() {
                 formData.append('correo', correo);
                 formData.append('psw', psw);
                 formData.append('tipo', tipo);
+                formData.append('tipo_login', tipoLogin);
 
                 try {
                     const response = await fetch(conf.url + '/registroUsuario', {

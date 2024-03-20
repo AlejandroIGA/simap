@@ -49,7 +49,6 @@ const MainColaborador = () => {
         dataResponse['Datos del Dispositivo'] !== null &&
           dataResponse['Datos del Dispositivo'].length > 0
       );
-      console.log(dataResponse);
     } catch (error) {
       console.error('Error al obtener los datos del dispositivo:', error);
     }

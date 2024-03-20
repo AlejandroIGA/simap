@@ -67,6 +67,48 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
+    public function loginGoogle()
+    {
+        $correo = $this->input->post("correo");
+        $psw = $this->input->post("psw");
+        $token = $this->input->post("token");
+
+        $row = $this->Usuarios_model->login($correo, $psw);
+
+        $obj["resultado"] = $row != NULL;
+        if($obj["resultado"]!=NULL){
+            $tokenU = $row->token;
+            if($row->psw == $psw and $row->correo == $correo){
+                if($row->estatus == 0){
+                    $obj["mensaje"] = "Cuenta desactivada";
+                    $obj["data"] = NULL;
+                }else{
+                    if(!$tokenU){
+                        $obj["mensaje"] = "Credenciales correctas";
+                        $obj["data"] = array(
+                            'id_usuario' => $row->id_usuario,
+                            'tipo_usuario' => $row->tipo_usuario,
+                            'estatus' => $row->estatus
+                        ); 
+                        $this->Usuarios_model->saveUserToken($row->id_usuario, $token);
+                    }else{
+                        $obj["mensaje"] = "Ya hay una sesión activa";
+                        $obj["data"] = NULL;
+                    }
+                }
+            }else{
+                $obj["mensaje"] = "Correo o contraseña incorrecto";
+                $obj["data"] = NULL;
+            }
+        }else{
+            $obj["mensaje"] = "No se encontro al usuario";
+            $obj["data"] = NULL;
+        }
+        
+
+        echo json_encode($obj);
+    }
+
 
     public function loginWeb()
     {

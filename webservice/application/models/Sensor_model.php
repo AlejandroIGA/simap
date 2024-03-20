@@ -8,54 +8,43 @@ class Sensor_model extends CI_Model
         //$this->load->library('curl');
     }
 
-    function test(){
-        $fechaHoraActual = new DateTime();
-        return $fechaHoraActual->format("Y-m-d H:i:s");
+    function test($mac)
+    {
+        //Obtener datos de la BD SQL para enviar a la BD NoSQ
+        $rs = $this->db
+            ->select("dispositivo.id_dispositivo, maestro, dispositivo.nombre, cosecha.nombre as cosecha, dispositivo.id_cosecha")
+            ->from("dispositivo")
+            ->join("cosecha", "dispositivo.id_cosecha = cosecha.id_cosecha")
+            ->where("dispositivo.mac", $mac)
+            ->get();
+        return $rs->num_rows() > 0 ?
+            $rs->row() : NULL;
     }
 
-/*
-    //Enviar los datos obtenidos de ua tarjeta
-    function enviarEsclavo($valor)
+    function simulacionDispositivos($mac)
     {
-
-        /// Configura la URL de la colección Firestore que deseas consultar
-        $firestore_url = 'https://firestore.googleapis.com/v1/projects/PruebasSimap/databases/(default)/documents/pruebas';
-
-        // Configura los datos que deseas enviar en el cuerpo de la solicitud POST
-        $data = array(
-            "fields" => array(
-                "valor_prueba" => array("stringValue" => $valor),
-            )
-        );
-
-        // Convierte los datos a formato JSON
-        $json_data = json_encode($data);
-
-        // Configura las opciones de la solicitud POST
-        $options = array(
-            CURLOPT_POST => TRUE,
-            CURLOPT_POSTFIELDS => $json_data,
-            CURLOPT_RETURNTRANSFER => TRUE,
-            CURLOPT_HTTPHEADER => array(
-                'Content-Type: application/json',
-                'Content-Length: ' . strlen($json_data)
-            )
-        );
-
-        // Inicializa cURL y configura las opciones
-        $this->curl->create($firestore_url);
-        $this->curl->options($options);
-
-        // Realiza la solicitud POST a Firestore
-        $response = $this->curl->execute();
-
-        // Procesa la respuesta
-        if ($response) {
-            // La respuesta puede contener el ID del documento creado u otra información según la configuración de Firestore
-            echo 'Documento creado exitosamente';
-        } else {
-            // Maneja el caso de error
-            echo 'Error al crear el documento en Firestore';
+        // Obtener el maestro asociado con la mac proporcionada
+        $maestro = $this->db
+            ->select('maestro')
+            ->from('dispositivo')
+            ->where('mac', $mac)
+            ->get()
+            ->row();
+    
+        if ($maestro) {
+            // Usar el maestro para obtener todas las mac asociadas a ese maestro
+            $rs = $this->db
+                ->select('mac')
+                ->from('dispositivo')
+                ->where('maestro', $maestro->maestro) // Utilizar directamente el valor de maestro
+                ->get();
+    
+            return $rs->num_rows() > 0 ? $rs->result() : NULL;
         }
-    }*/
+    
+        return NULL;
+    }
+
+    
+    
 }

@@ -2,40 +2,274 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link, useNavigate } from 'react-router-dom';
 import { Dropdown } from 'react-bootstrap';
 import agricultor from '../images/Granjero.png';
-
 import conf from '../conf';
 
-function Inicio(){
-    const navigate = useNavigate();
+import '../config/firebaseConfig'
+import { getFirestore, getDocs, collection, orderBy, query, where } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
 
-    //Logout
-    const handleLogout = async () => {
-      const id_usuario = sessionStorage.getItem('id_usuario');
-      const formData = new FormData();
-      formData.append('id_usuario', id_usuario);
-      try {
-        const response = await fetch(conf.url + '/logout', {
-          method: 'POST',
-          body: formData
-        });
-  
-        if (response.ok) {
-          sessionStorage.clear()
-          console.log("Sesión terminada, id_usuario: " + id_usuario)
-          alert("¡Cerraste sesión!");
-          navigate("/");
-        } else {
-          console.error('Error al cerrar sesión:', response.statusText);
-          alert('Error al cerrar sesión. Por favor, inténtalo de nuevo más tarde.');
-        }
-      } catch (error) {
-        console.error("Error al cerrar sesión:", error);
-        alert("Error al cerrar sesión. Por favor, inténtalo de nuevo más tarde.");
+import React from 'react'
+import Highcharts from 'highcharts'
+import HighchartsReact from 'highcharts-react-official'
+import HighchartsExporting from 'highcharts/modules/exporting';
+import HighchartsExportData from 'highcharts/modules/export-data';
+
+function Inicio() {
+  let id_usuario = sessionStorage.getItem('id_usuario');
+  const navigate = useNavigate();
+  const [showGrafica, setShowGrafica] = useState(false);
+  const [btnGrafica, setBtnGrafica] = useState(false);
+  const [options, setOptions] = useState({});
+  const [tipoGrafica, setTipoGrafica] = useState("temp_amb");
+  const [dispositivos, setDispositivos] = useState([]);
+  const [fechInicio, setFechInicio] = useState(null);
+  const [fechFin, setFechFin] = useState(null);
+
+  //Firebase
+  const db = getFirestore();
+
+  //Logout
+  const handleLogout = async () => {
+    const id_usuario = sessionStorage.getItem('id_usuario');
+    const formData = new FormData();
+    formData.append('id_usuario', id_usuario);
+    try {
+      const response = await fetch(conf.url + '/logout', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        sessionStorage.clear()
+        console.log("Sesión terminada, id_usuario: " + id_usuario)
+        alert("¡Cerraste sesión!");
+        navigate("/");
+      } else {
+        console.error('Error al cerrar sesión:', response.statusText);
+        alert('Error al cerrar sesión. Por favor, inténtalo de nuevo más tarde.');
       }
-    };
-    return(
-        <div style={{ background: '#f2f2f2' }}>
-        <nav className="navbar navbar-expand-lg nav">
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+      alert("Error al cerrar sesión. Por favor, inténtalo de nuevo más tarde.");
+    }
+  };
+
+  //OBTENER TODOS LOS DISPOSITIVOS DEL USUARIO
+  const getDispositivos = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("id_usuario", id_usuario);
+
+      const response = await fetch(conf.url + "/dispositivos", {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const data = await response.json();
+      if (data.resultado) {
+        setDispositivos(data.dispositivos)
+        setBtnGrafica(true);
+      }
+
+    } catch (error) {
+      console.error("ERROR:", error.message);
+    }
+  };
+
+  //metodo para crear las graficas
+  const grafica = async (tipo, fechaInicio, fechaFin, dispositivos) => {
+    const dataCollection = collection(db, 'pruebas');
+    const allSeries = [];
+
+    if(fechFin === null || fechInicio === null ){
+      alert("Seleccione una fecha de inicio y una fecha de fin")
+      setShowGrafica(false)
+      return
+    }else if(fechFin < fechInicio){
+      alert("La fecha de inicio no puede ser mayor a la fecha de fin")
+      setShowGrafica(false)
+      return
+    }
+    for (const dispositivo of dispositivos) {
+      if (dispositivo.tipo === "esclavo") {
+        const seriesData = [];
+        const dataSnapshot = await getDocs(query(
+          dataCollection,
+          where('dispositivo', '==', dispositivo.nombre), // Filtro por dispositivo
+          where('fecha', '>=', fechaInicio), // Filtro para incluir fechas a partir de la fecha de inicio
+          where('fecha', '<=', fechaFin), // Filtro para incluir fechas hasta la fecha de fin
+          orderBy('fecha') // Ordenar los documentos por fecha
+        ));
+        if (tipo === "temp_amb") {
+          dataSnapshot.docs.forEach(doc => {
+            if (doc.data().temp_amb !== undefined && doc.data().fecha !== undefined) {
+              const fechaString = doc.data().fecha;
+
+              // Separar la cadena de fecha y hora en componentes
+              const [fechaParte, horaParte] = fechaString.split(' ');
+              const [anio, mes, dia] = fechaParte.split('-');
+              const [hora, minuto, segundo] = horaParte.split(':');
+
+              seriesData.push([Date.UTC(anio, mes - 1, dia, hora, minuto, segundo), doc.data().temp_amb]);
+            }
+
+          });
+        }
+        else if (tipo === "hum_amb") {
+          dataSnapshot.docs.forEach(doc => {
+            if (doc.data().hum_amb !== undefined && doc.data().fecha !== undefined) {
+              console.log(doc.data().hum_amb)
+              const fechaString = doc.data().fecha;
+
+              // Separar la cadena de fecha y hora en componentes
+              const [fechaParte, horaParte] = fechaString.split(' ');
+              const [anio, mes, dia] = fechaParte.split('-');
+              const [hora, minuto, segundo] = horaParte.split(':');
+
+              seriesData.push([Date.UTC(anio, mes - 1, dia, hora, minuto, segundo), doc.data().hum_amb]);
+            }
+          });
+        }else if (tipo === "hum_sue") {
+          dataSnapshot.docs.forEach(doc => {
+            if (doc.data().hum_sue !== undefined && doc.data().fecha !== undefined) {
+              console.log(doc.data().hum_amb)
+              const fechaString = doc.data().fecha;
+
+              // Separar la cadena de fecha y hora en componentes
+              const [fechaParte, horaParte] = fechaString.split(' ');
+              const [anio, mes, dia] = fechaParte.split('-');
+              const [hora, minuto, segundo] = horaParte.split(':');
+
+              seriesData.push([Date.UTC(anio, mes - 1, dia, hora, minuto, segundo), doc.data().hum_sue]);
+            }
+          });
+        }
+        allSeries.push({
+          name: dispositivo.nombre,
+          data: seriesData
+        });
+      }
+    }
+    console.log(allSeries)
+    setOptions({
+      chart: {
+        type: 'spline'
+      },
+      title: {
+        text: tipo === "temp_amb" ? "Temperatura Ambiente" : tipo === "hum_amb" ? "Humedad Ambiente" : "Humedad Suelo"
+      },
+      xAxis: {
+        type: 'datetime',
+        dateTimeLabelFormats: {
+          minute: '%e. %b %H:%M',
+          hour: '%e. %b %H:%M',
+          day: '%e. %b',
+          month: '%b',
+        },
+        title: {
+          text: 'Fecha y Hora'
+        }
+      },
+      yAxis: {
+        title: {
+          text: tipo === "temp_amb" ? "Temperatura" : "Humedad"
+        },
+        labels: {
+          format: `{value}${tipo === "temp_amb" ? "°" : "%"}`
+        }
+      },
+      tooltip: {
+        headerFormat: '<b>{series.name}</b><br>',
+        pointFormat: `Fecha: {point.x:%e. %b %Y %H:%M} ${tipo}: {point.y:.2f}${tipo === "temp_amb" ? "°" : "%"}`
+      },
+      plotOptions: {
+        series: {
+          marker: {
+            symbol: 'circle',
+            fillColor: '#FFFFFF',
+            enabled: true,
+            radius: 2.5,
+            lineWidth: 1,
+            lineColor: null
+          }
+        }
+      },
+      series: allSeries
+    });
+    setShowGrafica(true);
+  }
+
+  useEffect(() => {
+    getDispositivos();
+    HighchartsExporting(Highcharts);
+    HighchartsExportData(Highcharts);
+    Highcharts.setOptions({
+      lang: {
+        shortMonths: [
+          'Ene',
+          'Feb',
+          'Mar',
+          'Abr',
+          'May',
+          'Jun',
+          'Jul',
+          'Ago',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dec',
+        ],
+        downloadCSV: 'Descarga CSV',
+        downloadJPEG: 'Descarga imagen JPEG',
+        downloadMIDI: 'Descarga MIDI',
+        downloadPDF: 'Descarga PDF',
+        downloadPNG: 'Descarga PNG',
+        downloadSVG: 'Descarga SVG',
+        downloadXLS: 'Descarga XLS',
+        exitFullScreen: 'Salir de pantalla completa',
+        hideData: 'Ocultar tabla de datos',
+        loading: 'Cargando...',
+        months: [
+          'Enero',
+          'Febreo',
+          'Marzo',
+          'Abril',
+          'Mayo',
+          'Junio',
+          'Julio',
+          'Agosto',
+          'Septiembre',
+          'Octubre',
+          'Noviembre',
+          'Diciembre',
+        ],
+        noData: 'No hay datos para mostrar',
+        playAsSound: 'Reproduce como sonido',
+        printChart: 'Imprime gráfica',
+        resetZoom: 'Restaura zoom',
+        resetZoomTitle: 'Restaura nivel de zoom 1:1',
+        shortWeekdays: ['dom', 'lun', 'mar', 'mie', 'jue', 'vie', 'sab'],
+        thousandsSep: '\u002C',
+        viewData: 'Ver tabla de datos',
+        viewFullscreen: 'Ver pantalla completa',
+        weekdays: [
+          'Domingo',
+          'Lunes',
+          'Martes',
+          'Miércoles',
+          'Jueves',
+          'Viernes',
+          'Sábado',
+        ],
+      },
+    });
+  }, [])
+  return (
+    <div style={{ background: '#f2f2f2', height: "100vh" }}>
+      <nav className="navbar navbar-expand-lg nav">
         <div className="container">
           <a className="navbar-brand" href="#inicio">SIMAP</a>
           <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -85,9 +319,51 @@ function Inicio(){
           </div>
         </div>
       </nav>
-        
+      <div>
+        {
+          <div className='container hv-100'>
+            <div className="row g-3 my-2">
+              <div className="col-md-6">
+                <label className="form-label">Gráfica:</label>
+                <select
+                  className="form-select"
+                  aria-label="Default select example"
+                  value={tipoGrafica}
+                  onChange={e => setTipoGrafica(e.target.value)}
+                >
+                  <option value="temp_amb">Temperatura ambiente</option>
+                  <option value="hum_amb">Humedad ambiente</option>
+                  <option value="hum_sue">Humedad suelo</option>
+                </select>
+              </div>
+
+              <div className="col-md-2">
+                <label for="fechaInicio" className="form-label">Fecha Inicio:</label>
+                <input value={fechInicio} onChange={e => setFechInicio(e.target.value)} type="date" className="form-control" id="fechaInicio" />
+              </div>
+              <div className="col-md-2">
+                <label for="fechaFin" className="form-label">Fecha Fin:</label>
+                <input value={fechFin} onChange={e => setFechFin(e.target.value)} type="date" className="form-control" id="fechaFin" />
+              </div>
+              <div className="col-md-2 mt-auto">
+                <button enabled={btnGrafica.toString()} className='btn btn-primary' onClick={() => grafica(tipoGrafica, fechInicio, fechFin, dispositivos)}>Ver Gráfica</button>
+              </div>
+
+            </div>
+            {
+              showGrafica ?
+                <HighchartsReact
+                  highcharts={Highcharts}
+                  options={options}
+                /> : null
+            }
+
+          </div>
+        }
+
+      </div>
     </div >
-    )
+  )
 }
 
 export default Inicio;

@@ -4,6 +4,8 @@ import conf from '../conf';
 import agricultor from '../images/Granjero.png';
 import google from '../images/google.png';
 import facebbok from '../images/facebook.png';
+import GoogleLogin from 'react-google-login';
+import { gapi } from 'gapi-script';
 
 function Login() {
 
@@ -15,6 +17,94 @@ function Login() {
   const tipoCuenta = localStorage.setItem('cuenta', JSON.stringify(cuenta));
   const navigate = useNavigate();
 
+  useEffect (() => {
+    const start = () => {
+      gapi.auth2.init({
+        clientId: "191244130158-qmn4snu41sfu0tfrc0u3ktb1kdubtdjo.apps.googleusercontent.com",
+      })
+    }
+    gapi.load("client:auth2", start)
+  }, []);
+
+  const onSuccess = async (response) => {
+    console.log(response);
+    const correo = response.profileObj.email;
+    setCorreo(correo);
+    const psw = response.googleId;
+    setPsw(psw);
+    const nombre = response.profileObj.givenName;
+    const apellidos = response.profileObj.familyName;
+
+    const formData = new FormData();
+    formData.append('correo', correo);
+    formData.append('psw', psw);
+
+    const formData2 = new FormData();
+    formData2.append('correo', correo);
+    formData2.append('nombre', nombre);
+    formData2.append('apellidos', apellidos);
+    formData2.append('psw', psw);
+    formData2.append('tipo', "propietario");
+
+    try {
+      const response = await fetch(conf.url + '/loginWeb', {
+        method: 'POST',
+        body: formData,
+      });
+
+        const dataResponse = await response.json();
+        
+        if (dataResponse.data != null) {
+          const tipoCuenta = dataResponse.data.tipo;
+          setCuenta(tipoCuenta);
+          sessionStorage.setItem('id_usuario', dataResponse.data.id_usuario);
+          sessionStorage.setItem('tipo_usuario', dataResponse.data.tipo_usuario);
+          if (dataResponse.data.tipo === "Pro") {
+              navigate('/mainAdmin');
+          } else if (dataResponse.data.tipo === "Free") {
+              navigate('/mainAdminFree');
+          }else if (dataResponse.data.tipo_usuario === "colaborador"){
+            alert("Acceso único a usuarios propietarios");
+          }
+        } else {
+          const response = await fetch(conf.url + '/registroUsuario', {
+            method: 'POST',
+            body: formData2,
+          });
+          const dataResponse = await response.json();
+          alert(dataResponse.mensaje);
+          if(dataResponse.id_usuario > 0) {
+            const response = await fetch(conf.url + '/loginWeb', {
+              method: 'POST',
+              body: formData,
+            });
+            const dataResponse = await response.json();
+            const tipoCuenta = dataResponse.data.tipo;
+            setCuenta(tipoCuenta);
+            sessionStorage.setItem('id_usuario', dataResponse.data.id_usuario);
+            sessionStorage.setItem('tipo_usuario', dataResponse.data.tipo_usuario);
+            if (dataResponse.data.tipo === "Pro") {
+                navigate('/mainAdmin');
+            } else if (dataResponse.data.tipo === "Free") {
+                navigate('/mainAdminFree');
+            }else if (dataResponse.data.tipo_usuario === "colaborador"){
+              alert("Acceso único a usuarios propietarios");
+            }
+          }
+          
+        }
+
+    } catch (error) {
+      console.error(error.message);
+      alert(error);
+    }
+  }
+
+  const onFailure = (response) => {
+    console.log("Error: " + response);
+  }
+
+  
 
   const login = async () => {
     if (!correo || !psw) {
@@ -104,8 +194,15 @@ function Login() {
         </p>
       </div>
       <div className="d-flex justify-content-center mt-3">
-        <img src={google} style={{ width: '40px' }} alt="Imagen agricultor" />
-        <button type="button" className="btn btn-outline-danger mx-3">Inicio de sesión rápido con Google</button>
+      <img src={google} style={{ width: '40px' }} alt="Imagen agricultor" />
+      <GoogleLogin
+          className="btn btn-outline-primary mx-3"
+          clientId="191244130158-qmn4snu41sfu0tfrc0u3ktb1kdubtdjo.apps.googleusercontent.com"
+          buttonText="Inicio de sesión rápido con Google"
+          onSuccess={onSuccess}
+          onFailure={onFailure}
+          cookiePolicy={'single_host_origin'}
+        />
       </div>
       <div className="d-flex justify-content-center mt-3">
         <img src={facebbok} style={{ width: '40px' }} alt="Imagen agricultor" />

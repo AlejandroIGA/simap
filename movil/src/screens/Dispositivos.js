@@ -173,6 +173,7 @@ const DeviceItem = ({ dispositivo, width, onDelete, onEdit }) => {
       <Text style={styles.deviceTextInfo}>Red: {dispositivo.ssid}</Text>
       <Text style={styles.deviceTextInfo}>Contraseña: {dispositivo.psw}</Text>
       <Text style={styles.deviceTextInfo}>Tipo: {dispositivo.tipo}</Text>
+      <Text style={styles.deviceTextInfo}>Cosecha: {dispositivo.cosecha}</Text>
       <View style={styles.btnCenter}>
         <TouchableOpacity style={styles.button} onPress={handleEdit}>
           <Icon name='edit' size={20} color='white' />

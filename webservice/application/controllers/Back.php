@@ -120,6 +120,54 @@ class Back extends CI_Controller
 
     }
 
+    public function loginFacebook() {
+        $correo = $this->input->post("correo");
+        $nombre = $this->input->post("nombre");
+    
+        // Verificar si el usuario ya existe en la base de datos
+        $row = $this->Usuarios_model->getUsuarioPorCorreo($correo);
+    
+        // Si el usuario no existe, se crea uno nuevo
+        if (!$row) {
+            $this->Usuarios_model->guardarUsuarioFacebook($nombre, $correo);
+        }
+    
+        // Intentar iniciar sesión con los datos del usuario de Facebook
+        $row = $this->Usuarios_model->login_facebook($nombre, $correo);
+    
+        $obj["resultado"] = $row != NULL;
+        if ($obj["resultado"] != NULL) {
+            $token = $row->token;
+            if ($row->nombre == $nombre and $row->correo == $correo) {
+                if ($row->estatus == 0) {
+                    $obj["mensaje"] = "Cuenta desactivada";
+                    $obj["data"] = NULL;
+                } else {
+                    if (!$token) {
+                        $obj["mensaje"] = "Credenciales correctas";
+                        $obj["data"] = array(
+                            'id_usuario' => $row->id_usuario,
+                            'tipo_usuario' => $row->tipo_usuario,
+                        );
+                        $this->Usuarios_model->saveUserToken($row->id_usuario);
+                    } else {
+                        $obj["mensaje"] = "Ya hay una sesión activa";
+                        $obj["data"] = NULL;
+                    }
+                }
+            } else {
+                $obj["mensaje"] = "Correo o contraseña incorrecto";
+                $obj["data"] = NULL;
+            }
+        } else {
+            $obj["mensaje"] = "Correo o contraseña incorrecto";
+            $obj["data"] = NULL;
+        }
+    
+        // Devolver la respuesta JSON utilizando la variable $obj
+        echo json_encode($obj);
+    }    
+
     public function usuario()
     {
         $id = $this->input->post("id_usuario");
@@ -142,10 +190,10 @@ class Back extends CI_Controller
         $nombre = $this->input->post("nombre");
         $apellidos = $this->input->post("apellidos");
         $correo = $this->input->post("correo");
-        $tel = $this->input->post("tel");
+        $psw = $this->input->post("psw");
         $tipo_usuario = $this->input->post("tipo_usuario");
         $tipo_login = $this->input->post("tipo_login");
-        $row = $this->Usuarios_model->insert($nombre, $apellidos, $correo, $tel, $tipo_usuario, $tipo_login);
+        $row = $this->Usuarios_model->insert($nombre, $apellidos, $correo, $psw, $tipo_usuario, $tipo_login);
 
         $obj["resultado"] = $row != NULL;
         $obj["mensaje"] = $obj["resultado"] ?
@@ -161,15 +209,15 @@ class Back extends CI_Controller
         $nombre = $this->input->post("nombre");
         $apellidos = $this->input->post("apellidos");
         $correo = $this->input->post("correo");
-        $tel = $this->input->post("tel");
+        $psw = $this->input->post("psw");
         $tipo_usuario = $this->input->post("tipo_usuario");
         $tipo_login = $this->input->post("tipo_login");
-        $row = $this->Usuarios_model->update($id_usuario, $nombre, $apellidos, $correo, $tel, $tipo_usuario, $tipo_login);
+        $row = $this->Usuarios_model->update($id_usuario, $nombre, $apellidos, $correo, $psw, $tipo_usuario, $tipo_login);
     
         $obj["resultado"] = $row != NULL;
         $obj["mensaje"] = $obj["resultado"] ?
             "Usuario actualizado"
-            : "Error: usuario no actualizado";
+            : "No se realizaron cambios";
         $obj["data"] = $row;
     
         echo json_encode($obj);
@@ -203,20 +251,6 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }    
     //Fin de CRUD
-
-    public function getCultivos(){
-        $id_usuario = $this->input->post("id_usuario");
-        $row = $this->Usuarios_model->getCultivos($id_usuario);
-
-        $obj["resultado"] = $row != NULL;
-        $obj["mensaje"] = $obj["resultado"] ?
-            "Cultivos recuperados"
-            : "No hay cultivos registrados";
-        $obj["data"] = $row;
-
-        echo json_encode($obj);
-    }
-
    
     public function registroUsuario(){
         $nombre = $this->input->post("nombre");
@@ -254,6 +288,38 @@ class Back extends CI_Controller
 
     }
 
+    public function facebookPerfil() {
+        $nombre = $this->input->post( "nombre" );
+        $correo = $this->input->post( "correo" );
+
+        $data = array(
+            "nombre" => $nombre,
+            "correo" => $correo
+        );
+
+        $row = $this->Usuarios_model->facebookLogin($nombre, $correo);
+
+        $obj["resultado"] = $row != NULL;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Guardado de perfil e inicio de sesión exitoso"
+            : "Error: inicio de sesión fallido";
+        $obj["data"] = $row;
+
+        echo json_encode($obj);
+    }
+
+    public function getCultivos(){
+        $id_usuario = $this->input->post("id_usuario");
+        $row = $this->Usuarios_model->getCultivos($id_usuario);
+
+        $obj["resultado"] = $row != NULL;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Cultivos recuperados"
+            : "No hay cultivos registrados";
+        $obj["data"] = $row;
+
+        echo json_encode($obj);
+    }
 
     //Obtener la información de un cultivo especifico
     public function getCultivo($id_cosecha){

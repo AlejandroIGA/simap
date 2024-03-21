@@ -3,11 +3,13 @@ import { Link, useNavigate } from "react-router-dom";
 import conf from '../conf';
 import agricultor from '../images/Granjero.png';
 import google from '../images/google.png';
-import facebbok from '../images/facebook.png';
+import facebook from '../images/facebook.png';
+import FacebookLogin from 'react-facebook-login';
 
 function Login() {
 
   const [id_usuario, setId_usuario] = useState('');
+  const [ nombre, setNombre ] = useState( "" );
   const [correo, setCorreo] = useState("");
   const [psw, setPsw] = useState("");
   const [cuenta, setCuenta] = useState("");
@@ -15,6 +17,56 @@ function Login() {
   const tipoCuenta = localStorage.setItem('cuenta', JSON.stringify(cuenta));
   const navigate = useNavigate();
 
+  const responseFacebook = async (response) => {
+    console.log("Nombre: " + response.name);
+    console.log("Correo: " + response.email);
+  
+    const formData = new FormData();
+    formData.append('nombre', response.name);
+    formData.append('correo', response.email);
+  
+    try {
+      const response = await fetch(conf.url + '/loginFacebook', {
+        method: 'POST',
+        body: formData,
+      });
+  
+      if (response.ok) {
+        const dataResponse = await response.json();
+  
+        if (dataResponse.resultado) {
+          console.log("OK: ",dataResponse);
+          // Obtener el tipo de cuenta (tipo de usuario) de la respuesta
+          const tipoCuenta = dataResponse.data.tipo;
+          // Almacenar el tipo de cuenta en el estado cuenta
+          setCuenta(tipoCuenta);
+          // Almacenar el id_usuario en localStorage
+          sessionStorage.setItem('id_usuario', dataResponse.data.id_usuario);
+          // Almacenar tipo de usuario
+          sessionStorage.setItem('tipo_usuario', dataResponse.data.tipo_usuario);
+          // Redirigir según el tipo de cuenta
+          if (dataResponse.data.tipo === "Pro") {
+              navigate('/mainAdmin');
+          } else if (dataResponse.data.tipo === "Free") {
+              navigate('/mainAdminFree');
+          }else if (dataResponse.data.tipo_usuario === "colaborador"){
+            alert("Acceso único a usuarios propietarios");
+          }
+      }
+       else {
+          alert(dataResponse.mensaje);
+        }
+      } else {
+        console.error('Error al iniciar sesión: ', response.statusText);
+        alert('Error al iniciar sesión');
+      }
+    } catch (error) {
+      console.error('Error');
+      alert('Error al iniciar sesión, intenta de nuevo');
+      console.error(error.message);
+      alert('Ya existe una cuenta iniciada con este usuario');
+    }
+  };
 
   const login = async () => {
     if (!correo || !psw) {
@@ -108,8 +160,15 @@ function Login() {
         <button type="button" className="btn btn-outline-danger mx-3">Inicio de sesión rápido con Google</button>
       </div>
       <div className="d-flex justify-content-center mt-3">
-        <img src={facebbok} style={{ width: '40px' }} alt="Imagen agricultor" />
-        <button type="button" className="btn btn-outline-primary mx-3">Inicio de sesión rápido con Facebbok</button>
+        <img src={facebook} style={{ width: '40px' }} alt="Imagen facebook" />
+        <FacebookLogin
+          appId="745129577370445"
+          autoLoad={false}
+          fields="name,email"
+          callback={responseFacebook}
+          cssClass="btn btn-outline-primary mx-3"
+          textButton="Inicio de sesión rápido con Facebook"
+        />
       </div>
     </div>
   );

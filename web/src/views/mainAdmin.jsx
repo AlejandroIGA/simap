@@ -13,7 +13,7 @@ function MainAdmin() {
   const [nombre, setNombre] = useState('');
   const [apellidos, setApellidos] = useState('');
   const [correo, setCorreo] = useState('');
-  const [tel, setTel] = useState('');
+  const [psw, setPsw] = useState('');
   const [tipo_usuario, setTipo_usuario] = useState('');
   const [tipo_login, setTipo_login] = useState('');
   const [empleadosList, setEmpleadosList] = useState([]);
@@ -68,7 +68,7 @@ function MainAdmin() {
     formData.append('nombre', nombre);
     formData.append('apellidos', apellidos);
     formData.append('correo', correo);
-    formData.append('tel', tel);
+    formData.append('psw', psw);
     formData.append('tipo_usuario', tipo_usuario);
     formData.append('tipo_login', tipo_login);
 
@@ -122,7 +122,7 @@ function MainAdmin() {
     formData.append('nombre', nombre);
     formData.append('apellidos', apellidos);
     formData.append('correo', correo);
-    formData.append('tel', tel);
+    formData.append('psw', psw);
     formData.append('tipo_usuario', tipo_usuario);
     formData.append('tipo_login', tipo_login);
 
@@ -145,10 +145,11 @@ function MainAdmin() {
           },
             getEmpleados(),
             limpiarCampos());
+            setEditar(false);
         } else {
           Swal.fire({
-            icon: 'error',
-            title: 'Error',
+            icon: 'warning',
+            title: 'Sin cambios',
             text: dataResponse.mensaje
           });
         }
@@ -232,7 +233,7 @@ function MainAdmin() {
     setNombre('');
     setApellidos('');
     setCorreo('');
-    setTel('');
+    setPsw('');
     setTipo_usuario('');
     setTipo_login('');
   };
@@ -243,7 +244,7 @@ function MainAdmin() {
     setNombre(val.nombre);
     setApellidos(val.apellidos);
     setCorreo(val.correo);
-    setTel(val.tel);
+    setPsw(val.psw);
     setTipo_usuario(val.tipo_usuario);
     setTipo_login(val.tipo_login);
   };
@@ -395,18 +396,18 @@ function MainAdmin() {
               </div>
               <div className='input-group mb-3'>
                 <span className='input-group-text' id='basic-addon1'>
-                  Tel.:
+                  Contraseña:
                 </span>
                 <input
                   maxLength={10}
-                  type='text'
+                  type='password'
                   className='form-control'
-                  placeholder='Ingrese número'
+                  placeholder='Ingrese contraseña'
                   aria-label='Username'
                   aria-describedby='basic-addon1'
-                  value={tel}
+                  value={psw}
                   onChange={(event) => {
-                    setTel(event.target.value);
+                    setPsw(event.target.value);
                   }}
                 />
               </div>
@@ -414,35 +415,39 @@ function MainAdmin() {
                 <span className='input-group-text' id='basic-addon1'>
                   Tipo de usuario:
                 </span>
-                <input
-                  type='text'
+                <select
                   className='form-control'
-                  placeholder='Ingrese tipo (Propietario/Colaborador)'
-                  aria-label='Username'
+                  aria-label='Tipo de login'
                   aria-describedby='basic-addon1'
                   value={tipo_usuario}
                   onChange={(event) => {
                     setTipo_usuario(event.target.value);
                   }}
-                />
+                >
+                  <option value=''>Seleccione tipo de login</option>
+                  <option value='Propietario'>Propietario</option>
+                  <option value='Colaborador'>Colaborador</option>
+                </select>
               </div>
               <div className='input-group mb-3'>
                 <span className='input-group-text' id='basic-addon1'>
                   Tipo de login:
                 </span>
-                <input
-                  type='text'
+                <select
                   className='form-control'
-                  placeholder='Ingrese tipo de login'
-                  aria-label='Username'
+                  aria-label='Tipo de login'
                   aria-describedby='basic-addon1'
                   value={tipo_login}
                   onChange={(event) => {
                     setTipo_login(event.target.value);
                   }}
-                />
+                >
+                  <option value=''>Seleccione tipo de login</option>
+                  <option value='Sistema'>Sistema</option>
+                  <option value='Google'>Google</option>
+                  <option value='Facebook'>Facebook</option>
+                </select>
               </div>
-
               <div className='mx-4'>
                 {editar ? (
                   <div>
@@ -474,7 +479,7 @@ function MainAdmin() {
                 <th scope='col'>Nombre</th>
                 <th scope='col'>Apellidos</th>
                 <th scope='col'>Correo</th>
-                <th scope='col'>Tel.</th>
+                <th scope='col'>Contraseña</th>
                 <th scope='col'>Tipo usuario</th>
                 <th scope='col'>Tipo login</th>
                 <th scope='col'>Acciones</th>
@@ -487,7 +492,7 @@ function MainAdmin() {
                   <td>{val.nombre}</td>
                   <td>{val.apellidos}</td>
                   <td>{val.correo}</td>
-                  <td>{val.tel}</td>
+                  <td>{val.psw}</td>
                   <td>{val.tipo_usuario}</td>
                   <td>{val.tipo_login}</td>
                   <td>

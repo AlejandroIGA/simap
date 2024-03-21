@@ -67,6 +67,48 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
+    public function loginGoogle()
+    {
+        $correo = $this->input->post("correo");
+        $psw = $this->input->post("psw");
+        $token = $this->input->post("token");
+
+        $row = $this->Usuarios_model->login($correo, $psw);
+
+        $obj["resultado"] = $row != NULL;
+        if($obj["resultado"]!=NULL){
+            $tokenU = $row->token;
+            if($row->psw == $psw and $row->correo == $correo){
+                if($row->estatus == 0){
+                    $obj["mensaje"] = "Cuenta desactivada";
+                    $obj["data"] = NULL;
+                }else{
+                    if(!$tokenU){
+                        $obj["mensaje"] = "Credenciales correctas";
+                        $obj["data"] = array(
+                            'id_usuario' => $row->id_usuario,
+                            'tipo_usuario' => $row->tipo_usuario,
+                            'estatus' => $row->estatus
+                        ); 
+                        $this->Usuarios_model->saveUserToken($row->id_usuario, $token);
+                    }else{
+                        $obj["mensaje"] = "Ya hay una sesión activa";
+                        $obj["data"] = NULL;
+                    }
+                }
+            }else{
+                $obj["mensaje"] = "Correo o contraseña incorrecto";
+                $obj["data"] = NULL;
+            }
+        }else{
+            $obj["mensaje"] = "No se encontro al usuario";
+            $obj["data"] = NULL;
+        }
+        
+
+        echo json_encode($obj);
+    }
+
 
     public function loginWeb()
     {
@@ -141,6 +183,76 @@ class Back extends CI_Controller
 
         echo json_encode($obj);
     }
+
+    //CRUD Usuarios
+
+    public function insertUser(){
+
+        $nombre = $this->input->post("nombre");
+        $apellidos = $this->input->post("apellidos");
+        $correo = $this->input->post("correo");
+        $tel = $this->input->post("tel");
+        $tipo_usuario = $this->input->post("tipo_usuario");
+        $tipo_login = $this->input->post("tipo_login");
+        $row = $this->Usuarios_model->insert($nombre, $apellidos, $correo, $tel, $tipo_usuario, $tipo_login);
+
+        $obj["resultado"] = $row != NULL;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Usuario agregado"
+            : "Error: usuario no agregado";
+        $obj["data"] = $row;
+
+        echo json_encode($obj);
+    }
+
+    public function updateUser(){
+        $id_usuario = $this->input->post("id_usuario");
+        $nombre = $this->input->post("nombre");
+        $apellidos = $this->input->post("apellidos");
+        $correo = $this->input->post("correo");
+        $tel = $this->input->post("tel");
+        $tipo_usuario = $this->input->post("tipo_usuario");
+        $tipo_login = $this->input->post("tipo_login");
+        $row = $this->Usuarios_model->update($id_usuario, $nombre, $apellidos, $correo, $tel, $tipo_usuario, $tipo_login);
+    
+        $obj["resultado"] = $row != NULL;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Usuario actualizado"
+            : "Error: usuario no actualizado";
+        $obj["data"] = $row;
+    
+        echo json_encode($obj);
+    }
+    
+
+    public function deleteUser (){
+
+        $id_usuario = $this->input->post("id_usuario");
+        $row = $this->Usuarios_model->delete($id_usuario);
+
+        $obj["resultado"] = $row != NULL;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Usuario eliminado"
+            : "Error: usuario no eliminado";
+        $obj["data"] = $row;
+
+        echo json_encode($obj);
+
+    }
+    //Consulta empleados
+    public function getEmpleados(){
+        $rows = $this->Usuarios_model->empleados();
+    
+        $obj["resultado"] = !empty($rows);
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Usuarios obtenidos"
+            : "Error: usuarios no obtenidos";
+        $obj["data"] = $rows;
+    
+        echo json_encode($obj);
+    }    
+    //Fin de CRUD
+
 
     public function getCultivos()
     {

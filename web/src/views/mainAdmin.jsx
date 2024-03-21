@@ -11,11 +11,12 @@ function MainAdmin() {
 
   const [id_usuario, setId_usuario] = useState('');
   const [nombre, setNombre] = useState('');
+  const [apellidos, setApellidos] = useState('');
   const [correo, setCorreo] = useState('');
   const [tel, setTel] = useState('');
-  const [tipoUsuario, setTipoUsuario] = useState('');
-  const [tipoLogin, setTipoLogin] = useState('');
-  const [empleadosList, setEmpleados] = useState([]);
+  const [tipo_usuario, setTipo_usuario] = useState('');
+  const [tipo_login, setTipo_login] = useState('');
+  const [empleadosList, setEmpleadosList] = useState([]);
   const [editar, setEditar] = useState(false);
   const navigate = useNavigate();
   const storedSession = sessionStorage.getItem('id_usuario');
@@ -23,12 +24,16 @@ function MainAdmin() {
 
   useEffect(() => {
     if (!sesion) {
-      alert("Debes iniciar sesión primero");
+      alert("Inicia sesión primero");
       navigate('/login');
-    } else if (sesion) {
-      navigate('/mainAdmin');
+    } else if (sesion.tipo === 'Cliente') {
+      navigate('/catalogoCliente');
     }
   }, [sesion, navigate]);
+
+  useEffect(() => {
+    getEmpleados();
+  }, []);
 
 
   const handleLogout = async () => {
@@ -58,51 +63,226 @@ function MainAdmin() {
 
 
 
-  const add = () => {
+  const add = async () => {
+    const formData = new FormData();
+    formData.append('nombre', nombre);
+    formData.append('apellidos', apellidos);
+    formData.append('correo', correo);
+    formData.append('tel', tel);
+    formData.append('tipo_usuario', tipo_usuario);
+    formData.append('tipo_login', tipo_login);
 
+    try {
+      const response = await fetch(conf.url + '/insertUser', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const dataResponse = await response.json();
+        console.log(dataResponse);
+
+        if (dataResponse.resultado) {
+          Swal.fire({
+            title: "<strong>¡Registro exitoso!</strong>",
+            html: "<i>El empleado <strong>" + nombre + "</strong> fue registrado con éxito</i>",
+            icon: 'success',
+            timer: 3000
+          },
+            getEmpleados(),
+            limpiarCampos());
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: dataResponse.mensaje
+          });
+        }
+      } else {
+        console.error('Error al insertar usuario: ', response.statusText);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Error al insertar usuario'
+        });
+      }
+    } catch (error) {
+      console.error('Error: ', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Error al insertar usuario'
+      });
+    }
   };
 
-  const update = () => {
+  const update = async () => {
+    const formData = new FormData();
+    formData.append('id_usuario', id_usuario);
+    formData.append('nombre', nombre);
+    formData.append('apellidos', apellidos);
+    formData.append('correo', correo);
+    formData.append('tel', tel);
+    formData.append('tipo_usuario', tipo_usuario);
+    formData.append('tipo_login', tipo_login);
 
+    try {
+      const response = await fetch(conf.url + '/updateUser', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const dataResponse = await response.json();
+        console.log(dataResponse);
+
+        if (dataResponse.resultado) {
+          Swal.fire({
+            title: "<strong>¡Actualización exitosa!</strong>",
+            html: "<i>El empleado <strong>" + nombre + "</strong> fue actualizado con éxito</i>",
+            icon: 'success',
+            timer: 3000
+          },
+            getEmpleados(),
+            limpiarCampos());
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: dataResponse.mensaje
+          });
+        }
+      } else {
+        console.error('Error al actualizar usuario: ', response.statusText);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Error al actualizar usuario'
+        });
+      }
+    } catch (error) {
+      console.error('Error: ', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Error al actualizar usuario'
+      });
+    }
   };
 
-  const deleteEmple = (val) => {
+  const deleteEmple = async (val) => {
+    const formData = new FormData();
+    formData.append('id_usuario', val.id_usuario);
+    try {
+      const response = await fetch(conf.url + '/deleteUser', {
+        method: 'POST',
+        body: formData,
+      });
 
+      if (response.ok) {
+        const dataResponse = await response.json();
+        console.log(dataResponse);
+
+        if (dataResponse.resultado) {
+          Swal.fire({
+            title: 'Confirmar eliminación',
+            html: "<i>¿Realmente deseas eliminar a <strong>" + val.nombre + "</strong>?</i>",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, ¡Eliminarlo!'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              getEmpleados();
+              limpiarCampos();
+              Swal.fire({
+                text: val.nombre + ' fue eliminado',
+                icon: 'success',
+                timer: 3000
+              });
+            }
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: dataResponse.mensaje
+          });
+        }
+      } else {
+        console.error('Error al eliminar usuario: ', response.statusText);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Error al eliminar usuario'
+        });
+      }
+    } catch (error) {
+      console.error('Error: ', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Error al eliminar usuario'
+      });
+    }
   };
 
   const limpiarCampos = () => {
     setNombre('');
+    setApellidos('');
     setCorreo('');
     setTel('');
-    setTipoUsuario('');
-    setTipoLogin('');
+    setTipo_usuario('');
+    setTipo_login('');
   };
 
   const editarEmpleado = (val) => {
     setEditar(true);
+    setId_usuario(val.id_usuario);
     setNombre(val.nombre);
+    setApellidos(val.apellidos);
     setCorreo(val.correo);
-    setTipoUsuario(val.tipoUsuario);
-    setTipoLogin(val.tipoLogin);
+    setTel(val.tel);
+    setTipo_usuario(val.tipo_usuario);
+    setTipo_login(val.tipo_login);
   };
 
   const filterEmpleados = () => {
-    return empleadosList.filter((empleado) => {
-      return (
-        empleado.nombre === '' ||
-        empleado.correo === '' ||
-        empleado.tel === '' ||
-        empleado.tipoUsuario === '' ||
-        empleado.tipoLogin === ''
-      );
-    });
+    return empleadosList;
   };
 
-  const empleadosConCamposVacios = filterEmpleados();
+  const getEmpleados = async () => {
+    try {
+      const response = await fetch(conf.url + '/getEmpleados', {
+        method: 'GET',
+      });
 
-  const getEmpleados = () => {
-
+      if (response.ok) {
+        const dataResponse = await response.json();
+        console.log(dataResponse);
+        // Accede a la clave "data" para obtener los detalles de los empleados
+        const empleadosData = dataResponse.data;
+        // Verifica si hay datos de empleados antes de establecer el estado
+        if (empleadosData && Array.isArray(empleadosData)) {
+          // Establece el estado con los datos de los empleados
+          setEmpleadosList(empleadosData);
+        } else {
+          console.error('Error: Datos de empleados no válidos');
+        }
+      } else {
+        console.error('Error al obtener empleados: ', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error: ', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Error al obtener empleados'
+      });
+    }
   };
+
 
   return (
     <div className='container-fluid p-0' style={{ background: '#f2f2f2' }}>
@@ -167,7 +347,7 @@ function MainAdmin() {
             <div className='box card-body'>
               <div className='input-group mb-3'>
                 <span className='input-group-text' id='basic-addon1'>
-                  Nombre completo:
+                  Nombre:
                 </span>
                 <input
                   type='text'
@@ -178,6 +358,22 @@ function MainAdmin() {
                   value={nombre}
                   onChange={(event) => {
                     setNombre(event.target.value);
+                  }}
+                />
+              </div>
+              <div className='input-group mb-3'>
+                <span className='input-group-text' id='basic-addon1'>
+                  Apellidos:
+                </span>
+                <input
+                  type='text'
+                  className='form-control'
+                  placeholder='Ingrese apellidos'
+                  aria-label='Username'
+                  aria-describedby='basic-addon1'
+                  value={apellidos}
+                  onChange={(event) => {
+                    setApellidos(event.target.value);
                   }}
                 />
               </div>
@@ -202,6 +398,7 @@ function MainAdmin() {
                   Tel.:
                 </span>
                 <input
+                  maxLength={10}
                   type='text'
                   className='form-control'
                   placeholder='Ingrese número'
@@ -218,14 +415,14 @@ function MainAdmin() {
                   Tipo de usuario:
                 </span>
                 <input
-                  type='password'
+                  type='text'
                   className='form-control'
-                  placeholder='Ingrese tipo (Admin/Colab)'
+                  placeholder='Ingrese tipo (Propietario/Colaborador)'
                   aria-label='Username'
                   aria-describedby='basic-addon1'
-                  value={tipoUsuario}
+                  value={tipo_usuario}
                   onChange={(event) => {
-                    setTipoUsuario(event.target.value);
+                    setTipo_usuario(event.target.value);
                   }}
                 />
               </div>
@@ -239,9 +436,9 @@ function MainAdmin() {
                   placeholder='Ingrese tipo de login'
                   aria-label='Username'
                   aria-describedby='basic-addon1'
-                  value={tipoLogin}
+                  value={tipo_login}
                   onChange={(event) => {
-                    setTipoLogin(event.target.value);
+                    setTipo_login(event.target.value);
                   }}
                 />
               </div>
@@ -249,12 +446,15 @@ function MainAdmin() {
               <div className='mx-4'>
                 {editar ? (
                   <div>
-                    <button className='btn btn-warning m-2' onClick={update}>
+                    <button className='btn btn-warning m-2 text-white' onClick={update}>
                       Actualizar
                     </button>
                     <button
-                      className='btn btn-info m-2'
-                      onClick={limpiarCampos}
+                      className='btn btn-info m-2 text-white'
+                      onClick={() => {
+                        limpiarCampos();
+                        setEditar(false);
+                      }}
                     >
                       Cancelar
                     </button>
@@ -272,6 +472,7 @@ function MainAdmin() {
               <tr>
                 <th scope='col'>#</th>
                 <th scope='col'>Nombre</th>
+                <th scope='col'>Apellidos</th>
                 <th scope='col'>Correo</th>
                 <th scope='col'>Tel.</th>
                 <th scope='col'>Tipo usuario</th>
@@ -280,19 +481,17 @@ function MainAdmin() {
               </tr>
             </thead>
             <tbody>
-              {empleadosConCamposVacios.map((val, key) => (
-                <tr key={val.idUsuario}>
+              {filterEmpleados().map((val, key) => (
+                <tr key={key}>
+                  <td>{val.id_usuario}</td>
                   <td>{val.nombre}</td>
+                  <td>{val.apellidos}</td>
                   <td>{val.correo}</td>
                   <td>{val.tel}</td>
-                  <td>{val.tipoUsuario}</td>
-                  <td>{val.tipoLogin}</td>
+                  <td>{val.tipo_usuario}</td>
+                  <td>{val.tipo_login}</td>
                   <td>
-                    <div
-                      className='btn-group'
-                      role='group'
-                      aria-label='Basic example'
-                    >
+                    <div className='btn-group' role='group' aria-label='Basic example'>
                       <button
                         type='button'
                         className='btn btn-danger text-white'
@@ -316,6 +515,7 @@ function MainAdmin() {
                 </tr>
               ))}
             </tbody>
+
           </table>
         </div>
       </div>

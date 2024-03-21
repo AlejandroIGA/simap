@@ -45,6 +45,15 @@ class Sensor_model extends CI_Model
         return NULL;
     }
 
-    
+    function getConfiguracion($mac){
+        $rs = $this->db
+        ->select("temp_amb_min, temp_amb_max, hum_amb_min, hum_amb_max,hum_sue_min, hum_sue_max, dispositivo.nombre as nombre, ssid, psw")
+        ->from("cosecha")
+        ->join("dispositivo","cosecha.id_cosecha = dispositivo.id_cosecha ")
+        ->where("dispositivo.mac", $mac)
+        ->get();
+        return $rs->num_rows() > 0 ?
+            $rs->row() : NULL;
+    }
     
 }

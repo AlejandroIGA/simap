@@ -712,4 +712,10 @@ class Back extends CI_Controller
             echo $response;
         }
     }
+
+    public function getConfiguracion($mac){
+        $data = $this->Sensor_model->getConfiguracion($mac);
+        $obj["data"] = $data;
+        echo json_encode($obj);
+    }
 }

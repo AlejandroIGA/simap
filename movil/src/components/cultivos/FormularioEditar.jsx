@@ -121,7 +121,16 @@ const FormularioEditar = ({ visible, onClose, onCambio, id }) => {
         //Validación campos vacios
         if (planta === "" || nombre === "" || siembra === "" || temp_amb_min === "" || temp_amb_max === "" || hum_amb_min === "" || hum_amb_max === "" || hum_sue_min === "" || hum_sue_max === "") {
             alert("No se permiten campos vacios");
-        } else {
+        }else if(parseFloat(siembra)<=0){
+            alert("La cantidad de siembra debe ser mayor a cero");
+        } else if (parseFloat(temp_amb_min)>parseFloat(temp_amb_max)){
+            alert("La temperatura ambiente mínima no puede ser mayor a la temperatura ambiente máxima")
+        } else if (parseFloat(hum_amb_min)>parseFloat(hum_amb_max)){
+            alert("La humedad ambiente mínima no puede ser mayor a la humedad ambiente máxima")
+        } else if(parseFloat(hum_sue_min)>parseFloat(hum_sue_max)){
+            alert("La humedad suelo mínima no puede ser mayor a la humedad suelo máxima")
+        } 
+        else {
             try {
 
                     const formData = new FormData();

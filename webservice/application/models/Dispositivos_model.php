@@ -14,7 +14,7 @@ class Dispositivos_model extends CI_Model
     public function editDispositivo($data, $id_dispositivo) {
         $this->db
             ->where("id_dispositivo", $id_dispositivo)
-            ->where("(id_cosecha IS NULL OR id_cosecha IN (SELECT id_cosecha FROM cosecha WHERE fecha_fin IS NOT NULL))")
+            ->where("id_cosecha IN (SELECT id_cosecha FROM cosecha WHERE fecha_fin IS NOT NULL OR fecha_inicio > CURDATE())")
             ->update("dispositivo", $data);
 
         return $this->db->affected_rows() > 0 ? 
@@ -24,7 +24,8 @@ class Dispositivos_model extends CI_Model
     public function getDispositivos($id_usuario) {
 
         $rs = $this->db
-            ->select("dp.*")
+            ->select("dp.*, cs.nombre as cosecha")
+            ->join("cosecha AS cs", "cs.id_cosecha = dp.id_cosecha", "inner")
             ->where("dp.id_usuario", $id_usuario)
             ->from("dispositivo AS dp")
             ->get();
@@ -52,7 +53,7 @@ class Dispositivos_model extends CI_Model
         $this->db
              ->from('dispositivo')
              ->where('id_dispositivo', $id_dispositivo)
-             ->where("(id_cosecha IS NULL OR id_cosecha IN (SELECT id_cosecha FROM cosecha WHERE fecha_fin IS NOT NULL))")
+             ->where("id_cosecha IN (SELECT id_cosecha FROM cosecha WHERE fecha_fin IS NOT NULL OR fecha_inicio > CURDATE())")
              ->delete();
         
         return $this->db->affected_rows() > 0;

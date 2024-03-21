@@ -38,7 +38,8 @@ function Cultivos() {
     let id_usuario = sessionStorage.getItem('id_usuario');
 
 
-    const filteredResponseData = responseData.filter((val) => {
+    const filteredResponseData = responseData && responseData.length > 0 ? 
+    responseData.filter((val) => {
         if (parametro === 'nombre') {
             const { nombre } = val;
             const filterText = globalFilter.toUpperCase();
@@ -54,10 +55,11 @@ function Cultivos() {
             const filterText = globalFilter.toUpperCase();
             return fecha_inicio.toUpperCase().includes(filterText);
         }
-        else {
-            return responseData;
-        }
-    });
+        // En el caso de que parametro no coincida con ninguno de los casos anteriores, devuelve true para mantener todos los elementos en el arreglo.
+        return true;
+    }) 
+    : []; // Si responseData es nulo o vacío, asigna un arreglo vacío a filteredResponseData
+
 
     const borrarDatos = () => {
         setNombre("");

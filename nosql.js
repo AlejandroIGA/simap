@@ -30,14 +30,13 @@ const dispositivos = [
   },
 ];
 
-const dispositivos2 = [
+const sensores = [
   {
-    id_dispositivo: 'id_dispositivo',
-    id_master: 'id_master',
-    master: 'nombre_master',
+    master: 'id_master',
+    esclavo: 'id_esclavo',
     id_cultivo: 'id_cultivo',
     cultivo: 'nombre_cultivo',
-    esclavo: 'nombre_dispositivo',
+    dispositivo: 'nombre_dispositivo',
     fecha: 'fecha y hora medicion',
     temp_amb: 'valor',
     hum_amb: 'valor',
@@ -48,41 +47,24 @@ const dispositivos2 = [
   Con el documento cultivos se tiene la información general del cultivo,
   con esta información se realizan los procesos estadisticos en la web.
 */
-const cultivos = [
+const desarrollo = [
   {
     id_cultivo: 'id_cultivo',
     cultivo: 'nombre_cultivo',
     id_master: 'id_master',
     master: 'nombre_master',
-    temp_amb_prom: [
-      {
-        valor: 'valor',
-        fecha: 'fecha y hora',
-      },
-    ],
-    hum_amb_prom: [
-      {
-        valor: 'valor',
-        fecha: 'fecha y hora',
-      },
-    ],
-    hum_sue_prom: [
-      {
-        valor: 'valor',
-        fecha: 'fecha y hora',
-      },
-    ],
-    agua: [
-      {
-        valor: 'valor',
-        fecha: 'fecha y hora',
-      },
-    ],
-    gdd: [
-      {
-        valor: 'valor',
-        fecha: 'fecha',
-      },
-    ],
+    fecha: 'fecha y hora medicion',
+    gdd: 'valor',
+  },
+];
+
+const consumoAgua = [
+  {
+    id_cultivo: 'id_cultivo',
+    cultivo: 'nombre_cultivo',
+    id_master: 'id_master',
+    master: 'nombre_master',
+    fecha: 'fecha y hora medicion',
+    agua: 'valor',
   },
 ];

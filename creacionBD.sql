@@ -169,3 +169,9 @@ INSERT INTO dispositivo(maestro, id_usuario,id_cosecha,mac,ssid,psw,tipo,automat
 (null,1,5,"aabbccdd","red1","1234","maestro",1),
 (10,2,5,"eeffgghh","red1","1234","esclavo",null),
 (null,3,6,"aaeeiioo","red1","1234","maestro",1)
+
+#INSERT DE DISPOSITIVO
+INSERT INTO dispositivo(maestro, id_usuario,id_cosecha,nombre,mac,ssid,psw,tipo,automatizado) values
+(20,4,84,"ESP32-V","3282601366","Simap","12345678","esclavo",null)
+
+ select mac from dispositivo where maestro in (select maestro from dispositivo where mac = "3282601365");

@@ -1,6 +1,6 @@
 const conf = {
-  url: 'http://172.20.10.4:80/simap/webservice/back',
-  paypalGateway: 'http://172.20.10.4:3000',
+  url: 'http://localhost/simap/webservice/back',
+  paypalGateway: 'http://10.13.6.222:3000/paypalWeb',
 };
 
 export default conf;

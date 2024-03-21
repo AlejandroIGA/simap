@@ -10,7 +10,7 @@ function PaypalWeb() {
       purchase_units: [
         {
           amount: {
-            value: "1",
+            value: "285",
           },
         },
       ],

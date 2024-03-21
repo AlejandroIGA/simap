@@ -31,9 +31,33 @@ export function Dispositivos() {
     setShowModal(true);
   };
 
-  const openModal = () => {
-    setDispositivoEditar(null);
-    setShowModal(true);
+  const openModal = async () => {
+    
+
+    try {
+      const userDataJSON = await AsyncStorage.getItem('userData');
+      const userData = JSON.parse(userDataJSON);
+      const id_usuario = userData.id_usuario;
+      const formData = new FormData();
+      formData.append('id_usuario', id_usuario);
+
+      const response = await fetch(conf.url + '/getCultivos', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const dataResponse = await response.json();
+
+      if(dataResponse.resultado) {
+        setDispositivoEditar(null);
+        setShowModal(true);
+      } else {
+        alert("Primero debes de dar de alta un cultivo");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+    
   };
 
   const closeModal = () => {
@@ -65,9 +89,7 @@ export function Dispositivos() {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
-        console.log(data);
         setDispositivos(data.dispositivos);
-        console.log(dispositivos);
       }
     } catch (error) {
       console.error('ERROR:', error.message);
@@ -86,7 +108,6 @@ export function Dispositivos() {
       });
 
       const dataResponse = await response.json();
-      console.log(dataResponse);
 
       alert(dataResponse.mensaje);
 

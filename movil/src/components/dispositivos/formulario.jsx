@@ -58,7 +58,6 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
       });
 
       const dataResponse = await response.json();
-      console.log(dataResponse);
       setDispositivosMaestros(dataResponse.dispositivosMaestro);
     } catch (error) {
       console.error('Error al obtener dispositivos maestros del usuario :' + idUsuario + error);
@@ -110,89 +109,90 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
       getDispositivosMaestros();
       getCosechas();
     }
-  }, [idUsuario]);
+  });
 
   // Dar de alta nuevo dispositivo
   const handleSubmit = async (props) => {
 
-    if(tipoDispositivo === "maestro") {
-      if (nombre.trim() === '' || direccionMac.trim() === '' || nombreRed.trim() === '' || psw.trim() === '') {
-        alert('Por favor completa todos los campos.');
-        return;
-      }
-      if (idCosecha.trim() === '') {
-        alert('Debe dar de alta una cosecha o seleccionar una existente.');
-        return;
-      }
-      if (nombre.trim().length < 5) {
-        alert('El nombre debe tener mínimo 5 caracteres.');
-        return;
-      }
-      if (direccionMac.trim().length != 12) {
-        alert('La dirección MAC debe tener exactamente 12 caracteres.');
-        return;
-      }
-      if (nombreRed.trim().length < 5) {
-        alert('El nombre de la red debe tener mínimo 5 caracteres.');
-        return;
-      }
-      if (psw.trim().length < 8) {
-        alert('La contraseña debe tener mínimo 8 caracteres.');
-        return;
-      }
-    } else if(tipoDispositivo === "esclavo") {
-      if (nombre.trim() === '' || direccionMac.trim() === '') {
-        alert('Por favor completa todos los campos.');
-        return;
-      }
-      if (dispositivoMaestro.trim()  === '') {
-        alert('Debe seleccionar un dispositivo maestro o dar uno de alta.');
-        return;
-      }
-      if (nombre.trim().length < 5) {
-        alert('El nombre debe tener mínimo 5 caracteres.');
-        return;
-      }
-      if (direccionMac.trim().length != 12) {
-        alert('La dirección MAC debe tener exactamente 12 caracteres.');
-        return;
-      }
-    }
-
-    const formData = new FormData();
-    formData.append('nombre', nombre);
-    formData.append('mac', direccionMac);
-    formData.append('ssid', nombreRed);
-    formData.append('psw', psw);
-    formData.append('tipo', tipoDispositivo);
-    formData.append('maestro', dispositivoMaestro);
-    formData.append('id_usuario', idUsuario);
-    formData.append('id_cosecha', idCosecha);
-
-    try {
-      const response = await fetch(conf.url + '/nuevoDispositivo', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const dataResponse = await response.json();
-      console.log(dataResponse);
-      //primero comprobar que tengo algo en data, si no, ya se que no se inserto dispositivo
-
-        if (dataResponse.resultado && dataResponse.id_dispositivo > '0') {
-          alert(dataResponse.mensaje);
-          console.log('Id dispositivo ingresado:', dataResponse.id_dispositivo);
-        } else {
-          alert(dataResponse.mensaje);
+      if(tipoDispositivo === "maestro") {
+        if (nombre.trim() === '' || direccionMac.trim() === '' || nombreRed.trim() === '' || psw.trim() === '') {
+          alert('Por favor completa todos los campos.');
+          return;
         }
-    } catch (error) {
-      console.error('Error al insetrtar dispositivo:', error);
-      alert('Error agregar dispositivo. Por favor, inténtalo de nuevo.');
-    }
-    props.onClose();
-    props.actualizarDispositivos();
-    getDispositivosMaestros();
-    limpiarCampos();
+        if (idCosecha.trim() === '') {
+          alert('Debe dar de alta una cosecha o seleccionar una existente.');
+          return;
+        }
+        if (nombre.trim().length < 5) {
+          alert('El nombre debe tener mínimo 5 caracteres.');
+          return;
+        }
+        if (direccionMac.trim().length > 12 || direccionMac.trim().length < 8) {
+          alert('La dirección MAC debe tener exactamente 12 caracteres.');
+          return;
+        }
+        if (nombreRed.trim().length < 5) {
+          alert('El nombre de la red debe tener mínimo 5 caracteres.');
+          return;
+        }
+        if (psw.trim().length < 8) {
+          alert('La contraseña debe tener mínimo 8 caracteres.');
+          return;
+        }
+      } else if(tipoDispositivo === "esclavo") {
+          if (nombre.trim() === '' || direccionMac.trim() === '') {
+            alert('Por favor completa todos los campos.');
+            return;
+          }
+          if (dispositivoMaestro.trim()  === '') {
+            alert('Debe seleccionar un dispositivo maestro o dar uno de alta.');
+            return;
+          }
+          if (nombre.trim().length < 5) {
+            alert('El nombre debe tener mínimo 5 caracteres.');
+            return;
+          }
+          if (direccionMac.trim().length != 12) {
+            alert('La dirección MAC debe tener exactamente 12 caracteres.');
+            return;
+          }
+        
+      }
+  
+      const formData = new FormData();
+      formData.append('nombre', nombre);
+      formData.append('mac', direccionMac);
+      formData.append('ssid', nombreRed);
+      formData.append('psw', psw);
+      formData.append('tipo', tipoDispositivo);
+      formData.append('maestro', dispositivoMaestro);
+      formData.append('id_usuario', idUsuario);
+      formData.append('id_cosecha', idCosecha);
+  
+      try {
+        const response = await fetch(conf.url + '/nuevoDispositivo', {
+          method: 'POST',
+          body: formData,
+        });
+  
+        const dataResponse = await response.json();
+        //primero comprobar que tengo algo en data, si no, ya se que no se inserto dispositivo
+  
+          if (dataResponse.resultado && dataResponse.id_dispositivo > '0') {
+            alert(dataResponse.mensaje);
+          } else {
+            alert(dataResponse.mensaje);
+          }
+      } catch (error) {
+        console.error('Error al insetrtar dispositivo:', error);
+        alert('Error agregar dispositivo. Por favor, inténtalo de nuevo.');
+      }
+      props.onClose();
+      props.actualizarDispositivos();
+      getDispositivosMaestros();
+      limpiarCampos();
+
+    
   };
   
   // Editar dispositivo
@@ -321,7 +321,7 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
+    <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose} onTouchOutside={onClose}>
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
           {

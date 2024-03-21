@@ -51,7 +51,6 @@ async function registerForPushNotificationsAsync() {
       return;
     }
     token = (await Notifications.getExpoPushTokenAsync({ projectId: '3d8c0a6e-b84d-4c7d-a111-7ae87e1f59c2' })).data;
-    console.log(token);
   } else {
     alert('Must use physical device for Push Notifications');
   }
@@ -95,7 +94,6 @@ export function Login({ onLogin }) {
       });
 
       const dataResponse = await response.json();
-      console.log(dataResponse);
       //primero comprobar que tengo algo en data, si no, ya se que no se encontro al usuario
       if (dataResponse.data === null) {
         alert(dataResponse.mensaje);
@@ -107,7 +105,6 @@ export function Login({ onLogin }) {
           );
           const userDataJSON = await AsyncStorage.getItem('userData');
           const userData = JSON.parse(userDataJSON);
-          console.log('Datos del usuario:', userData);
           onLogin();
         } else if (
           dataResponse.resultado &&
@@ -166,7 +163,7 @@ export function Login({ onLogin }) {
           <TouchableOpacity style={styles.button} onPress={handleLogin}>
             <Text style={styles.buttonText}>Ingresar</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.buttonGoogle} onPress={handleLogin}>
+          <TouchableOpacity style={styles.buttonGoogle} >
             <Image
               source={require('../../images/Google.png')}
               style={styles.image}
@@ -175,7 +172,7 @@ export function Login({ onLogin }) {
               Iniciar sesión con Google
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.buttonFacebook} onPress={handleLogin}>
+          <TouchableOpacity style={styles.buttonFacebook}>
             <Image
               source={require('../../images/Facebook.png')}
               style={styles.image}

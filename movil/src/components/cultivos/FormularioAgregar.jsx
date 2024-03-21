@@ -66,7 +66,6 @@ const FormularioAgregar = ({ visible, onClose, onCambio }) => {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
             const data = await response.json();
-            console.log("plantas", data.data)
             setPlantasData(data.data)
         } catch (error) {
             console.error("ERROR:", error.message);
@@ -84,7 +83,6 @@ const FormularioAgregar = ({ visible, onClose, onCambio }) => {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
             const data = await response.json();
-            console.log("planta", data.data[0])
             setTempAmbMin(data.data[0].temp_amb_min);
             setTempAmbMax(data.data[0].temp_amb_max);
             setHumAmbMin(data.data[0].hum_amb_min);
@@ -133,13 +131,11 @@ const FormularioAgregar = ({ visible, onClose, onCambio }) => {
                     formData.append("hum_sue_min", hum_sue_min);
                     formData.append("hum_sue_max", hum_sue_max);
 
-                    console.log("formdata: ", formData)
                     const response = await fetch(conf.url + "/addCultivo/", {
                         method: 'POST',
                         body: formData
                     });
                     const data = await response.json();
-                    console.log(data);
 
                     if (data.resultado === true) {
                         borrarDatos();
@@ -181,7 +177,7 @@ const FormularioAgregar = ({ visible, onClose, onCambio }) => {
                 <View>
                     <View flexDirection="row" justifyContent="space-between">
                         <Text style={style.label}>Planta:</Text>
-                        <Text style={style.label}>Cantidad sembrada:</Text>
+                        <Text style={style.label}>Cantidad sembrada kg :</Text>
                     </View>
                     <View flexDirection="row">
                         <Picker

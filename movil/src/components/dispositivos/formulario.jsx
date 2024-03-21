@@ -109,7 +109,7 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
       getDispositivosMaestros();
       getCosechas();
     }
-  }, [idUsuario]);
+  });
 
   // Dar de alta nuevo dispositivo
   const handleSubmit = async (props) => {

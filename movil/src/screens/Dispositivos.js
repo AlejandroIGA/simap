@@ -32,6 +32,7 @@ export function Dispositivos() {
   };
 
   const openModal = async () => {
+    
 
     try {
       const userDataJSON = await AsyncStorage.getItem('userData');

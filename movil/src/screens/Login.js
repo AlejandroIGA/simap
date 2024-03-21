@@ -163,7 +163,24 @@ export function Login({ onLogin }) {
           <TouchableOpacity style={styles.button} onPress={handleLogin}>
             <Text style={styles.buttonText}>Ingresar</Text>
           </TouchableOpacity>
-          
+          <TouchableOpacity style={styles.buttonGoogle} >
+            <Image
+              source={require('../../images/Google.png')}
+              style={styles.image}
+            />
+            <Text style={styles.buttonTextGoogle}>
+              Iniciar sesión con Google
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.buttonFacebook}>
+            <Image
+              source={require('../../images/Facebook.png')}
+              style={styles.image}
+            />
+            <Text style={styles.buttonTextFacebook}>
+              Iniciar sesión con Facebook
+            </Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>

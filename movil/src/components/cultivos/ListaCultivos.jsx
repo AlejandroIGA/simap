@@ -147,7 +147,7 @@ const ListaCultivos = ({ cultivos, filtro, onCambio }) => {
                         }
                         
                         {formulariosCultivo.editar && <FormularioEditar visible={true} onClose={() => toggleFormulario(idCultivo, 'editar')} onCambio={onCambio} id={idCultivo}/>}
-                        {formulariosCultivo.finalizar && <FormularioFinalizar visible={true} onClose={() => toggleFormulario(idCultivo, 'finalizar')} onCambio={onCambio} id={idCultivo}/>}
+                        {formulariosCultivo.finalizar && <FormularioFinalizar visible={true} onClose={() => toggleFormulario(idCultivo, 'finalizar', )} onCambio={onCambio} id={idCultivo} />}
                     </View>
                 )
             }}

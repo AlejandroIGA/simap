@@ -79,128 +79,106 @@ function Inicio() {
     }
   };
 
-  //metodo para crear las graficas
-  const grafica = async (tipo, fechaInicio, fechaFin, dispositivos) => {
+  const processData = (doc, tipo) => {
+    if (doc.data()[tipo] !== undefined && doc.data().fecha !== undefined) {
+        const fechaString = doc.data().fecha;
+        const [fechaParte, horaParte] = fechaString.split(' ');
+        const [anio, mes, dia] = fechaParte.split('-');
+        const [hora, minuto, segundo] = horaParte.split(':');
+        return [Date.UTC(anio, mes - 1, dia, hora, minuto, segundo), doc.data()[tipo]];
+    }
+    return null;
+};
+
+const grafica = async (tipo, fechaInicio, fechaFin, dispositivos) => {
     const dataCollection = collection(db, 'pruebas');
     const allSeries = [];
 
-    if(fechFin === null || fechInicio === null ){
-      alert("Seleccione una fecha de inicio y una fecha de fin")
-      setShowGrafica(false)
-      return
-    }else if(fechFin < fechInicio){
-      alert("La fecha de inicio no puede ser mayor a la fecha de fin")
-      setShowGrafica(false)
-      return
+    if (fechaFin === null || fechaInicio === null) {
+        alert("Seleccione una fecha de inicio y una fecha de fin");
+        setShowGrafica(false);
+        return;
+    } else if (fechaFin < fechaInicio) {
+        alert("La fecha de inicio no puede ser mayor a la fecha de fin");
+        setShowGrafica(false);
+        return;
     }
+
     for (const dispositivo of dispositivos) {
-      if (dispositivo.tipo === "esclavo") {
-        const seriesData = [];
-        const dataSnapshot = await getDocs(query(
-          dataCollection,
-          where('dispositivo', '==', dispositivo.nombre), // Filtro por dispositivo
-          where('fecha', '>=', fechaInicio), // Filtro para incluir fechas a partir de la fecha de inicio
-          where('fecha', '<=', fechaFin), // Filtro para incluir fechas hasta la fecha de fin
-          orderBy('fecha') // Ordenar los documentos por fecha
-        ));
-        if (tipo === "temp_amb") {
-          dataSnapshot.docs.forEach(doc => {
-            if (doc.data().temp_amb !== undefined && doc.data().fecha !== undefined) {
-              const fechaString = doc.data().fecha;
+        if (dispositivo.tipo === "esclavo") {
+            const seriesData = [];
+            const dataSnapshot = await getDocs(query(
+                dataCollection,
+                where('dispositivo', '==', dispositivo.nombre),
+                where('fecha', '>=', fechaInicio),
+                where('fecha', '<=', fechaFin),
+                orderBy('fecha')
+            ));
 
-              // Separar la cadena de fecha y hora en componentes
-              const [fechaParte, horaParte] = fechaString.split(' ');
-              const [anio, mes, dia] = fechaParte.split('-');
-              const [hora, minuto, segundo] = horaParte.split(':');
+            dataSnapshot.docs.forEach(doc => {
+                const data = processData(doc, tipo);
+                if (data) {
+                    seriesData.push(data);
+                }
+            });
 
-              seriesData.push([Date.UTC(anio, mes - 1, dia, hora, minuto, segundo), doc.data().temp_amb]);
-            }
-
-          });
+            allSeries.push({
+                name: dispositivo.nombre,
+                data: seriesData
+            });
         }
-        else if (tipo === "hum_amb") {
-          dataSnapshot.docs.forEach(doc => {
-            if (doc.data().hum_amb !== undefined && doc.data().fecha !== undefined) {
-              console.log(doc.data().hum_amb)
-              const fechaString = doc.data().fecha;
-
-              // Separar la cadena de fecha y hora en componentes
-              const [fechaParte, horaParte] = fechaString.split(' ');
-              const [anio, mes, dia] = fechaParte.split('-');
-              const [hora, minuto, segundo] = horaParte.split(':');
-
-              seriesData.push([Date.UTC(anio, mes - 1, dia, hora, minuto, segundo), doc.data().hum_amb]);
-            }
-          });
-        }else if (tipo === "hum_sue") {
-          dataSnapshot.docs.forEach(doc => {
-            if (doc.data().hum_sue !== undefined && doc.data().fecha !== undefined) {
-              console.log(doc.data().hum_amb)
-              const fechaString = doc.data().fecha;
-
-              // Separar la cadena de fecha y hora en componentes
-              const [fechaParte, horaParte] = fechaString.split(' ');
-              const [anio, mes, dia] = fechaParte.split('-');
-              const [hora, minuto, segundo] = horaParte.split(':');
-
-              seriesData.push([Date.UTC(anio, mes - 1, dia, hora, minuto, segundo), doc.data().hum_sue]);
-            }
-          });
-        }
-        allSeries.push({
-          name: dispositivo.nombre,
-          data: seriesData
-        });
-      }
     }
-    console.log(allSeries)
+
     setOptions({
-      chart: {
-        type: 'spline'
-      },
-      title: {
-        text: tipo === "temp_amb" ? "Temperatura Ambiente" : tipo === "hum_amb" ? "Humedad Ambiente" : "Humedad Suelo"
-      },
-      xAxis: {
-        type: 'datetime',
-        dateTimeLabelFormats: {
-          minute: '%e. %b %H:%M',
-          hour: '%e. %b %H:%M',
-          day: '%e. %b',
-          month: '%b',
+        chart: {
+            type: 'spline',
+            zoomType: 'x'
         },
         title: {
-          text: 'Fecha y Hora'
-        }
-      },
-      yAxis: {
-        title: {
-          text: tipo === "temp_amb" ? "Temperatura" : "Humedad"
+            text: tipo === "temp_amb" ? "Temperatura Ambiente" : tipo === "hum_amb" ? "Humedad Ambiente" : "Humedad Suelo"
         },
-        labels: {
-          format: `{value}${tipo === "temp_amb" ? "°" : "%"}`
-        }
-      },
-      tooltip: {
-        headerFormat: '<b>{series.name}</b><br>',
-        pointFormat: `Fecha: {point.x:%e. %b %Y %H:%M} ${tipo}: {point.y:.2f}${tipo === "temp_amb" ? "°" : "%"}`
-      },
-      plotOptions: {
-        series: {
-          marker: {
-            symbol: 'circle',
-            fillColor: '#FFFFFF',
-            enabled: true,
-            radius: 2.5,
-            lineWidth: 1,
-            lineColor: null
-          }
-        }
-      },
-      series: allSeries
+        xAxis: {
+            type: 'datetime',
+            dateTimeLabelFormats: {
+                minute: '%e. %b %H:%M',
+                hour: '%e. %b %H:%M',
+                day: '%e. %b',
+                month: '%b',
+            },
+            title: {
+                text: 'Fecha y Hora'
+            }
+        },
+        yAxis: {
+            title: {
+                text: tipo === "temp_amb" ? "Temperatura" : "Humedad"
+            },
+            labels: {
+                format: `{value}${tipo === "temp_amb" ? "°" : "%"}`
+            }
+        },
+        tooltip: {
+            headerFormat: '<b>{series.name}</b><br>',
+            pointFormat: `Fecha: {point.x:%e. %b %Y %H:%M} ${tipo}: {point.y:.2f}${tipo === "temp_amb" ? "°" : "%"}`
+        },
+        plotOptions: {
+            series: {
+                marker: {
+                    symbol: 'circle',
+                    fillColor: '#FFFFFF',
+                    enabled: true,
+                    radius: 2.5,
+                    lineWidth: 1,
+                    lineColor: null
+                }
+            }
+        },
+        series: allSeries
     });
+
     setShowGrafica(true);
-  }
+};
+
 
   useEffect(() => {
     getDispositivos();

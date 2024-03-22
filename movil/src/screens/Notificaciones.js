@@ -37,7 +37,6 @@ export function Notificaciones() {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
-        console.log(data);
         setNotificaciones(data.notificaciones);
       }
     } catch (error) {

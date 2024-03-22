@@ -34,7 +34,6 @@ const MainColaborador = () => {
       }
 
       const dataResponse = await response.json();
-      console.log(dataResponse);
       setDispositivos(dataResponse['Datos del Dispositivo']);
       setMostrarTarjeta(
         dataResponse['Datos del Dispositivo'] !== null &&

@@ -147,7 +147,7 @@ class Back extends CI_Controller
                 $obj["data"] = NULL;
             }
         } else {
-            $obj["mensaje"] = "Correo o contraseña incorrecto";
+            $obj["mensaje"] = "Su cuenta no es main";
             $obj["data"] = NULL;
         }
 
@@ -307,6 +307,7 @@ class Back extends CI_Controller
         $correo = $this->input->post("correo");
         $psw = $this->input->post("psw");
         $tipo = $this->input->post("tipo");
+        $tipo_login = $this->input->post("tipo_login");
 
         $data = array(
             "nombre" => $nombre,
@@ -314,7 +315,8 @@ class Back extends CI_Controller
             "correo" => $correo,
             "psw" => $psw,
             "estatus" => 1,
-            "tipo_usuario" => $tipo
+            "tipo_usuario" => $tipo,
+            "tipo_login" => $tipo_login
         );
 
         $id_usuario = $this->Usuarios_model->registro($data);
@@ -886,5 +888,11 @@ class Back extends CI_Controller
         } else {
             echo $response;
         }
+    }
+
+    public function getConfiguracion($mac){
+        $data = $this->Sensor_model->getConfiguracion($mac);
+        $obj["data"] = $data;
+        echo json_encode($obj);
     }
 }

@@ -79,7 +79,8 @@ const FormularioFinalizar = ({ visible, onClose, onCambio, id }) => {
     const endCultivo = async () => {
         if (fecha_fin === null || cosechado === null) {
             alert("No se permiten campos vacios");
-        } else {
+        } 
+        else {
             try {
                 const formData = new FormData();
                 formData.append("id_cosecha", id);

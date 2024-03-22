@@ -17,6 +17,101 @@ function Login() {
   const navigate = useNavigate();
 
 
+  useEffect (() => {
+    const start = () => {
+      gapi.auth2.init({
+        clientId: "191244130158-qmn4snu41sfu0tfrc0u3ktb1kdubtdjo.apps.googleusercontent.com",
+      })
+    }
+    gapi.load("client:auth2", start)
+  }, []);
+
+  //INICIO DE SESION CON GOOGLE
+  const onSuccess = async (response) => {
+    console.log(response);
+    // SE OBTIENEN LOS DATOS DE LA CUENTA DE GOOGLE
+    const correo = response.profileObj.email;
+    setCorreo(correo);
+    const psw = response.googleId;
+    setPsw(psw);
+    const nombre = response.profileObj.givenName;
+    const apellidos = response.profileObj.familyName;
+
+    //FORMULARIO  PARA REALIZAR EL LOGIN
+    const formData = new FormData();
+    formData.append('correo', correo);
+    formData.append('psw', psw);
+
+    //FORMULARIO PARA REALIZAR REGISTRO
+    const formData2 = new FormData();
+    formData2.append('correo', correo);
+    formData2.append('nombre', nombre);
+    formData2.append('apellidos', apellidos);
+    formData2.append('psw', psw);
+    formData2.append('tipo', "propietario");
+    formData2.append('tipo_login', "Google");
+
+    try {
+      //CONSULTA PARA VER SI YA EXISTE UN USUARIO CON ESTA CUENTA DE GOOGLE
+      const response = await fetch(conf.url + '/loginWeb', {
+        method: 'POST',
+        body: formData,
+      });
+
+        const dataResponse = await response.json();
+        
+        if (dataResponse.data != null) {
+          //REALIZAR LOGIN EN CASO DE QUE EXISTA LA CUENTA
+          const tipoCuenta = dataResponse.data.tipo;
+          setCuenta(tipoCuenta);
+          sessionStorage.setItem('id_usuario', dataResponse.data.id_usuario);
+          sessionStorage.setItem('tipo_usuario', dataResponse.data.tipo_usuario);
+          if (dataResponse.data.tipo === "Pro") {
+              navigate('/mainAdmin');
+          } else if (dataResponse.data.tipo === "Free") {
+              navigate('/mainAdminFree');
+          }else if (dataResponse.data.tipo_usuario === "colaborador"){
+            alert("Acceso único a usuarios propietarios");
+          }
+        } else {
+          //REALIZAR REGISTRO DE UN ACUENTA NUEVA PARA DESPUES HACER EL LOGIN
+          const response = await fetch(conf.url + '/registroUsuario', {
+            method: 'POST',
+            body: formData2,
+          });
+          const dataResponse = await response.json();
+          alert(dataResponse.mensaje);
+          if(dataResponse.id_usuario > 0) {
+            const response = await fetch(conf.url + '/loginWeb', {
+              method: 'POST',
+              body: formData,
+            });
+            const dataResponse = await response.json();
+            const tipoCuenta = dataResponse.data.tipo;
+            setCuenta(tipoCuenta);
+            sessionStorage.setItem('id_usuario', dataResponse.data.id_usuario);
+            sessionStorage.setItem('tipo_usuario', dataResponse.data.tipo_usuario);
+            if (dataResponse.data.tipo === "Pro") {
+                navigate('/mainAdmin');
+            } else if (dataResponse.data.tipo === "Free") {
+                navigate('/mainAdminFree');
+            }else if (dataResponse.data.tipo_usuario === "colaborador"){
+              alert("Acceso único a usuarios propietarios");
+            }
+          }
+          
+        }
+
+    } catch (error) {
+      console.error(error.message);
+      alert(error);
+    }
+  }
+
+  const onFailure = (response) => {
+    console.log("Error: " + response);
+  }
+
   const login = async () => {
     if (!correo || !psw) {
       alert("Por favor, complete todos los campos");

@@ -175,3 +175,33 @@ INSERT INTO dispositivo(maestro, id_usuario,id_cosecha,nombre,mac,ssid,psw,tipo,
 (20,4,84,"ESP32-V","3282601366","Simap","12345678","esclavo",null)
 
  select mac from dispositivo where maestro in (select maestro from dispositivo where mac = "3282601365");
+
+
+ Select dispositivo.id_dispositivo from usuario 
+ inner join dispositivo on usuario.id_usuario = dispositivo.id_usuario
+ where usuario.id_usuario = 4 and dispositivo.tipo="maestro";
+
+
+
+ Select dispositivo.id_dispositivo from usuario 
+ inner join dispositivo on usuario.id_usuario = dispositivo.id_usuario
+ where usuario.id_usuario in (Select cuenta_main from usuario where id_usuario = 2) and dispositivo.tipo="maestro" ;
+
+#OBTENER LAS TARJETAS ESCLAVO Y MAESTRO PARA EL PROPIETARIO Y LA CORRESPONDIENTE PARA EL COLABORARDOR.
+#CON ESTA CONSULTA NO IMPORTA QUIEN DE DA ALTA UNA TARJETA, TODO ESE BASA EN EL ID DEL MAESTRO
+ Select dispositivo.*, cosecha.nombre as cosecha from dispositivo
+ inner join usuario on usuario.id_usuario = dispositivo.id_usuario
+ inner join cosecha on cosecha.id_cosecha = dispositivo.id_cosecha
+ where (dispositivo.maestro in
+    (Select dispositivo.id_dispositivo from usuario 
+ inner join dispositivo on usuario.id_usuario = dispositivo.id_usuario
+ where usuario.id_usuario = 4 and dispositivo.tipo="maestro") or dispositivo.id_dispositivo in (Select dispositivo.id_dispositivo from usuario 
+ inner join dispositivo on usuario.id_usuario = dispositivo.id_usuario
+ where usuario.id_usuario = 4 and dispositivo.tipo="maestro"))
+ or 
+ (
+    dispositivo.maestro in
+    ( Select dispositivo.id_dispositivo from usuario 
+ inner join dispositivo on usuario.id_usuario = dispositivo.id_usuario
+ where usuario.id_usuario in (Select cuenta_main from usuario where id_usuario = 4) and dispositivo.tipo="maestro") and dispositivo.id_usuario = 4
+ )

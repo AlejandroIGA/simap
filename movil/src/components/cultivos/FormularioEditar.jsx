@@ -59,7 +59,6 @@ const FormularioEditar = ({ visible, onClose, onCambio, id }) => {
                 method:'GET',
             });
             const data = await response.json();
-            console.log("EDITAR: ",data.data[0]);
             setNombre(data.data[0].nombre);
             setPlanta(data.data[0].id_planta);
             setSiembra(data.data[0].cant_siembra);
@@ -86,7 +85,6 @@ const FormularioEditar = ({ visible, onClose, onCambio, id }) => {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
             const data = await response.json();
-            console.log("plantas", data.data)
             setPlantasData(data.data)
         } catch (error) {
             console.error("ERROR:", error.message);
@@ -104,7 +102,6 @@ const FormularioEditar = ({ visible, onClose, onCambio, id }) => {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
             const data = await response.json();
-            console.log("planta", data.data[0])
             setTempAmbMin(data.data[0].temp_amb_min);
             setTempAmbMax(data.data[0].temp_amb_max);
             setHumAmbMin(data.data[0].hum_amb_min);
@@ -121,7 +118,16 @@ const FormularioEditar = ({ visible, onClose, onCambio, id }) => {
         //Validación campos vacios
         if (planta === "" || nombre === "" || siembra === "" || temp_amb_min === "" || temp_amb_max === "" || hum_amb_min === "" || hum_amb_max === "" || hum_sue_min === "" || hum_sue_max === "") {
             alert("No se permiten campos vacios");
-        } else {
+        }else if(parseFloat(siembra)<=0){
+            alert("La cantidad de siembra debe ser mayor a cero");
+        } else if (parseFloat(temp_amb_min)>parseFloat(temp_amb_max)){
+            alert("La temperatura ambiente mínima no puede ser mayor a la temperatura ambiente máxima")
+        } else if (parseFloat(hum_amb_min)>parseFloat(hum_amb_max)){
+            alert("La humedad ambiente mínima no puede ser mayor a la humedad ambiente máxima")
+        } else if(parseFloat(hum_sue_min)>parseFloat(hum_sue_max)){
+            alert("La humedad suelo mínima no puede ser mayor a la humedad suelo máxima")
+        } 
+        else {
             try {
 
                     const formData = new FormData();
@@ -140,13 +146,11 @@ const FormularioEditar = ({ visible, onClose, onCambio, id }) => {
                     formData.append("hum_sue_min", hum_sue_min);
                     formData.append("hum_sue_max", hum_sue_max);
 
-                    console.log("formdata: ", formData)
                     const response = await fetch(conf.url + "/updateCultivo/", {
                         method: 'POST',
                         body: formData
                     });
                     const data = await response.json();
-                    console.log(data);
 
                     if (data.resultado === true) {
                         alert(data.mensaje);

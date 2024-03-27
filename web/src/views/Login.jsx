@@ -3,7 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import conf from '../conf';
 import agricultor from '../images/Granjero.png';
 import google from '../images/google.png';
-import facebbok from '../images/facebook.png';
+import facebook from '../images/facebook.png';
+import GoogleLogin from 'react-google-login';
+import {gapi} from 'gapi-script';
+import FacebookLogin from 'react-facebook-login';
 
 function Login() {
 
@@ -161,11 +164,55 @@ function Login() {
       console.error('Error');
       alert('Error al iniciar sesión, intenta de nuevo');
       console.error(error.message);
-      alert('Ya existe una cuenta iniciada con este usuario');
+      alert('Error al iniciar sesión, intenta de nuevo');
     }
   };
   
-
+  const responseFacebook = async (response) => {
+    try {
+      if (response.status === "unknown") {
+        // El usuario canceló el inicio de sesión con Facebook
+        console.log("Inicio de sesión cancelado por el usuario");
+        return;
+      }
+      
+      // El usuario ha iniciado sesión correctamente, puedes acceder a los datos del usuario desde "response"
+      console.log("Datos del usuario de Facebook:", response);
+      
+      // Aquí puedes enviar los datos del usuario a tu backend para autenticarlo
+      const formData = new FormData();
+      formData.append('facebookId', response.id); // Enviar el ID de Facebook al backend para identificar al usuario
+      
+      // Envía una solicitud POST a tu endpoint de inicio de sesión con Facebook
+      const responseBackend = await fetch(conf.url + '/loginFacebook', {
+        method: 'POST',
+        body: formData,
+      });
+  
+      if (responseBackend.ok) {
+        const dataResponse = await responseBackend.json();
+  
+        if (dataResponse.resultado) {
+          // Inicio de sesión con éxito, maneja la respuesta como lo haces con tu función de inicio de sesión normal
+          console.log("Inicio de sesión exitoso: ", dataResponse);
+          navigate('/mainAdmin');
+        } else {
+          // Error al iniciar sesión en tu backend
+          console.error("Error al iniciar sesión con Facebook en el backend: ", dataResponse.mensaje);
+          alert("Error al iniciar sesión, inténtalo de nuevo más tarde");
+        }
+      } else {
+        // Error en la solicitud al backend
+        console.error('Error al iniciar sesión con Facebook en el backend: ', responseBackend.statusText);
+        alert('Error al iniciar sesión, inténtalo de nuevo más tarde');
+      }
+    } catch (error) {
+      // Error en el proceso
+      console.error('Error al iniciar sesión con Facebook:', error);
+      alert('Error al iniciar sesión, inténtalo de nuevo más tarde');
+    }
+  };
+  
   return (
     <div>
       <nav className="navbar">

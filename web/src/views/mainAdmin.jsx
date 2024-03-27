@@ -174,6 +174,7 @@ function MainAdmin() {
   const deleteEmple = async (val) => {
     const formData = new FormData();
     formData.append('id_usuario', val.id_usuario);
+    console.log(val.id_usuario);
     try {
       const response = await fetch(conf.url + '/deleteUser', {
         method: 'POST',

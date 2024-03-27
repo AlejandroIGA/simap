@@ -8,6 +8,17 @@ class Sensor_model extends CI_Model
         //$this->load->library('curl');
     }
 
+    function setGdd($id_planta){
+        //Obtener la temperatura de trabajo promedio de la planta para calcular el gdd
+        $rs = $this->db
+        ->select(" temp_amb_min as temperatura")
+        ->from("planta")
+        ->where("id_planta",$id_planta)
+        ->get();
+        return $rs->num_rows() > 0 ?
+            $rs->row() : NULL;
+    }
+
     function test($mac)
     {
         //Obtener datos de la BD SQL para enviar a la BD NoSQ

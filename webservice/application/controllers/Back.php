@@ -1,4 +1,7 @@
 <?php
+
+use function GuzzleHttp\json_encode;
+
 class Back extends CI_Controller
 {
     //Constructor
@@ -76,35 +79,35 @@ class Back extends CI_Controller
         $row = $this->Usuarios_model->login($correo, $psw);
 
         $obj["resultado"] = $row != NULL;
-        if($obj["resultado"]!=NULL){
+        if ($obj["resultado"] != NULL) {
             $tokenU = $row->token;
-            if($row->psw == $psw and $row->correo == $correo){
-                if($row->estatus == 0){
+            if ($row->psw == $psw and $row->correo == $correo) {
+                if ($row->estatus == 0) {
                     $obj["mensaje"] = "Cuenta desactivada";
                     $obj["data"] = NULL;
-                }else{
-                    if(!$tokenU){
+                } else {
+                    if (!$tokenU) {
                         $obj["mensaje"] = "Credenciales correctas";
                         $obj["data"] = array(
                             'id_usuario' => $row->id_usuario,
                             'tipo_usuario' => $row->tipo_usuario,
                             'estatus' => $row->estatus
-                        ); 
+                        );
                         $this->Usuarios_model->saveUserToken($row->id_usuario, $token);
-                    }else{
+                    } else {
                         $obj["mensaje"] = "Ya hay una sesión activa";
                         $obj["data"] = NULL;
                     }
                 }
-            }else{
+            } else {
                 $obj["mensaje"] = "Correo o contraseña incorrecto";
                 $obj["data"] = NULL;
             }
-        }else{
+        } else {
             $obj["mensaje"] = "No se encontro al usuario";
             $obj["data"] = NULL;
         }
-        
+
 
         echo json_encode($obj);
     }
@@ -234,7 +237,8 @@ class Back extends CI_Controller
 
     //CRUD Usuarios
 
-    public function insertUser(){
+    public function insertUser()
+    {
 
         $nombre = $this->input->post("nombre");
         $apellidos = $this->input->post("apellidos");
@@ -253,7 +257,8 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
-    public function updateUser(){
+    public function updateUser()
+    {
         $id_usuario = $this->input->post("id_usuario");
         $nombre = $this->input->post("nombre");
         $apellidos = $this->input->post("apellidos");
@@ -262,18 +267,18 @@ class Back extends CI_Controller
         $tipo_usuario = $this->input->post("tipo_usuario");
         $tipo_login = $this->input->post("tipo_login");
         $row = $this->Usuarios_model->update($id_usuario, $nombre, $apellidos, $correo, $psw, $tipo_usuario, $tipo_login);
-    
         $obj["resultado"] = $row != NULL;
         $obj["mensaje"] = $obj["resultado"] ?
             "Usuario actualizado"
             : "No se realizaron cambios";
         $obj["data"] = $row;
-    
+
         echo json_encode($obj);
     }
-    
 
-    public function deleteUser (){
+
+    public function deleteUser()
+    {
 
         $id_usuario = $this->input->post("id_usuario");
         $row = $this->Usuarios_model->delete($id_usuario);
@@ -285,20 +290,20 @@ class Back extends CI_Controller
         $obj["data"] = $row;
 
         echo json_encode($obj);
-
     }
     //Consulta empleados
-    public function getEmpleados(){
+    public function getEmpleados()
+    {
         $rows = $this->Usuarios_model->empleados();
-    
+
         $obj["resultado"] = !empty($rows);
         $obj["mensaje"] = $obj["resultado"] ?
             "Usuarios obtenidos"
             : "Error: usuarios no obtenidos";
         $obj["data"] = $rows;
-    
+
         echo json_encode($obj);
-    }    
+    }
     //Fin de CRUD
    
     public function registroUsuario(){
@@ -802,9 +807,9 @@ class Back extends CI_Controller
                     "cosecha" =>  array("stringValue" => $data->cosecha),
                     "dispositivo" => array("stringValue" => $data->nombre),
                     "fecha" => array("stringValue" => $fecha->format("Y-m-d H:i:s")),
-                    "temp_amb" => array("doubleValue" => $input->temp_amb+$variacion),
-                    "hum_amb" => array("doubleValue" => $input->hum_amb+$variacion),
-                    "hum_sue" => array("doubleValue" => $input->hum_sue+$variacion),
+                    "temp_amb" => array("doubleValue" => $input->temp_amb + $variacion),
+                    "hum_amb" => array("doubleValue" => $input->hum_amb + $variacion),
+                    "hum_sue" => array("doubleValue" => $input->hum_sue + $variacion),
                 )
             );
             //Madar datos al firebase
@@ -890,7 +895,113 @@ class Back extends CI_Controller
         }
     }
 
-    public function getConfiguracion($mac){
+    /*
+    Funcion para calcular los gdd de un cultvio
+    La función debe de ejecutarse en cuando se agrega un cultivo por primera vez
+    La función se ejecuta cuando hace un login y el ultimo dia registrado en firebase es igual al día del login
+    */
+    public function setGdd()
+    {
+        //
+        $id_planta= 2;
+        $id_cultivo = 84;
+        $temperaturaBase = $this->Sensor_model->setGdd($id_planta, $id_cultivo);
+        $temperaturaBase = $temperaturaBase->temperatura;
+        
+        //https://api.openweathermap.org/data/2.5/forecast?lat=20.58806&lon=-100.38806&units=metric&appid=eef355588b320115816599bad7abf8bf
+        // Configura las opciones de la solicitud POST
+        $clima_url = "https://api.openweathermap.org/data/2.5/forecast?lat=20.58806&lon=-100.38806&units=metric&appid=eef355588b320115816599bad7abf8bf";
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $clima_url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Accept: application/json',
+            'Content-Type: application/json',
+        ));
+        curl_setopt($ch, CURLOPT_POST, false); // Cambiado a false para una solicitud GET
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        // No necesitamos CURLOPT_POSTFIELDS para una solicitud GET
+
+        // Realiza la solicitud GET
+        $response = curl_exec($ch);
+        $informacion = [];
+        if ($response === false) {
+            // Manejar errores si la solicitud falla
+            echo 'Error en la solicitud: ' . curl_error($ch);
+        } else {
+            // Manejar la respuesta exitosa
+            $decoded_response = json_decode($response, true);
+            $dataPeticion = $decoded_response['list'];
+            $fecha = new DateTime();
+            $nueva_zona_horaria = new DateTimeZone('America/Mexico_City');
+            $fecha->setTimezone($nueva_zona_horaria);
+
+            $fechaActual = $fecha->format('Y-m-d');
+
+            foreach ($dataPeticion as $data) {
+                $fechaObtenida = new DateTime($data["dt_txt"]);
+                $fechaObtenida = $fechaObtenida->format('Y-m-d');
+                if ($fechaObtenida > $fechaActual) {
+                    $pares["fecha"] = $fechaObtenida;
+                    $pares["temp_avg"] = $data["main"]["temp"];
+                    array_push($informacion, $pares);
+                }
+            }
+        }
+        $dataJson = json_encode($informacion);
+        // Decodificar el JSON
+        $data = json_decode($dataJson, true);
+
+       // Nuevo arreglo para almacenar el promedio de temp_avg por fecha
+$promedio_temp_avg_por_fecha = array();
+
+// Nuevo arreglo para almacenar la cantidad de valores por fecha
+$cantidad_valores_por_fecha = array();
+
+// Recorrer los datos y calcular el promedio de temp_avg por fecha
+foreach ($data as $item) {
+    $fecha = $item['fecha'];
+    $temp_avg = $item['temp_avg'];
+    
+    // Verificar si la fecha ya existe en el nuevo arreglo
+    if (array_key_exists($fecha, $promedio_temp_avg_por_fecha)) {
+        // Sumar el temp_avg y la cantidad de valores para la fecha existente
+        $promedio_temp_avg_por_fecha[$fecha] += $temp_avg;
+        $cantidad_valores_por_fecha[$fecha]++;
+    } else {
+        // Crear una nueva entrada en el arreglo para la fecha
+        $promedio_temp_avg_por_fecha[$fecha] = $temp_avg;
+        $cantidad_valores_por_fecha[$fecha] = 1;
+    }
+}
+$responseData = [];
+
+// Calcular el promedio para cada fecha
+foreach ($promedio_temp_avg_por_fecha as $fecha => $suma_temp_avg) {
+    $pares["id_cultivo"] = $id_cultivo;
+    $pares["id_planta"] = $id_planta;
+
+    $cantidad_valores = $cantidad_valores_por_fecha[$fecha];
+    $promedio = $suma_temp_avg / $cantidad_valores;
+    $promedio = number_format($promedio,2);
+    if($promedio > $temperaturaBase){
+        $pares["fecha"] = $fecha;
+        $pares["temp_avg"] = $promedio;
+        $pares["gdd"] = number_format($promedio-$temperaturaBase,2);
+        array_push($responseData, $pares);
+    }else{
+        $pares["fecha"] = $fecha;
+        $pares["temp_avg"] = $promedio;
+        $pares["gdd"] = 0;
+        array_push($responseData, $pares);  
+    }
+    
+}
+        echo json_encode($responseData);
+        curl_close($ch);
+    }
+
+    public function getConfiguracion($mac)
+    {
         $data = $this->Sensor_model->getConfiguracion($mac);
         $obj["data"] = $data;
         echo json_encode($obj);

@@ -5,13 +5,13 @@ import agricultor from '../images/Granjero.png';
 import google from '../images/google.png';
 import facebook from '../images/facebook.png';
 import GoogleLogin from 'react-google-login';
-import {gapi} from 'gapi-script';
+import { gapi } from 'gapi-script';
 import FacebookLogin from 'react-facebook-login';
 
 function Login() {
 
   const [id_usuario, setId_usuario] = useState('');
-  const [ nombre, setNombre ] = useState( "" );
+  const [nombre, setNombre] = useState("");
   const [correo, setCorreo] = useState("");
   const [psw, setPsw] = useState("");
   const [cuenta, setCuenta] = useState("");
@@ -20,7 +20,7 @@ function Login() {
   const navigate = useNavigate();
 
 
-  useEffect (() => {
+  useEffect(() => {
     const start = () => {
       gapi.auth2.init({
         clientId: "191244130158-qmn4snu41sfu0tfrc0u3ktb1kdubtdjo.apps.googleusercontent.com",
@@ -61,49 +61,49 @@ function Login() {
         body: formData,
       });
 
+      const dataResponse = await response.json();
+
+      if (dataResponse.data != null) {
+        //REALIZAR LOGIN EN CASO DE QUE EXISTA LA CUENTA
+        const tipoCuenta = dataResponse.data.tipo;
+        setCuenta(tipoCuenta);
+        sessionStorage.setItem('id_usuario', dataResponse.data.id_usuario);
+        sessionStorage.setItem('tipo_usuario', dataResponse.data.tipo_usuario);
+        if (dataResponse.data.tipo === "Pro") {
+          navigate('/mainAdmin');
+        } else if (dataResponse.data.tipo === "Free") {
+          navigate('/mainAdminFree');
+        } else if (dataResponse.data.tipo_usuario === "colaborador") {
+          alert("Acceso único a usuarios propietarios");
+        }
+      } else {
+        //REALIZAR REGISTRO DE UN ACUENTA NUEVA PARA DESPUES HACER EL LOGIN
+        const response = await fetch(conf.url + '/registroUsuario', {
+          method: 'POST',
+          body: formData2,
+        });
         const dataResponse = await response.json();
-        
-        if (dataResponse.data != null) {
-          //REALIZAR LOGIN EN CASO DE QUE EXISTA LA CUENTA
+        alert(dataResponse.mensaje);
+        if (dataResponse.id_usuario > 0) {
+          const response = await fetch(conf.url + '/loginWeb', {
+            method: 'POST',
+            body: formData,
+          });
+          const dataResponse = await response.json();
           const tipoCuenta = dataResponse.data.tipo;
           setCuenta(tipoCuenta);
           sessionStorage.setItem('id_usuario', dataResponse.data.id_usuario);
           sessionStorage.setItem('tipo_usuario', dataResponse.data.tipo_usuario);
           if (dataResponse.data.tipo === "Pro") {
-              navigate('/mainAdmin');
+            navigate('/mainAdmin');
           } else if (dataResponse.data.tipo === "Free") {
-              navigate('/mainAdminFree');
-          }else if (dataResponse.data.tipo_usuario === "colaborador"){
+            navigate('/mainAdminFree');
+          } else if (dataResponse.data.tipo_usuario === "colaborador") {
             alert("Acceso único a usuarios propietarios");
           }
-        } else {
-          //REALIZAR REGISTRO DE UN ACUENTA NUEVA PARA DESPUES HACER EL LOGIN
-          const response = await fetch(conf.url + '/registroUsuario', {
-            method: 'POST',
-            body: formData2,
-          });
-          const dataResponse = await response.json();
-          alert(dataResponse.mensaje);
-          if(dataResponse.id_usuario > 0) {
-            const response = await fetch(conf.url + '/loginWeb', {
-              method: 'POST',
-              body: formData,
-            });
-            const dataResponse = await response.json();
-            const tipoCuenta = dataResponse.data.tipo;
-            setCuenta(tipoCuenta);
-            sessionStorage.setItem('id_usuario', dataResponse.data.id_usuario);
-            sessionStorage.setItem('tipo_usuario', dataResponse.data.tipo_usuario);
-            if (dataResponse.data.tipo === "Pro") {
-                navigate('/mainAdmin');
-            } else if (dataResponse.data.tipo === "Free") {
-                navigate('/mainAdminFree');
-            }else if (dataResponse.data.tipo_usuario === "colaborador"){
-              alert("Acceso único a usuarios propietarios");
-            }
-          }
-          
         }
+
+      }
 
     } catch (error) {
       console.error(error.message);
@@ -120,22 +120,22 @@ function Login() {
       alert("Por favor, complete todos los campos");
       return;
     }
-  
+
     const formData = new FormData();
     formData.append('correo', correo);
     formData.append('psw', psw);
-  
+
     try {
       const response = await fetch(conf.url + '/loginWeb', {
         method: 'POST',
         body: formData,
       });
-  
+
       if (response.ok) {
         const dataResponse = await response.json();
-  
+
         if (dataResponse.resultado) {
-          console.log("OK: ",dataResponse);
+          console.log("OK: ", dataResponse);
           // Obtener el tipo de cuenta (tipo de usuario) de la respuesta
           const tipoCuenta = dataResponse.data.tipo;
           // Almacenar el tipo de cuenta en el estado cuenta
@@ -146,14 +146,14 @@ function Login() {
           sessionStorage.setItem('tipo_usuario', dataResponse.data.tipo_usuario);
           // Redirigir según el tipo de cuenta
           if (dataResponse.data.tipo === "Pro") {
-              navigate('/mainAdmin');
+            navigate('/mainAdmin');
           } else if (dataResponse.data.tipo === "Free") {
-              navigate('/mainAdminFree');
-          }else if (dataResponse.data.tipo_usuario === "colaborador"){
+            navigate('/mainAdminFree');
+          } else if (dataResponse.data.tipo_usuario === "colaborador") {
             alert("Acceso único a usuarios propietarios");
           }
-      }
-       else {
+        }
+        else {
           alert(dataResponse.mensaje);
         }
       } else {
@@ -167,44 +167,88 @@ function Login() {
       alert('Error al iniciar sesión, intenta de nuevo');
     }
   };
-  
-  const responseFacebook = async (response) => {
+
+  const loginFacebook = async (response) => {
     try {
       if (response.status === "unknown") {
         // El usuario canceló el inicio de sesión con Facebook
         console.log("Inicio de sesión cancelado por el usuario");
+        alert("Inicio de sesión cancelado por el usuario");
         return;
       }
-      
+  
       // El usuario ha iniciado sesión correctamente, puedes acceder a los datos del usuario desde "response"
       console.log("Datos del usuario de Facebook:", response);
-      
-      // Aquí puedes enviar los datos del usuario a tu backend para autenticarlo
+      console.log("Nombre: ", response.name);
+      console.log("Correo: ", response.email);
+      console.log("Psw: ", response.userID);
+  
+      // Datos para login con Facebook si la cuenta ya existe
       const formData = new FormData();
-      formData.append('facebookId', response.id); // Enviar el ID de Facebook al backend para identificar al usuario
-      
-      // Envía una solicitud POST a tu endpoint de inicio de sesión con Facebook
-      const responseBackend = await fetch(conf.url + '/loginFacebook', {
-        method: 'POST',
-        body: formData,
-      });
+      formData.append('correo', response.email);
+      formData.append('psw', response.userID);
   
-      if (responseBackend.ok) {
-        const dataResponse = await responseBackend.json();
+      const formData2 = new FormData();
+      formData2.append('nombre', response.name);
+      formData2.append('correo', response.email);
+      formData2.append('psw', response.userID);
+      formData2.append('tipo', "Propietario");
+      formData2.append('tipo_login', "Facebook");
   
-        if (dataResponse.resultado) {
-          // Inicio de sesión con éxito, maneja la respuesta como lo haces con tu función de inicio de sesión normal
-          console.log("Inicio de sesión exitoso: ", dataResponse);
-          navigate('/mainAdmin');
+      try {
+        // CONSULTA PARA VER SI YA EXISTE UN USUARIO CON ESTA CUENTA DE GOOGLE
+        const response = await fetch(conf.url + '/loginWeb', {
+          method: 'POST',
+          body: formData,
+        });
+  
+        const dataResponse = await response.json();
+  
+        if (dataResponse.data != null) {
+          // REALIZAR LOGIN EN CASO DE QUE EXISTA LA CUENTA
+          const tipoCuenta = dataResponse.data.tipo;
+          setCuenta(tipoCuenta);
+          sessionStorage.setItem('id_usuario', dataResponse.data.id_usuario);
+          sessionStorage.setItem('tipo_usuario', dataResponse.data.tipo_usuario);
+          if (dataResponse.data.tipo === "Pro") {
+            navigate('/mainAdmin');
+          } else if (dataResponse.data.tipo === "Free") {
+            navigate('/mainAdminFree');
+          } else if (dataResponse.data.tipo_usuario === "colaborador") {
+            alert("Acceso único a usuarios propietarios");
+          }
         } else {
-          // Error al iniciar sesión en tu backend
-          console.error("Error al iniciar sesión con Facebook en el backend: ", dataResponse.mensaje);
-          alert("Error al iniciar sesión, inténtalo de nuevo más tarde");
+          // REALIZAR REGISTRO DE UN ACUENTA NUEVA PARA DESPUES HACER EL LOGIN
+          const response = await fetch(conf.url + '/registroUsuario', {
+            method: 'POST',
+            body: formData2,
+          });
+          const dataResponse = await response.json();
+          alert(dataResponse.mensaje);
+          if (dataResponse.id_usuario > 0) {
+            const response = await fetch(conf.url + '/loginWeb', {
+              method: 'POST',
+              body: formData,
+            });
+            const dataResponse = await response.json();
+            const tipoCuenta = dataResponse.data.tipo;
+            setCuenta(tipoCuenta);
+            sessionStorage.setItem('id_usuario', dataResponse.data.id_usuario);
+            sessionStorage.setItem('tipo_usuario', dataResponse.data.tipo_usuario);
+            if (dataResponse.data.tipo === "Pro") {
+              navigate('/mainAdmin');
+            } else if (dataResponse.data.tipo === "Free") {
+              navigate('/mainAdminFree');
+            } else if (dataResponse.data.tipo_usuario === "colaborador") {
+              alert("Acceso único a usuarios propietarios");
+            }
+          }
+  
         }
-      } else {
-        // Error en la solicitud al backend
-        console.error('Error al iniciar sesión con Facebook en el backend: ', responseBackend.statusText);
-        alert('Error al iniciar sesión, inténtalo de nuevo más tarde');
+  
+      } catch (error) {
+        console.error(error.message);
+        alert(error);
       }
     } catch (error) {
       // Error en el proceso
@@ -213,6 +257,7 @@ function Login() {
     }
   };
   
+
   return (
     <div>
       <nav className="navbar">
@@ -247,8 +292,8 @@ function Login() {
         </p>
       </div>
       <div className="d-flex justify-content-center mt-3">
-      <img src={google} style={{ width: '40px' }} alt="Imagen agricultor" />
-      <GoogleLogin
+        <img src={google} style={{ width: '40px' }} alt="Imagen agricultor" />
+        <GoogleLogin
           className="btn btn-outline-primary mx-3"
           clientId="191244130158-qmn4snu41sfu0tfrc0u3ktb1kdubtdjo.apps.googleusercontent.com"
           buttonText="Inicio de sesión rápido con Google"
@@ -263,7 +308,7 @@ function Login() {
           appId="745129577370445"
           autoLoad={false}
           fields="name,email"
-          callback={responseFacebook}
+          callback={loginFacebook}
           cssClass="btn btn-outline-primary mx-3"
           textButton="Inicio de sesión rápido con Facebook"
         />

@@ -15,7 +15,11 @@ import AppBar from '../components/AppBar.jsx';
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import * as Facebook from 'expo-auth-session/providers/facebook.js';
+import * as WebBrowser from 'expo-web-browser';
+import { UserInterfaceIdiom } from 'expo-constants';
 
+WebBrowser.maybeCompleteAuthSession();
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -36,7 +40,7 @@ async function registerForPushNotificationsAsync() {
       vibrationPattern: [0, 250, 250, 250],
       lightColor: '#FF231F7C',
       sound: 'https://10.13.13.99/simap/movil/assets/yametemela.mp3'
-    });    
+    });
   }
 
   if (Device.isDevice) {
@@ -59,6 +63,11 @@ async function registerForPushNotificationsAsync() {
 }
 
 export function Login({ onLogin }) {
+
+  const [user, setUser] = useState(null);
+  const [request, response, promptAsync] = Facebook.useAuthRequest({
+    clientId: "745129577370445",
+  });
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -79,6 +88,30 @@ export function Login({ onLogin }) {
       Notifications.removeNotificationSubscription(notificationListener);
     };
   }, []);
+
+  useEffect(() => {
+    if (response && response.type === "success" && response.authentication) {
+      (async () => {
+        const userInfoResponse = await fetch(
+          `https://graph.facebook.com/me?access_token=${response.authentication.accessToken}&fields=id,name,email`
+        );
+        const userInfo = await userInfoResponse.json();
+        setUser(userInfo);
+        console.log(userInfo);
+      console.log("Nombre:", userInfo.name);
+      console.log("Email:", userInfo.email);
+      console.log("ID:", userInfo.id);
+      })();
+    }
+  }, [response]);
+
+  const handleFacebookLogin2 = async () => {
+    const result = await promptAsync();
+    if (result.type !== "success") {
+      alert("Uh oh, something went wrong");
+      return;
+    }
+  };
 
   const handleLogin = async () => {
 
@@ -118,6 +151,78 @@ export function Login({ onLogin }) {
       alert('Error al iniciar sesión. Por favor, inténtalo de nuevo.');
     }
   };
+
+  const handleFacebookLogin = async () => {
+    try {
+      const result = await promptAsync();
+      if (result.type !== "success") {
+        alert("Uh oh, something went wrong");
+        return;
+      }
+  
+      const accessToken = result.authentication.accessToken;
+  
+      // Obtiene la información del usuario desde Facebook
+      const userInfoResponse = await fetch(
+        `https://graph.facebook.com/me?access_token=${accessToken}&fields=id,name,email`
+      );
+      const userInfo = await userInfoResponse.json();
+  
+      // Datos para iniciar sesión con Facebook
+      const formData = new FormData();
+      formData.append('correo', userInfo.email);
+      formData.append('psw', userInfo.id);
+      formData.append('token', expoPushToken);
+  
+      try {
+        // Envía los datos al backend para verificar si el usuario ya existe
+        const loginResponse = await fetch(conf.url + '/login', {
+          method: 'POST',
+          body: formData,
+        });
+        const dataResponse = await loginResponse.json();
+  
+        if (dataResponse.data != null) {
+          // El usuario ya existe, realiza el inicio de sesión
+          onLogin();
+        } else {
+          // El usuario no existe, registra al usuario
+          const formData2 = new FormData();
+          formData2.append('nombre', userInfo.name);
+          formData2.append('correo', userInfo.email);
+          formData2.append('psw', userInfo.id);
+          formData2.append('tipo_usuario', 'Colaborador');
+          formData2.append('tipo_login', 'Facebook');
+  
+          try {
+            const registerResponse = await fetch(conf.url + '/registroUsuario', {
+              method: 'POST',
+              body: formData2,
+            });
+            const registerData = await registerResponse.json();
+  
+            if (registerData.id_usuario > 0) {
+              // Registro exitoso, realiza el inicio de sesión
+              onLogin();
+            } else {
+              alert('Error al registrar el usuario. Por favor, inténtalo de nuevo.');
+            }
+          } catch (error) {
+            console.error('Error al registrar el usuario:', error);
+            alert('Error al registrar el usuario. Por favor, inténtalo de nuevo.');
+          }
+        }
+      } catch (error) {
+        console.error('Error al iniciar sesión:', error);
+        alert('Error al iniciar sesión. Por favor, inténtalo de nuevo.');
+      }
+    } catch (error) {
+      console.error('Error al iniciar sesión con Facebook:', error);
+      alert('Error al iniciar sesión con Facebook. Por favor, inténtalo de nuevo.');
+    }
+  };
+  
+  
 
   return (
     <View style={styles.container}>
@@ -172,7 +277,9 @@ export function Login({ onLogin }) {
               Iniciar sesión con Google
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.buttonFacebook}>
+          <TouchableOpacity style={styles.buttonFacebook}
+            onPress={handleFacebookLogin}
+          >
             <Image
               source={require('../../images/Facebook.png')}
               style={styles.image}

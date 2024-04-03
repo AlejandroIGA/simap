@@ -24,9 +24,9 @@ function Inicio() {
   const [btnGrafica, setBtnGrafica] = useState(false);
   const [options, setOptions] = useState({});
   const [tipoGrafica, setTipoGrafica] = useState("temp_amb");
-  const [dispositivos, setDispositivos] = useState([]);
   const [fechInicio, setFechInicio] = useState(null);
   const [fechFin, setFechFin] = useState(null);
+  const [dispositivos, setDispositivos] = useState([]);
   const [showModal, setShowModal] = useState(false);
 
   //Maixmo de dispositivos
@@ -70,6 +70,8 @@ function Inicio() {
     }, 10000);
     return () => clearInterval(interval);
   }, []);
+  const [cultivos, setCultivos] = useState([]);
+  const [id_cultivo, setIdCultivo] = useState(null);
 
   //Firebase
   const db = getFirestore();
@@ -100,134 +102,161 @@ function Inicio() {
     }
   };
 
-  //OBTENER TODOS LOS DISPOSITIVOS DEL USUARIO
-  const getDispositivos = async () => {
+
+  const processData = (doc, tipo) => {
+    if (doc.data()[tipo] !== undefined && doc.data().fecha !== undefined) {
+      const fechaString = doc.data().fecha;
+      const [fechaParte, horaParte] = fechaString.split(' ');
+      const [anio, mes, dia] = fechaParte.split('-');
+      const [hora, minuto, segundo] = horaParte.split(':');
+      return [Date.UTC(anio, mes - 1, dia, hora, minuto, segundo), doc.data()[tipo]];
+    }
+    return null;
+  };
+
+  //Manda a llamar los cultivos del usuario
+  const getCultivos = async () => {
     try {
-      const formData = new FormData();
-      formData.append("id_usuario", id_usuario);
+      //const userDataJSON = await AsyncStorage.getItem('userData');
+      if (true) {
+        //const userData = JSON.parse(userDataJSON);
+        //const id_usuario = userData.id_usuario;
 
-      const response = await fetch(conf.url + "/dispositivos", {
-        method: 'POST',
-        body: formData
-      });
+        const formData = new FormData();
+        formData.append("id_usuario", id_usuario);
+        const response = await fetch(conf.url + "/getCultivos/", {
+          method: 'POST',
+          body: formData
+        });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        setCultivos(data.data)
+        console.log(data.data);
       }
-      const data = await response.json();
-      if (data.resultado) {
-        setDispositivos(data.dispositivos)
-        setBtnGrafica(true);
-      }
-
     } catch (error) {
       console.error("ERROR:", error.message);
     }
   };
 
-  const processData = (doc, tipo) => {
-    if (doc.data()[tipo] !== undefined && doc.data().fecha !== undefined) {
-        const fechaString = doc.data().fecha;
-        const [fechaParte, horaParte] = fechaString.split(' ');
-        const [anio, mes, dia] = fechaParte.split('-');
-        const [hora, minuto, segundo] = horaParte.split(':');
-        return [Date.UTC(anio, mes - 1, dia, hora, minuto, segundo), doc.data()[tipo]];
-    }
-    return null;
-};
-
-const grafica = async (tipo, fechaInicio, fechaFin, dispositivos) => {
+  const grafica = async (tipo, id_cultivo, fechaInicio, fechaFin) => {
+    console.log(tipo, id_cultivo, fechaInicio, fechaFin)
+    //getDispositivos(cultivo);
     const dataCollection = collection(db, 'pruebas');
     const allSeries = [];
 
     if (fechaFin === null || fechaInicio === null) {
-        alert("Seleccione una fecha de inicio y una fecha de fin");
-        setShowGrafica(false);
-        return;
+      alert("Seleccione una fecha de inicio y una fecha de fin");
+      setShowGrafica(false);
+      return;
     } else if (fechaFin < fechaInicio) {
-        alert("La fecha de inicio no puede ser mayor a la fecha de fin");
-        setShowGrafica(false);
-        return;
+      alert("La fecha de inicio no puede ser mayor a la fecha de fin");
+      setShowGrafica(false);
+      return;
+    } else if(id_cultivo === null){
+      alert("Seleccione un cultivo");
+      setShowGrafica(false);
+      return;
     }
 
-    for (const dispositivo of dispositivos) {
-        if (dispositivo.tipo === "esclavo") {
-            const seriesData = [];
-            const dataSnapshot = await getDocs(query(
-                dataCollection,
-                where('dispositivo', '==', dispositivo.nombre),
-                where('fecha', '>=', fechaInicio),
-                where('fecha', '<=', fechaFin),
-                orderBy('fecha')
-            ));
+    const seriesData = [];
+    const dispositivosUnicos = new Set();   
+     
+    const queryDispositivos = await getDocs(query(
+      dataCollection,
+      where('id_cosecha', '==', parseInt(id_cultivo)),
+      where('fecha', '>=', fechaInicio),
+      where('fecha', '<=', fechaFin),
+      orderBy('fecha')
+    ));
 
-            dataSnapshot.docs.forEach(doc => {
-                const data = processData(doc, tipo);
-                if (data) {
-                    seriesData.push(data);
-                }
-            });
+    queryDispositivos.docs.forEach(doc => {
+      dispositivosUnicos.add(doc.data().dispositivo);
+    });
 
-            allSeries.push({
-                name: dispositivo.nombre,
-                data: seriesData
-            });
-        }
-    }
+    for (const dispositivo of dispositivosUnicos) {
+          const seriesData = [];
+          const dataSnapshot = await getDocs(query(
+              dataCollection,
+              where('dispositivo', '==', dispositivo),
+              where('fecha', '>=', fechaInicio),
+              where('fecha', '<=', fechaFin),
+              orderBy('fecha')
+          ));
+
+          dataSnapshot.docs.forEach(doc => {
+              const data = processData(doc, tipo);
+              if (data) {
+                  seriesData.push(data);
+              }
+          });
+
+          allSeries.push({
+              name: dispositivo,
+              data: seriesData
+          });
+  }
+
+    
+
+
+   
 
     setOptions({
-        chart: {
-            type: 'spline',
-            zoomType: 'x'
+      chart: {
+        type: 'spline',
+        zoomType: 'x'
+      },
+      title: {
+        text: tipo === "temp_amb" ? "Temperatura Ambiente" : tipo === "hum_amb" ? "Humedad Ambiente" : "Humedad Suelo"
+      },
+      xAxis: {
+        type: 'datetime',
+        dateTimeLabelFormats: {
+          minute: '%e. %b %H:%M',
+          hour: '%e. %b %H:%M',
+          day: '%e. %b',
+          month: '%b',
         },
         title: {
-            text: tipo === "temp_amb" ? "Temperatura Ambiente" : tipo === "hum_amb" ? "Humedad Ambiente" : "Humedad Suelo"
+          text: 'Fecha y Hora'
+        }
+      },
+      yAxis: {
+        title: {
+          text: tipo === "temp_amb" ? "Temperatura" : "Humedad"
         },
-        xAxis: {
-            type: 'datetime',
-            dateTimeLabelFormats: {
-                minute: '%e. %b %H:%M',
-                hour: '%e. %b %H:%M',
-                day: '%e. %b',
-                month: '%b',
-            },
-            title: {
-                text: 'Fecha y Hora'
-            }
-        },
-        yAxis: {
-            title: {
-                text: tipo === "temp_amb" ? "Temperatura" : "Humedad"
-            },
-            labels: {
-                format: `{value}${tipo === "temp_amb" ? "°" : "%"}`
-            }
-        },
-        tooltip: {
-            headerFormat: '<b>{series.name}</b><br>',
-            pointFormat: `Fecha: {point.x:%e. %b %Y %H:%M} ${tipo}: {point.y:.2f}${tipo === "temp_amb" ? "°" : "%"}`
-        },
-        plotOptions: {
-            series: {
-                marker: {
-                    symbol: 'circle',
-                    fillColor: '#FFFFFF',
-                    enabled: true,
-                    radius: 2.5,
-                    lineWidth: 1,
-                    lineColor: null
-                }
-            }
-        },
-        series: allSeries
+        labels: {
+          format: `{value}${tipo === "temp_amb" ? "°" : "%"}`
+        }
+      },
+      tooltip: {
+        headerFormat: '<b>{series.name}</b><br>',
+        pointFormat: `Fecha: {point.x:%e. %b %Y %H:%M} ${tipo}: {point.y:.2f}${tipo === "temp_amb" ? "°" : "%"}`
+      },
+      plotOptions: {
+        series: {
+          marker: {
+            symbol: 'circle',
+            fillColor: '#FFFFFF',
+            enabled: true,
+            radius: 2.5,
+            lineWidth: 1,
+            lineColor: null
+          }
+        }
+      },
+      series: allSeries
     });
 
     setShowGrafica(true);
-};
+  };
 
 
   useEffect(() => {
-    getDispositivos();
+    getCultivos();
     HighchartsExporting(Highcharts);
     HighchartsExportData(Highcharts);
     Highcharts.setOptions({
@@ -347,7 +376,7 @@ const grafica = async (tipo, fechaInicio, fechaFin, dispositivos) => {
         {
           <div className='container hv-100'>
             <div className="row g-3 my-2">
-              <div className="col-md-6">
+              <div className="col-md-3">
                 <label className="form-label">Gráfica:</label>
                 <select
                   className="form-select"
@@ -361,6 +390,23 @@ const grafica = async (tipo, fechaInicio, fechaFin, dispositivos) => {
                 </select>
               </div>
 
+              <div className="col-md-3">
+                <label className="form-label">Cultivo:</label>
+                <select
+                  className="form-select"
+                  aria-label="Default select example"
+                  value={id_cultivo}
+                  onChange={e => setIdCultivo(e.target.value)}
+                >
+                  <option value={null}>Seleccione un cultivo</option>
+                  {
+                    cultivos.map(cultivo => (
+                      <option value={cultivo.id_cosecha}>{cultivo.nombre}</option>
+                    ))
+                  }
+                </select>
+              </div>
+
               <div className="col-md-2">
                 <label for="fechaInicio" className="form-label">Fecha Inicio:</label>
                 <input value={fechInicio} onChange={e => setFechInicio(e.target.value)} type="date" className="form-control" id="fechaInicio" />
@@ -370,7 +416,7 @@ const grafica = async (tipo, fechaInicio, fechaFin, dispositivos) => {
                 <input value={fechFin} onChange={e => setFechFin(e.target.value)} type="date" className="form-control" id="fechaFin" />
               </div>
               <div className="col-md-2 mt-auto">
-                <button enabled={btnGrafica.toString()} className='btn btn-primary' onClick={() => grafica(tipoGrafica, fechInicio, fechFin, dispositivos)}>Ver Gráfica</button>
+                <button enabled={btnGrafica.toString()} className='btn btn-primary' onClick={() => grafica(tipoGrafica, id_cultivo, fechInicio, fechFin)}>Ver Gráfica</button>
               </div>
 
             </div>

@@ -65,6 +65,8 @@ function MainAdmin() {
 
   const add = async () => {
     const formData = new FormData();
+    const cuenta_main = sessionStorage.getItem('id_usuario');
+    formData.append('cuenta_main', cuenta_main);
     formData.append('nombre', nombre);
     formData.append('apellidos', apellidos);
     formData.append('correo', correo);
@@ -145,7 +147,7 @@ function MainAdmin() {
           },
             getEmpleados(),
             limpiarCampos());
-            setEditar(false);
+          setEditar(false);
         } else {
           Swal.fire({
             icon: 'warning',
@@ -175,58 +177,58 @@ function MainAdmin() {
     const formData = new FormData();
     formData.append('id_usuario', val.id_usuario);
     console.log(val.id_usuario);
-    try {
-      const response = await fetch(conf.url + '/deleteUser', {
-        method: 'POST',
-        body: formData,
-      });
 
-      if (response.ok) {
-        const dataResponse = await response.json();
-        console.log(dataResponse);
+    const result = await Swal.fire({
+      title: 'Confirmar eliminación',
+      html: "<i>¿Realmente deseas eliminar a <strong>" + val.nombre + "</strong>?</i>",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, ¡Eliminarlo!'
+    });
 
-        if (dataResponse.resultado) {
-          Swal.fire({
-            title: 'Confirmar eliminación',
-            html: "<i>¿Realmente deseas eliminar a <strong>" + val.nombre + "</strong>?</i>",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Sí, ¡Eliminarlo!'
-          }).then((result) => {
-            if (result.isConfirmed) {
-              getEmpleados();
-              limpiarCampos();
-              Swal.fire({
-                text: val.nombre + ' fue eliminado',
-                icon: 'success',
-                timer: 3000
-              });
-            }
-          });
+    if (result.isConfirmed) {
+      try {
+        const response = await fetch(conf.url + '/deleteUser', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (response.ok) {
+          const dataResponse = await response.json();
+          console.log(dataResponse);
+
+          if (dataResponse.resultado) {
+            getEmpleados();
+            Swal.fire({
+              text: val.nombre + ' fue eliminado',
+              icon: 'success',
+              timer: 3000
+            });
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: dataResponse.mensaje
+            });
+          }
         } else {
+          console.error('Error al eliminar usuario: ', response.statusText);
           Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: dataResponse.mensaje
+            icon: 'warning',
+            title: 'Advertencia',
+            text: '¡Antes de eliminar al propietario, debes eliminar los dispositivos y cosechas asociados!'
           });
         }
-      } else {
-        console.error('Error al eliminar usuario: ', response.statusText);
+      } catch (error) {
+        console.error('Error: ', error);
         Swal.fire({
           icon: 'error',
           title: 'Error',
           text: 'Error al eliminar usuario'
         });
       }
-    } catch (error) {
-      console.error('Error: ', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Error al eliminar usuario'
-      });
     }
   };
 
@@ -255,9 +257,14 @@ function MainAdmin() {
   };
 
   const getEmpleados = async () => {
+    const id_usuario = sessionStorage.getItem('id_usuario');
+    const formData = new FormData();
+    formData.append('id_usuario', id_usuario);
+    console.log("id usuario: " + id_usuario);
     try {
       const response = await fetch(conf.url + '/getEmpleados', {
-        method: 'GET',
+        method: 'POST',
+        body: formData,
       });
 
       if (response.ok) {
@@ -265,9 +272,7 @@ function MainAdmin() {
         console.log(dataResponse);
         // Accede a la clave "data" para obtener los detalles de los empleados
         const empleadosData = dataResponse.data;
-        // Verifica si hay datos de empleados antes de establecer el estado
         if (empleadosData && Array.isArray(empleadosData)) {
-          // Establece el estado con los datos de los empleados
           setEmpleadosList(empleadosData);
         } else {
           console.error('Error: Datos de empleados no válidos');

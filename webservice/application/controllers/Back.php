@@ -177,6 +177,7 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
+
     public function loginFacebook()
     {
         $correo = $this->input->post("correo");
@@ -243,16 +244,15 @@ class Back extends CI_Controller
 
     //CRUD Usuarios
 
-    public function insertUser()
-    {
-
+    public function insertUser(){
+        $cuenta_main = $this->input->post('cuenta_main');
         $nombre = $this->input->post("nombre");
         $apellidos = $this->input->post("apellidos");
         $correo = $this->input->post("correo");
         $psw = $this->input->post("psw");
         $tipo_usuario = $this->input->post("tipo_usuario");
         $tipo_login = $this->input->post("tipo_login");
-        $row = $this->Usuarios_model->insert($nombre, $apellidos, $correo, $psw, $tipo_usuario, $tipo_login);
+        $row = $this->Usuarios_model->insert($cuenta_main, $nombre, $apellidos, $correo, $psw, $tipo_usuario, $tipo_login);
 
         $obj["resultado"] = $row != NULL;
         $obj["mensaje"] = $obj["resultado"] ?
@@ -298,10 +298,10 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
     //Consulta empleados
-    public function getEmpleados()
-    {
-        $rows = $this->Usuarios_model->empleados();
-
+    public function getEmpleados() {
+        $id_usuario = $this->input->post("id_usuario");
+        $rows = $this->Usuarios_model->empleados($id_usuario);
+    
         $obj["resultado"] = !empty($rows);
         $obj["mensaje"] = $obj["resultado"] ?
             "Usuarios obtenidos"
@@ -309,7 +309,7 @@ class Back extends CI_Controller
         $obj["data"] = $rows;
 
         echo json_encode($obj);
-    }
+    }        
     //Fin de CRUD
 
     public function registroUsuario()

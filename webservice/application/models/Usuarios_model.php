@@ -31,56 +31,6 @@ class Usuarios_model extends CI_Model
         $rs->row() : NULL;
     }
 
-    //Login con Facebook
-    public function login_facebook($nombre, $correo) {
-        $rs = $this->db
-            ->select("us.id_usuario, us.tipo_usuario, us.correo, us.nombre, us.token, su.tipo")
-            ->from("usuario AS us")
-            ->join("suscripcion AS su", "su.id_usuario = us.id_usuario")
-            ->where("us.nombre", $nombre)
-            ->where("us.correo", $correo)
-            ->get();
-        
-        return $rs->num_rows() > 0 ? $rs->row() : NULL;
-    }    
-
-    public function getUsuarioPorCorreo($correo) {
-        $rs = $this->db
-            ->select("*")
-            ->from("usuario")
-            ->where("correo", $correo)
-            ->get();
-    
-        return $rs->num_rows() > 0 ? $rs->row() : NULL;
-    }
-    
-    public function guardarUsuarioFacebook($nombre, $correo) {
-        // Datos para insertar en la tabla usuario
-        $dataUsuario = array(
-            'nombre' => $nombre,
-            'correo' => $correo,
-        );
-    
-        // Insertar datos en la tabla usuario
-        $this->db->insert('usuario', $dataUsuario);
-    
-        // Obtener el ID del usuario recién insertado
-        $id_usuario = $this->db->insert_id();
-        
-        // Datos para insertar en la tabla suscripcion
-        $dataSuscripcion = array(
-            'id_usuario' => $id_usuario,
-            'fecha_inicio' => date('Y-m-d'), // Fecha actual
-            'tipo' => 'free',
-            'estatus' => 1,
-        );
-    
-        // Insertar datos en la tabla suscripcion
-        $this->db->insert('suscripcion', $dataSuscripcion);
-    }
-    
-    //Fin login con facebook
-
     //Método para registrar a un usuario mediante el sistema
     public function registro($data)
     {
@@ -185,8 +135,9 @@ class Usuarios_model extends CI_Model
     
     //CRUD Usuarios
 
-    public function insert($nombre, $apellidos, $correo, $psw, $tipo_usuario, $tipo_login){
+    public function insert($cuenta_main, $nombre, $apellidos, $correo, $psw, $tipo_usuario, $tipo_login){
         $data = array(
+            'cuenta_main' => $cuenta_main,
             'nombre' => $nombre,
             'apellidos' => $apellidos,
             'correo' => $correo,
@@ -225,13 +176,13 @@ class Usuarios_model extends CI_Model
 	}
 
     //Consulta de usuarios
-    public function empleados(){
+    public function empleados($cuenta_main) {
         $rs = $this->db
             ->select('id_usuario, nombre, apellidos, correo, psw, tipo_usuario, tipo_login')
+             ->where('cuenta_main', $cuenta_main)
             ->get("usuario");
     
-        return $rs->num_rows() > 0 ?
-            $rs->result_array() : NULL;
+        return $rs->num_rows() > 0 ? $rs->result_array() : NULL;
     }    
     //Fin CRUD Usuarios
 

@@ -85,7 +85,7 @@ export function Login({ onLogin }) {
     const formData = new FormData();
     formData.append('correo', email);
     formData.append('psw', password);
-    formData.append('token', expoPushToken);
+    formData.append('token_notificacion', expoPushToken);
 
     try {
       const response = await fetch(conf.url + '/login', {
@@ -163,15 +163,18 @@ export function Login({ onLogin }) {
           <TouchableOpacity style={styles.button} onPress={handleLogin}>
             <Text style={styles.buttonText}>Ingresar</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.buttonGoogle} >
-            <Image
-              source={require('../../images/Google.png')}
-              style={styles.image}
-            />
-            <Text style={styles.buttonTextGoogle}>
-              Iniciar sesión con Google
-            </Text>
-          </TouchableOpacity>
+          {/* 
+            <TouchableOpacity style={styles.buttonGoogle} >
+              <Image
+                source={require('../../images/Google.png')}
+                style={styles.image}
+              />
+              <Text style={styles.buttonTextGoogle}>
+                Iniciar sesión con Google
+              </Text>
+            </TouchableOpacity>
+          */}
+          
           <TouchableOpacity style={styles.buttonFacebook}>
             <Image
               source={require('../../images/Facebook.png')}

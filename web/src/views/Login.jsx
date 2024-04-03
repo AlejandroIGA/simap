@@ -17,6 +17,7 @@ function Login() {
   const tipoCuenta = localStorage.setItem('cuenta', JSON.stringify(cuenta));
   const navigate = useNavigate();
 
+  /*
   useEffect (() => {
     const start = () => {
       gapi.auth2.init({
@@ -112,7 +113,7 @@ function Login() {
     console.log("Error: " + response);
   }
 
-  
+  */
 
   const login = async () => {
     if (!correo || !psw) {
@@ -201,9 +202,11 @@ function Login() {
           <Link to="/registro"> aquí</Link>
         </p>
       </div>
+      
+      {/*
       <div className="d-flex justify-content-center mt-3">
-      <img src={google} style={{ width: '40px' }} alt="Imagen agricultor" />
-      <GoogleLogin
+        <img src={google} style={{ width: '40px' }} alt="Imagen agricultor" />
+        <GoogleLogin
           className="btn btn-outline-primary mx-3"
           clientId="191244130158-qmn4snu41sfu0tfrc0u3ktb1kdubtdjo.apps.googleusercontent.com"
           buttonText="Inicio de sesión rápido con Google"
@@ -212,6 +215,8 @@ function Login() {
           cookiePolicy={'single_host_origin'}
         />
       </div>
+      */} 
+      
       <div className="d-flex justify-content-center mt-3">
         <img src={facebbok} style={{ width: '40px' }} alt="Imagen agricultor" />
         <button type="button" className="btn btn-outline-primary mx-3">Inicio de sesión rápido con Facebbok</button>

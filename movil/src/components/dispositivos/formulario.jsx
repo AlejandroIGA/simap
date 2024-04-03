@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Modal} from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Modal, Platform} from 'react-native';
 import {Picker} from "@react-native-picker/picker";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import conf from '../../data/conf';
@@ -10,8 +10,6 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
   const [direccionMac, setDireccionMac] = useState('');
   const [tipoDispositivo, setTipoDispositivo] = useState('esclavo');
   const [accion, setAccion] = useState('alta');
-  const [nombreRed, setNombreRed] = useState('');
-  const [psw, setPsw] = useState('');
   const [idCosecha, setIdCosecha] = useState(0);
   const [dispositivoMaestro, setDispositivoMaestro] = useState('');
   const [dispositivosMaestros, setDispositivosMaestros] = useState([]);
@@ -24,8 +22,6 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
   const limpiarCampos = () => {
     setNombre('');
     setDireccionMac('');
-    setNombreRed('');
-    setPsw('');
     setDispositivoMaestro('');
     setIdDispositivo(0);
     setIdCosecha(0);
@@ -88,8 +84,6 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
       setNombre(dispositivoEditar.nombre);
       setDireccionMac(dispositivoEditar.mac);
       setTipoDispositivo(dispositivoEditar.tipo);
-      setNombreRed(dispositivoEditar.ssid);
-      setPsw(dispositivoEditar.psw);
       setDispositivoMaestro(dispositivoEditar.maestro === null ? ' ' : dispositivoEditar.maestro);
       setIdDispositivo(dispositivoEditar.id_dispositivo);
       setIdCosecha(dispositivoEditar.id_cosecha);
@@ -106,16 +100,23 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
 
   useEffect(() => {
     if (idUsuario !== 0) {
+      const intervalId = setInterval(() => {
+        getDispositivosMaestros();
+        getCosechas();
+      }, 60000);
       getDispositivosMaestros();
       getCosechas();
+  
+      return () => clearInterval(intervalId);
     }
-  });
+  }, [idUsuario]); 
+  
 
   // Dar de alta nuevo dispositivo
   const handleSubmit = async (props) => {
 
       if(tipoDispositivo === "maestro") {
-        if (nombre.trim() === '' || direccionMac.trim() === '' || nombreRed.trim() === '' || psw.trim() === '') {
+        if (nombre.trim() === '' || direccionMac.trim() === '') {
           alert('Por favor completa todos los campos.');
           return;
         }
@@ -128,15 +129,7 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
           return;
         }
         if (direccionMac.trim().length > 12 || direccionMac.trim().length < 8) {
-          alert('La dirección MAC debe tener exactamente 12 caracteres.');
-          return;
-        }
-        if (nombreRed.trim().length < 5) {
-          alert('El nombre de la red debe tener mínimo 5 caracteres.');
-          return;
-        }
-        if (psw.trim().length < 8) {
-          alert('La contraseña debe tener mínimo 8 caracteres.');
+          alert('La dirección MAC debe tener entre 8 y 12 caracteres.');
           return;
         }
       } else if(tipoDispositivo === "esclavo") {
@@ -152,8 +145,8 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
             alert('El nombre debe tener mínimo 5 caracteres.');
             return;
           }
-          if (direccionMac.trim().length != 12) {
-            alert('La dirección MAC debe tener exactamente 12 caracteres.');
+          if (direccionMac.trim().length > 12 || direccionMac.trim().length < 8) {
+            alert('La dirección MAC debe tener entre 8 y 12 caracteres.');
             return;
           }
         
@@ -162,8 +155,6 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
       const formData = new FormData();
       formData.append('nombre', nombre);
       formData.append('mac', direccionMac);
-      formData.append('ssid', nombreRed);
-      formData.append('psw', psw);
       formData.append('tipo', tipoDispositivo);
       formData.append('maestro', dispositivoMaestro);
       formData.append('id_usuario', idUsuario);
@@ -199,7 +190,7 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
   const handleEdit = async (props) => {
 
     if(tipoDispositivo === "maestro") {
-      if (nombre.trim() === '' || direccionMac.trim() === '' || nombreRed.trim() === '' || psw.trim() === '' || idCosecha.trim() === '') {
+      if (nombre.trim() === '' || direccionMac.trim() === '' || idCosecha.trim() === '') {
         alert('Por favor completa todos los campos.');
         return;
       }
@@ -213,8 +204,6 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
     const formData = new FormData();
     formData.append('nombre', nombre);
     formData.append('mac', direccionMac);
-    formData.append('ssid', nombreRed);
-    formData.append('psw', psw);
     formData.append('tipo', tipoDispositivo);
     formData.append('maestro', dispositivoMaestro);
     formData.append('id_usuario', idUsuario);
@@ -254,40 +243,30 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
     if (tipoDispositivo === 'maestro') {
       return (
         <>
-          <TextInput
-            style={styles.input}
-            placeholder="Nombre de red"
-            value={nombreRed}
-            onChangeText={setNombreRed}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Contraseña"
-            value={psw}
-            onChangeText={setPsw}
-          />
+          <Text style={styles.text}>Cosecha</Text>
           <View style={styles.pickerContainer}>
-          <Picker
-            style={styles.picker}
-            selectedValue={idCosecha}
-            onValueChange={(itemValue) => {
-              setIdCosecha(itemValue);
-            }}>
-              <Picker.Item label="Seleccione una cosecha" value={''} />
-              {cosechas != null ? (
-                cosechas.map((cosecha) => (
-                <Picker.Item key={cosecha.id_cosecha} label={cosecha.nombre} value={cosecha.id_cosecha} />
-              ))
-            ) : (
-              <Picker.Item label="No hay cosechas dadas de alta" value="" />
-            )}
-          </Picker>
-        </View>
+            <Picker
+              style={styles.picker}
+              selectedValue={idCosecha}
+              onValueChange={(itemValue) => {
+                setIdCosecha(itemValue);
+              }}>
+                <Picker.Item label="Seleccione una cosecha" value={''} />
+                {cosechas != null ? (
+                  cosechas.map((cosecha) => (
+                  <Picker.Item key={cosecha.id_cosecha} label={cosecha.nombre} value={cosecha.id_cosecha} />
+                ))
+              ) : (
+                <Picker.Item label="No hay cosechas dadas de alta" value="" />
+              )}
+            </Picker>
+          </View>
         </>
       );
     } else if (tipoDispositivo === "esclavo") {
       return (
         <>
+        <Text style={styles.text}>Dispositivo Maestro</Text>
         <View style={styles.pickerContainer}>
           <Picker
             style={styles.picker}
@@ -296,12 +275,8 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
               setDispositivoMaestro(itemValue);
               const dispositivoMaestroSeleccionado = dispositivosMaestros.find(dispositivo => dispositivo.id_dispositivo === itemValue);
               if (dispositivoMaestroSeleccionado) {
-                setNombreRed(dispositivoMaestroSeleccionado.ssid);
-                setPsw(dispositivoMaestroSeleccionado.psw);
                 setIdCosecha(dispositivoMaestroSeleccionado.id_cosecha);
               } else {
-                setNombreRed('');
-                setPsw('');
                 setIdCosecha(0);
               }
             }}>
@@ -333,6 +308,9 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
           }
           
           {(tipoUsuario === 'propietario') &&
+            <Text style={styles.text}>Tipo de dispositivo</Text>
+          }
+          {(tipoUsuario === 'propietario') &&
             <View style={styles.pickerContainer}>
               <Picker
                 style={styles.picker}
@@ -344,12 +322,14 @@ const Formulario = ({ visible, onClose, actualizarDispositivos, dispositivoEdita
             </View>
           }
 
+          <Text style={styles.text}>Nombre de dispositivo</Text>
           <TextInput
             style={styles.input}
             placeholder="Nombre del dispositivo"
             value={nombre}
             onChangeText={setNombre}
           />
+          <Text style={styles.text}>Dirección MAC</Text>
           <TextInput
             style={styles.input}
             placeholder="Dirección MAC"
@@ -400,23 +380,31 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "white",
   },
+  text: {
+    fontSize: 15,
+    marginBottom: 5,
+    textAlign: "left",
+    color: "white",
+  },
   pickerContainer: {
     justifyContent: 'center',
     borderWidth: 1,
     backgroundColor: "white",
     borderColor: '#ccc',
     borderRadius: 5,
-    marginBottom: 20,
+    marginBottom: 10,
   },
   picker: {
-    height: 30,
+    height: Platform.OS === 'ios' ? 60 : 30,
+    overflow: Platform.OS === 'hidden' ? 60 : '',
+    justifyContent: 'center'
   },
   input: {
     borderWidth: 1,
     backgroundColor: "white",
     borderColor: '#ccc',
     borderRadius: 5,
-    marginBottom: 20,
+    marginBottom: 10,
     height: 30,
     paddingLeft: 15
   },

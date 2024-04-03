@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import conf from '../data/conf';
 import { useFocusEffect } from '@react-navigation/native';
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
@@ -11,12 +10,48 @@ import {
   Image,
   ScrollView,
 } from 'react-native';
+import EliminarDispositivos from "../components/suscripcion/eliminarDispositivos.jsx";
 
 const MainColaborador = () => {
+  const [showModal, setShowModal] = useState(false);
   const [dispositivos, setDispositivos] = useState([]);
   const [conectado, setConectado] = useState(false);
   const [conectadoBomb, setConectadoBomb] = useState(false);
   const [tarjeta, setTarjeta] = useState(false);
+
+  const eliminarDispositivos = async () => {
+    try {
+      const userDataJSON = await AsyncStorage.getItem('userData');
+
+      if (userDataJSON) {
+        const userData = JSON.parse(userDataJSON);
+        const id_usuario = userData.id_usuario;
+        const tipo = userData.tipo;
+        const formData = new FormData();
+        formData.append('id_usuario', id_usuario);
+
+        const response = await fetch(conf.url + '/dispositivos', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const data = await response.json();
+        if (data.dispositivos.length > 3 && tipo === "Free") {
+          openModal();
+        }
+      }
+    } catch (error) {
+      console.error('ERROR:', error.message);
+    }
+  }
+
+  const openModal = async () => {
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+  };
 
   const handleColor = () => {
     setConectado(!conectado);
@@ -64,6 +99,7 @@ const MainColaborador = () => {
 
   useEffect(() => {
     getDatos();
+    eliminarDispositivos();
   }, []);
 
   useEffect(() => {
@@ -122,7 +158,12 @@ const MainColaborador = () => {
           )}
         </View>
       </ScrollView>
+      <EliminarDispositivos
+        visible={showModal}
+        onClose={closeModal}
+      />
     </View>
+    
   );
 };
 

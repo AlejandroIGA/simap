@@ -118,7 +118,7 @@ export function Login({ onLogin }) {
     const formData = new FormData();
     formData.append('correo', email);
     formData.append('psw', password);
-    formData.append('token', expoPushToken);
+    formData.append('token_notificacion', expoPushToken);
 
     try {
       const response = await fetch(conf.url + '/login', {
@@ -280,6 +280,7 @@ export function Login({ onLogin }) {
           <TouchableOpacity style={styles.buttonFacebook}
             onPress={handleFacebookLogin}
           >
+
             <Image
               source={require('../../images/Facebook.png')}
               style={styles.image}

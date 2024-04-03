@@ -159,8 +159,6 @@ export function Dispositivos() {
       <Formulario
         visible={showModal}
         onClose={closeModal}
-        actualizarDispositivos={actualizarDispositivos}
-        dispositivoEditar={dispositivoEditar}
       />
     </View>
   );

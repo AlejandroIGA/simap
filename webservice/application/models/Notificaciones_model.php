@@ -5,13 +5,13 @@ class Notificaciones_model extends CI_Model
     // Obtener notificaciones
     public function getTokenUsuario($id_usuario) {
         $rs = $this->db
-            ->select("token")
+            ->select("token_notificacion")
             ->where("id_usuario", $id_usuario)
             ->from("usuario")
             ->get();
     
         return $rs->num_rows() > 0 ?
-            $rs->row()->token : NULL;
+            $rs->row()->token_notificacion : NULL;
     }
     
     public function getNotificaciones($id_usuario) {

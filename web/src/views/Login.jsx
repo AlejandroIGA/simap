@@ -19,6 +19,7 @@ function Login() {
   const tipoCuenta = localStorage.setItem('cuenta', JSON.stringify(cuenta));
   const navigate = useNavigate();
 
+  /*
 
   useEffect(() => {
     const start = () => {
@@ -27,6 +28,15 @@ function Login() {
       })
     }
     gapi.load("client:auth2", start)
+    if (!sessionStorage.getItem('id_usuario')) {
+            navigate('/login');
+          } else if (sessionStorage.getItem('id_usuario')) {
+            if(sessionStorage.getItem('tipo_usuario')==="Pro"){
+              navigate('/mainAdmin');
+            }else if(sessionStorage.getItem('tipo_usuario')==="Free"){
+              navigate('/mainAdminFree');
+            }
+          }
   }, []);
 
   //INICIO DE SESION CON GOOGLE
@@ -114,6 +124,9 @@ function Login() {
   const onFailure = (response) => {
     console.log("Error: " + response);
   }
+
+  */
+
 
   const login = async () => {
     if (!correo || !psw) {
@@ -291,6 +304,8 @@ function Login() {
           <Link to="/registro"> aquí</Link>
         </p>
       </div>
+      
+      {/*
       <div className="d-flex justify-content-center mt-3">
         <img src={google} style={{ width: '40px' }} alt="Imagen agricultor" />
         <GoogleLogin
@@ -302,6 +317,8 @@ function Login() {
           cookiePolicy={'single_host_origin'}
         />
       </div>
+      */} 
+      
       <div className="d-flex justify-content-center mt-3">
         <img src={facebook} style={{ width: '40px' }} alt="Imagen facebook" />
         <FacebookLogin

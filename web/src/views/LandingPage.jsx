@@ -1,7 +1,9 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import fondo from '../images/fondo.jpg';
+import { Link, useNavigate } from "react-router-dom";
 
 function LandingPage() {
+    const navigate = useNavigate();
     return (
         <div style={{ background: '#f2f2f2' }}>
             <nav className="navbar navbar-expand-lg nav fixed-top">
@@ -118,7 +120,7 @@ function LandingPage() {
                                     </li>
                                 </ul>
                                 <p style={{fontWeight:"bold"}}>Gratuita.</p>
-                                <a href="#" class="btn" style={{background:"#ABBF15",fontWeight:"bold"}}>Obtener</a>
+                                <button class="btn" style={{background:"#ABBF15",fontWeight:"bold"}} onClick={()=>navigate("/login")}>Obtener</button>
                             </div>
                         </div>
                     </div>
@@ -148,7 +150,7 @@ function LandingPage() {
                                     </li>
                                 </ul>
                                 <p style={{fontWeight:"bold"}}>$285 al mes.</p>
-                                <a href="#" class="btn" style={{background:"#ABBF15",fontWeight:"bold"}}>Obtener</a>
+                                <button class="btn" style={{background:"#ABBF15",fontWeight:"bold"}} onClick={()=>navigate("/login")}>Obtener</button>
                             </div>
                         </div>
                     </div>

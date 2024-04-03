@@ -31,8 +31,6 @@ function Dispositivos() {
     const [accion, setAccion] = useState('alta');
     const [nombre, setNombre] = useState('');
     const [direccionMAC, setDireccionMAC] = useState('');
-    const [nombreRed, setNombreRed] = useState('');
-    const [psw, setPsw] = useState('');
     const [dispositivoMaestro, setDispositivoMaestro] = useState('');
     const [idCosecha, setIdCosecha] = useState(0);
     let idUsuario = sessionStorage.getItem('id_usuario');
@@ -85,7 +83,6 @@ function Dispositivos() {
             }
             const data = await response.json();
             setDispositivos(data.dispositivos);
-        
         } catch (error) {
         console.error("ERROR:", error.message);
         }
@@ -128,9 +125,9 @@ function Dispositivos() {
       };
 
     const handleSubmit = async () => {
-
-        if(tipoDispositivo === "maestro"){
-            if (!nombre || !direccionMAC || !nombreRed || !psw || !idCosecha) {
+        if(cosechas != null) {
+          if(tipoDispositivo === "maestro"){
+            if (!nombre || !direccionMAC || !idCosecha) {
                 alert('Por favor completa todos los campos.');
                 return;
               }
@@ -138,16 +135,8 @@ function Dispositivos() {
                 alert('El nombre debe tener mínimo 5 caracteres.');
                 return;
               }
-              if (direccionMAC.length < 0) {
-                alert('La dirección MAC debe tener exactamente 12 caracteres.');
-                return;
-              }
-              if (nombreRed.length < 5) {
-                alert('El nombre de la red debe tener mínimo 5 caracteres.');
-                return;
-              }
-              if (psw.length < 8) {
-                alert('La contraseña debe tener mínimo 8 caracteres.');
+              if (direccionMAC.length < 8 || direccionMAC.length > 12) {
+                alert('La dirección MAC debe tener entre 8 y 12 caracteres.');
                 return;
               }
         } else if (tipoDispositivo === "esclavo") {
@@ -169,8 +158,6 @@ function Dispositivos() {
         const formData = new FormData();
         formData.append('nombre', nombre);
         formData.append('mac', direccionMAC);
-        formData.append('ssid', nombreRed);
-        formData.append('psw', psw);
         formData.append('tipo', tipoDispositivo);
         formData.append('maestro', dispositivoMaestro);
         formData.append('id_usuario', idUsuario);
@@ -195,13 +182,14 @@ function Dispositivos() {
         getDispositivos();
         getDispositivosMaestros();
         limpiarCampos();
+        } else {
+          alert("Primero debes de dar de alta una cosecha")
+        }
       };
 
       const limpiarCampos = () => {
         setNombre('');
         setDireccionMAC('');
-        setNombreRed('');
-        setPsw('');
         setTipoDispositivo('maestro');
         setIdCosecha(0);
         setDispositivoMaestro(0);
@@ -248,9 +236,7 @@ function Dispositivos() {
     const dispositivoEditar = (dispositivoEditar) => {
       setNombre(dispositivoEditar.nombre);
       setDireccionMAC(dispositivoEditar.mac);
-      setTipoDispositivo(dispositivoEditar.tipo);
-      setNombreRed(dispositivoEditar.ssid);
-      setPsw(dispositivoEditar.psw);
+      setTipoDispositivo(dispositivoEditar.tipo)
       setDispositivoMaestro(dispositivoEditar.maestro === null ? ' ' : dispositivoEditar.maestro);
       setIdDispositivo(dispositivoEditar.id_dispositivo);
       setIdCosecha(dispositivoEditar.id_cosecha);
@@ -261,7 +247,7 @@ function Dispositivos() {
   const handleEdit = async () => {
 
     if(tipoDispositivo === "maestro") {
-      if (!nombre || !direccionMAC || !nombreRed || !psw | !idCosecha) {
+      if (!nombre || !direccionMAC || !idCosecha) {
         alert('Por favor completa todos los campos.');
         return;
       }
@@ -269,16 +255,8 @@ function Dispositivos() {
         alert('El nombre debe tener mínimo 5 caracteres.');
         return;
       }
-      if (direccionMAC.length !== 12) {
-        alert('La dirección MAC debe tener exactamente 12 caracteres.');
-        return;
-      }
-      if (nombreRed.length < 5) {
-        alert('El nombre de la red debe tener mínimo 5 caracteres.');
-        return;
-      }
-      if (psw.length < 8) {
-        alert('La contraseña debe tener mínimo 8 caracteres.');
+      if (direccionMAC.length < 8 || direccionMAC.length > 12) {
+        alert('La dirección MAC debe tener entre 8 y 12 caracteres.');
         return;
       }
     } else if(tipoDispositivo === "esclavo") {
@@ -299,8 +277,6 @@ function Dispositivos() {
     const formData = new FormData();
     formData.append('nombre', nombre);
     formData.append('mac', direccionMAC);
-    formData.append('ssid', nombreRed);
-    formData.append('psw', psw);
     formData.append('tipo', tipoDispositivo);
     formData.append('maestro', dispositivoMaestro);
     formData.append('id_usuario', idUsuario);
@@ -333,6 +309,7 @@ function Dispositivos() {
       getDispositivosMaestros();
       getCosechas();
   },[]);
+
 
     return (
         <div style={{ background: '#f2f2f2' }}>
@@ -398,7 +375,7 @@ function Dispositivos() {
                           }
                                 <div className="mb-3">
                                     <label htmlFor="tipoDispositivo" className="form-label text-white">Tipo de Dispositivo:</label>
-                                    <select disabled id="tipoDispositivo" className="form-select" value={tipoDispositivo} onChange={(e) => setTipoDispositivo(e.target.value)}>
+                                    <select id="tipoDispositivo" className="form-select" value={tipoDispositivo} onChange={(e) => setTipoDispositivo(e.target.value)}>
                                         <option selected value="maestro">Maestro</option>
                                         <option value="esclavo">Esclavo</option>
                                     </select>
@@ -412,14 +389,6 @@ function Dispositivos() {
                                         <div className="mb-3">
                                             <label htmlFor="direccionMAC" className="form-label text-white">Dirección MAC:</label>
                                             <input placeholder='Dirección MAC' minLength={12} maxLength={12} type="text" className="form-control" id="direccionMAC" value={direccionMAC} onChange={(e) => setDireccionMAC(e.target.value.toUpperCase())} />
-                                        </div>
-                                        <div className="mb-3">
-                                            <label htmlFor="nombreRed" className="form-label text-white">Nombre de Red:</label>
-                                            <input placeholder='Nombre de ser' type="text" className="form-control" id="nombreRed" value={nombreRed} onChange={(e) => setNombreRed(e.target.value)} />
-                                        </div>
-                                        <div className="mb-3">
-                                            <label htmlFor="contraseña" className="form-label text-white">Contraseña:</label>
-                                            <input placeholder='Contraseña' type="password" className="form-control" id="contraseña" value={psw} onChange={(e) => setPsw(e.target.value)} />
                                         </div>
                                         <div className="mb-3">
                                             <label htmlFor="idCosecha" className="form-label text-white">Cosecha:</label>
@@ -456,9 +425,7 @@ function Dispositivos() {
                                             <select id="dispositivoMaestro" className="form-select text" value={dispositivoMaestro} 
                                             onChange={(e) => {
                                                 const selectedOption = e.target.options[e.target.selectedIndex];
-                                                setDispositivoMaestro(e.target.value); 
-                                                setNombreRed(selectedOption.getAttribute("ssid"));
-                                                setPsw(selectedOption.getAttribute("psw"));
+                                                setDispositivoMaestro(e.target.value);
                                                 setIdCosecha(selectedOption.getAttribute("id_cosecha"));
                                                 }}>
                                             <option value="">Seleccionar dispositivo maestro</option>
@@ -489,13 +456,12 @@ function Dispositivos() {
                         </div>
                     </div>
                     <div className="col-md-6" style={{ overflowY: 'auto', maxHeight: '80vh' }}>
-                        {dispositivos != null ? (
+                        {dispositivos.length > 0 ? (
                             dispositivos.map((dispositivo, index) => (
                               <div key={index} className="border rounded p-3 m-2 d-flex justify-content-between align-items-center" style={{ background: '#658C7A' }}>
                                 <div>
                                     <h4 className='text-white'>Dispositivo: {dispositivo.nombre} </h4>
                                     <p className='text-white'>MAC: {dispositivo.mac} </p>
-                                    <p className='text-white'>Nombre de red: {dispositivo.ssid} </p>
                                     <p className='text-white'>Tipo de dispositivo: {dispositivo.tipo} </p>
                                     <p className='text-white'>Cosecha: {dispositivo.cosecha} </p>
                                 </div>

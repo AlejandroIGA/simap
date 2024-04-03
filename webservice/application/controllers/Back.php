@@ -32,7 +32,8 @@ class Back extends CI_Controller
     {
         $correo = $this->input->post("correo");
         $psw = $this->input->post("psw");
-        $token = $this->input->post("token");
+        $tokenNotificacion = $this->input->post("token_notificacion");
+        $token = bin2hex(random_bytes(32));
 
         $row = $this->Usuarios_model->login($correo, $psw);
 
@@ -49,9 +50,10 @@ class Back extends CI_Controller
                         $obj["data"] = array(
                             'id_usuario' => $row->id_usuario,
                             'tipo_usuario' => $row->tipo_usuario,
-                            'estatus' => $row->estatus
+                            'estatus' => $row->estatus,
+                            'tipo' => $row->tipo
                         );
-                        $this->Usuarios_model->saveUserToken($row->id_usuario, $token);
+                        $this->Usuarios_model->saveUserToken($row->id_usuario, $token, $tokenNotificacion);
                     } else {
                         $obj["mensaje"] = "Ya hay una sesión activa";
                         $obj["data"] = NULL;
@@ -69,6 +71,7 @@ class Back extends CI_Controller
 
         echo json_encode($obj);
     }
+
 
     public function loginGoogle()
     {
@@ -113,6 +116,7 @@ class Back extends CI_Controller
     }
 
 
+
     public function loginWeb()
     {
         $correo = $this->input->post("correo");
@@ -138,7 +142,7 @@ class Back extends CI_Controller
                             'tipo' => $row->tipo,
                             'estatus' => $row->estatus
                         );
-                        $this->Usuarios_model->saveUserToken($row->id_usuario, $token);
+                        $this->Usuarios_model->saveUserTokenWeb($row->id_usuario, $token);
                     } else {
 
                         $obj["mensaje"] = "Ya hay una sesión activa";
@@ -392,8 +396,6 @@ class Back extends CI_Controller
     {
         $nombre = $this->input->post("nombre");
         $mac = $this->input->post("mac");
-        $ssid = $this->input->post("ssid");
-        $psw = $this->input->post("psw");
         $tipo = $this->input->post("tipo");
         $maestro = $this->input->post("maestro");
         $id_cosecha = $this->input->post("id_cosecha");
@@ -403,8 +405,6 @@ class Back extends CI_Controller
             $data = array(
                 "nombre" => $nombre,
                 "mac" => $mac,
-                "ssid" => $ssid,
-                "psw" => $psw,
                 "tipo" => $tipo,
                 "maestro" => $maestro,
                 "automatizado" => NULL,
@@ -415,8 +415,6 @@ class Back extends CI_Controller
             $data = array(
                 "nombre" => $nombre,
                 "mac" => $mac,
-                "ssid" => $ssid,
-                "psw" => $psw,
                 "tipo" => $tipo,
                 "automatizado" => NULL,
                 "id_usuario" => $id_usuario,
@@ -437,8 +435,6 @@ class Back extends CI_Controller
     {
         $nombre = $this->input->post("nombre");
         $mac = $this->input->post("mac");
-        $ssid = $this->input->post("ssid");
-        $psw = $this->input->post("psw");
         $tipo = $this->input->post("tipo");
         $maestro = $this->input->post("maestro");
         $id_usuario = $this->input->post("id_usuario");
@@ -449,8 +445,6 @@ class Back extends CI_Controller
             $data = array(
                 "nombre" => $nombre,
                 "mac" => $mac,
-                "ssid" => $ssid,
-                "psw" => $psw,
                 "tipo" => $tipo,
                 "maestro" => $maestro,
                 "automatizado" => NULL,
@@ -461,8 +455,6 @@ class Back extends CI_Controller
             $data = array(
                 "nombre" => $nombre,
                 "mac" => $mac,
-                "ssid" => $ssid,
-                "psw" => $psw,
                 "tipo" => $tipo,
                 "automatizado" => NULL,
                 "id_usuario" => $id_usuario,

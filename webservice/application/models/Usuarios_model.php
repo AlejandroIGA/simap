@@ -5,8 +5,9 @@ class Usuarios_model extends CI_Model
     public function login($correo, $psw)
     {
         $rs = $this->db
-            ->select("id_usuario,tipo_usuario,estatus,correo,psw,token")
-            ->from("usuario")
+            ->select("us.id_usuario,us.tipo_usuario,us.estatus,us.correo,us.psw,us.token, su.tipo")
+            ->from("usuario AS us")
+            ->join("suscripcion AS su", "su.id_usuario = us.id_usuario")
             ->where("correo", $correo)
             ->where("psw", $psw)
             ->get();
@@ -99,7 +100,18 @@ class Usuarios_model extends CI_Model
     }
 
     //Método para guardar el token del usuario
-    public function saveUserToken($id_usuario, $token)
+    public function saveUserToken($id_usuario, $token, $tokenNotificaciones)
+    {
+
+        $this->db
+            ->set("token", $token)
+            ->set("token_notificacion", $tokenNotificaciones)
+            ->where("id_usuario", $id_usuario)
+            ->update("usuario");
+    }
+    
+    //Método para guardar el token del usuario
+    public function saveUserTokenWeb($id_usuario, $token)
     {
 
         $this->db
@@ -152,7 +164,7 @@ class Usuarios_model extends CI_Model
             ->from("cosecha")
             ->join("planta", "planta.id_planta = cosecha.id_planta", "inner join")
             ->join("usuario", "cosecha.id_usuario = usuario.id_usuario", "inner join")
-            ->where("cosecha.id_usuario", $id_usuario)
+            ->where("cosecha.id_usuario", "IFNULL((SELECT cuenta_main FROM usuario WHERE id_usuario = $id_usuario), $id_usuario)", FALSE)
             ->order_by("fecha_inicio", "DESC")
             ->get();
 

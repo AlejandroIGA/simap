@@ -85,7 +85,7 @@ class Dispositivos_model extends CI_Model
     {
 
         $rs = $this->db
-            ->select("dp.id_dispositivo, dp.nombre, dp.ssid, dp.psw, dp.id_cosecha")
+            ->select("dp.id_dispositivo, dp.nombre, dp.id_cosecha")
             ->from("dispositivo AS dp")
             ->where("id_usuario", "IFNULL((SELECT cuenta_main FROM usuario WHERE id_usuario = $id_usuario), $id_usuario)", FALSE)
             ->where("dp.tipo", "maestro")
@@ -110,7 +110,7 @@ class Dispositivos_model extends CI_Model
     public function getDatosDispositivo($id_usuario)
     {
         $rs = $this->db
-            ->select('dp.id_dispositivo, dp.mac, dp.ssid, co.nombre')
+            ->select('dp.id_dispositivo, dp.mac, co.nombre')
             ->from('dispositivo AS dp')
             ->join('cosecha AS co', 'dp.id_cosecha = co.id_cosecha')
             ->join('usuario AS us', 'dp.id_usuario = us.id_usuario')

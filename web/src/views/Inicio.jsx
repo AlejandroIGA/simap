@@ -96,10 +96,6 @@ function Inicio() {
 
   const grafica = async (tipo, id_cultivo, fechaInicio, fechaFin) => {
     console.log(tipo, id_cultivo, fechaInicio, fechaFin)
-    //getDispositivos(cultivo);
-    const dataCollection = collection(db, 'pruebas');
-    const allSeries = [];
-
     if (fechaFin === null || fechaInicio === null) {
       alert("Seleccione una fecha de inicio y una fecha de fin");
       setShowGrafica(false);
@@ -108,101 +104,374 @@ function Inicio() {
       alert("La fecha de inicio no puede ser mayor a la fecha de fin");
       setShowGrafica(false);
       return;
-    } else if(id_cultivo === null){
+    } else if (id_cultivo === null) {
       alert("Seleccione un cultivo");
       setShowGrafica(false);
       return;
     }
 
-    const seriesData = [];
-    const dispositivosUnicos = new Set();   
-     
-    const queryDispositivos = await getDocs(query(
-      dataCollection,
-      where('id_cosecha', '==', parseInt(id_cultivo)),
-      where('fecha', '>=', fechaInicio),
-      where('fecha', '<=', fechaFin),
-      orderBy('fecha')
-    ));
+    /*
+    1.Identificar el tipo de datos a gráficar.
+    2.Apuntar a la colección correcta.
+    3.Definir las configuraciones necesarias.
+    */
+    if (tipo === "agua") {
+      const dataCollectionAgua = collection(db, 'consumoAgua');
+      const allSeriesAgua = [];
+      const seriesDataAgua = [];
+      let dispositivo = "";
+      const dataSnapshot = await getDocs(query(
+        dataCollectionAgua,
+        where('id_cosecha', '==', parseInt(id_cultivo)),
+        where('fecha', '>=', fechaInicio),
+        where('fecha', '<=', fechaFin),
+        orderBy('fecha')
+      ));
 
-    queryDispositivos.docs.forEach(doc => {
-      dispositivosUnicos.add(doc.data().dispositivo);
-    });
+      dataSnapshot.docs.forEach(doc => {
+        dispositivo = doc.data()["dispositivo"];
+        const data = processData(doc, tipo);
+        if (data) {
+          seriesDataAgua.push(data);
+        }
+      });
 
-    for (const dispositivo of dispositivosUnicos) {
-          const seriesData = [];
-          const dataSnapshot = await getDocs(query(
-              dataCollection,
-              where('dispositivo', '==', dispositivo),
-              where('fecha', '>=', fechaInicio),
-              where('fecha', '<=', fechaFin),
-              orderBy('fecha')
-          ));
+      allSeriesAgua.push({
+        name: dispositivo,
+        data: seriesDataAgua
+      });
 
-          dataSnapshot.docs.forEach(doc => {
-              const data = processData(doc, tipo);
-              if (data) {
-                  seriesData.push(data);
-              }
-          });
-
-          allSeries.push({
-              name: dispositivo,
-              data: seriesData
-          });
-  }
-
-    
-
-
-   
-
-    setOptions({
-      chart: {
-        type: 'spline',
-        zoomType: 'x'
-      },
-      title: {
-        text: tipo === "temp_amb" ? "Temperatura Ambiente" : tipo === "hum_amb" ? "Humedad Ambiente" : "Humedad Suelo"
-      },
-      xAxis: {
-        type: 'datetime',
-        dateTimeLabelFormats: {
-          minute: '%e. %b %H:%M',
-          hour: '%e. %b %H:%M',
-          day: '%e. %b',
-          month: '%b',
+      setOptions({
+        chart: {
+          type: 'spline',
+          zoomType: 'x'
         },
         title: {
-          text: 'Fecha y Hora'
-        }
-      },
-      yAxis: {
-        title: {
-          text: tipo === "temp_amb" ? "Temperatura" : "Humedad"
+          text: "Consumo de agua"
         },
-        labels: {
-          format: `{value}${tipo === "temp_amb" ? "°" : "%"}`
-        }
-      },
-      tooltip: {
-        headerFormat: '<b>{series.name}</b><br>',
-        pointFormat: `Fecha: {point.x:%e. %b %Y %H:%M} ${tipo}: {point.y:.2f}${tipo === "temp_amb" ? "°" : "%"}`
-      },
-      plotOptions: {
-        series: {
-          marker: {
-            symbol: 'circle',
-            fillColor: '#FFFFFF',
-            enabled: true,
-            radius: 2.5,
-            lineWidth: 1,
-            lineColor: null
+        xAxis: {
+          type: 'datetime',
+          dateTimeLabelFormats: {
+            minute: '%e. %b %H:%M',
+            hour: '%e. %b %H:%M',
+            day: '%e. %b',
+            month: '%b',
+          },
+          title: {
+            text: 'Fecha y Hora'
           }
-        }
-      },
-      series: allSeries
+        },
+        yAxis: {
+          title: {
+            text: "Litros"
+          },
+          labels: {
+            format: `{value}L`
+          }
+        },
+        tooltip: {
+          headerFormat: '<b>{series.name}</b><br>',
+          pointFormat: `Fecha: {point.x:%e. %b %Y %H:%M} ${tipo}: {point.y:.2f}L`
+        },
+        plotOptions: {
+          series: {
+            marker: {
+              symbol: 'circle',
+              fillColor: '#FFFFFF',
+              enabled: true,
+              radius: 2.5,
+              lineWidth: 1,
+              lineColor: null
+            }
+          }
+        },
+        series: allSeriesAgua
+      });
+
+
+    }
+    else if (tipo === "gdd_temp") {
+      const dataCollection = collection(db,'desarrollo');
+      const series = [];
+
+      const dataSnapshot = await getDocs(query(
+        dataCollection,
+        where('id_cosecha', '==', parseInt(id_cultivo)),
+        where('fecha', '>=', fechaInicio),
+        where('fecha', '<=', fechaFin),
+        orderBy('fecha')
+      ));
+
+      dataSnapshot.docs.forEach(doc=>{
+        const data = doc.data();
+        series.push(data);
+      })
+
+      const datos = series.map(item => [item.temp_avg, item.gdd]);
+
+
+      setOptions({
+        chart: {
+            type: 'scatter',
+            zoomType: 'xy'
+        },
+        title: {
+            text: 'Grados de desarrollo vs. Temperatura Promedio'
+        },
+        xAxis: {
+            title: {
+                enabled: true,
+                text: 'Temperatura Promedio (°C)'
+            },
+            startOnTick: true,
+            endOnTick: true,
+            showLastLabel: true
+        },
+        yAxis: {
+            title: {
+                text: 'Grados de desarrollo'
+            }
+        },
+        plotOptions: {
+            scatter: {
+                marker: {
+                    radius: 5,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            lineColor: 'rgb(100,100,100)'
+                        }
+                    }
+                },
+                states: {
+                    hover: {
+                        marker: {
+                            enabled: false
+                        }
+                    }
+                },
+                tooltip: {
+                    headerFormat: '<b>{series.name}</b><br>',
+                    pointFormat: '{point.x} °C, {point.y} GDD'
+                }
+            }
+        },
+        series: [{
+            name: 'Gdd',
+            color: 'rgba(223, 83, 83, .5)',
+            data: datos
+        }]
     });
+    }
+    else if(tipo === "desarrollo"){
+      const desarrollo = [
+        {
+          id_cultivo: 84,
+          id_planta: 3,
+          fecha: '2024-03-02',
+          gdd: 4.3,
+          temp_avg: 23
+        },
+        {
+          id_cultivo: 84,
+          id_planta: 3,
+          fecha: '2024-03-03',
+          gdd: 4.6,
+          temp_avg: 28
+        },
+      ];
+
+      const planta = {
+        emergencia:150,
+        establecimiento:650,
+        floracion:1250,
+        inicio_cosecha: 2050,
+        fin_cosecha: 2550
+      }
+
+      const plaga = [{
+          "nombre": "Mosca Blanca",
+          "emergencia": "100",
+          "establecimiento": "600",
+          "floracion": "1100",
+          "inicio_cosecha": "1900",
+          "fin_cosecha": "2300"
+      },
+      {
+          "nombre": "Trips",
+          "emergencia": "100",
+          "establecimiento": "600",
+          "floracion": "1100",
+          "inicio_cosecha": "1900",
+          "fin_cosecha": "2300"
+      }]
+
+      // Paso 1: Calcular la acumulación de los valores de GDD en cada iteración
+const acumulacionGDD = [];
+desarrollo.forEach((item, index) => {
+    if (index === 0) {
+        acumulacionGDD.push(item.gdd);
+    } else {
+        acumulacionGDD.push(item.gdd + acumulacionGDD[index - 1]);
+    }
+});
+
+// Paso 2: Calcular el porcentaje de desarrollo de la planta y de la plaga
+const desarrolloPlanta = {};
+const desarrolloPlaga = {};
+
+Object.keys(planta).forEach(etapa => {
+    desarrolloPlanta[etapa] = planta[etapa];
+});
+
+plaga.forEach(plaga => {
+    desarrolloPlaga[plaga.nombre] = {};
+    Object.keys(plaga).forEach(etapa => {
+        desarrolloPlaga[plaga.nombre][etapa] = plaga[etapa];
+    });
+});
+
+// Paso 3: Crear el arreglo de datos para Highcharts
+const seriesData = [];
+Object.keys(desarrolloPlanta).forEach(etapa => {
+    const dataItem = {
+        name: etapa,
+        data: []
+    };
+
+    plaga.forEach(plagaItem => {
+        dataItem.data.push({
+            name: plagaItem.nombre,
+            y: parseInt(plagaItem[etapa])
+        });
+    });
+
+    seriesData.push(dataItem);
+});
+
+// Crear el gráfico en Highcharts
+setOptions({
+    chart: {
+        type: 'column'
+    },
+    title: {
+        text: 'Porcentaje de Desarrollo de Planta y Plaga por Etapa'
+    },
+    xAxis: {
+        categories: acumulacionGDD,
+        title: {
+            text: 'GDD Acumulados'
+        }
+    },
+    yAxis: {
+        title: {
+            text: 'Etapas'
+        },
+        categories: Object.keys(desarrolloPlanta)
+    },
+    tooltip: {
+        shared: true,
+        headerFormat: '<b>{point.x} GDD</b><br/>',
+        pointFormat: '{point.y} % de desarrollo en {series.name}<br/>'
+    },
+    plotOptions: {
+        column: {
+            stacking: 'normal'
+        }
+    },
+    series: seriesData
+});
+
+
+    }
+    else {
+      const dataCollection = collection(db, 'pruebas');
+      const allSeries = [];
+      const dispositivosUnicos = new Set();
+
+      const queryDispositivos = await getDocs(query(
+        dataCollection,
+        where('id_cosecha', '==', parseInt(id_cultivo)),
+        where('fecha', '>=', fechaInicio),
+        where('fecha', '<=', fechaFin),
+        orderBy('fecha')
+      ));
+
+      queryDispositivos.docs.forEach(doc => {
+        dispositivosUnicos.add(doc.data().dispositivo);
+      });
+
+      for (const dispositivo of dispositivosUnicos) {
+        const seriesData = [];
+        const dataSnapshot = await getDocs(query(
+          dataCollection,
+          where('dispositivo', '==', dispositivo),
+          where('fecha', '>=', fechaInicio),
+          where('fecha', '<=', fechaFin),
+          orderBy('fecha')
+        ));
+
+        dataSnapshot.docs.forEach(doc => {
+          const data = processData(doc, tipo);
+          if (data) {
+            seriesData.push(data);
+          }
+        });
+
+        allSeries.push({
+          name: dispositivo,
+          data: seriesData
+        });
+      }
+      setOptions({
+        chart: {
+          type: 'spline',
+          zoomType: 'x'
+        },
+        title: {
+          text: tipo === "temp_amb" ? "Temperatura Ambiente" : tipo === "hum_amb" ? "Humedad Ambiente" : "Humedad Suelo"
+        },
+        xAxis: {
+          type: 'datetime',
+          dateTimeLabelFormats: {
+            minute: '%e. %b %H:%M',
+            hour: '%e. %b %H:%M',
+            day: '%e. %b',
+            month: '%b',
+          },
+          title: {
+            text: 'Fecha y Hora'
+          }
+        },
+        yAxis: {
+          title: {
+            text: tipo === "temp_amb" ? "Temperatura" : "Humedad"
+          },
+          labels: {
+            format: `{value}${tipo === "temp_amb" ? "°" : "%"}`
+          }
+        },
+        tooltip: {
+          headerFormat: '<b>{series.name}</b><br>',
+          pointFormat: `Fecha: {point.x:%e. %b %Y %H:%M} ${tipo}: {point.y:.2f}${tipo === "temp_amb" ? "°" : "%"}`
+        },
+        plotOptions: {
+          series: {
+            marker: {
+              symbol: 'circle',
+              fillColor: '#FFFFFF',
+              enabled: true,
+              radius: 2.5,
+              lineWidth: 1,
+              lineColor: null
+            }
+          }
+        },
+        series: allSeries
+      });
+    }
+
+
 
     setShowGrafica(true);
   };
@@ -340,6 +609,10 @@ function Inicio() {
                   <option value="temp_amb">Temperatura ambiente</option>
                   <option value="hum_amb">Humedad ambiente</option>
                   <option value="hum_sue">Humedad suelo</option>
+                  <option value="agua">Consumo de agua</option>
+                  <option value="desarrollo">Desarrollo del cultivo</option>
+                  <option value="gdd_temp">Desarrollo vs Temperatura</option>
+                  <option value="plagas">Plagas vs Agricultor</option>
                 </select>
               </div>
 
@@ -353,9 +626,10 @@ function Inicio() {
                 >
                   <option value={null}>Seleccione un cultivo</option>
                   {
-                    cultivos.map(cultivo => (
+                    cultivos != null ? cultivos.map(cultivo => (
                       <option value={cultivo.id_cosecha}>{cultivo.nombre}</option>
-                    ))
+                    )) : null
+
                   }
                 </select>
               </div>

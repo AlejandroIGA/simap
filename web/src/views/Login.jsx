@@ -27,6 +27,15 @@ function Login() {
       })
     }
     gapi.load("client:auth2", start)
+    if (!sessionStorage.getItem('id_usuario')) {
+            navigate('/login');
+          } else if (sessionStorage.getItem('id_usuario')) {
+            if(sessionStorage.getItem('tipo_usuario')==="Pro"){
+              navigate('/mainAdmin');
+            }else if(sessionStorage.getItem('tipo_usuario')==="Free"){
+              navigate('/mainAdminFree');
+            }
+          }
   }, []);
 
   //INICIO DE SESION CON GOOGLE

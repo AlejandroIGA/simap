@@ -1,0 +1,98 @@
+Tengo una base datos en firestores database y consulto los datos desde una aplicación elaborada en ReactJS,
+tengo una colección llamda pruea y dentro de esta guardo documentos con la siguiente estructura:
+const sensores = [
+  {
+    master: 'id_master',
+    esclavo: 'id_esclavo',
+    id_cultivo: 'id_cultivo',
+    cultivo: 'nombre_cultivo',
+    dispositivo: 'nombre_dispositivo',
+    fecha: 'fecha y hora medicion',
+    temp_amb: 'valor',
+    hum_amb: 'valor',
+    hum_sue: 'valor',
+  },
+];
+
+Hay forma de consultar los datos para que me traiga un promedio de la temperatura por día, algo parecido a los siguiente:
+respuesta = [
+    {
+        fecha: "2024-03-02",
+        temperatura_promedio: 32
+    },
+    {
+        fecha: "2024-03-03",
+        temperatura_promedio: 30
+    },
+    {
+        fecha: "2024-03-04",
+        temperatura_promedio: 26
+    }
+]
+
+Guardo el siguiente documento en firestore, donde la temp_avg está en grados celcious y gdd es solo un valor númerico
+const desarrollo = [
+  {
+    id_cultivo: 84,
+    id_planta: 3,
+    fecha: '2024-03-02',
+    gdd: 4.3,
+    temp_avg: 23
+  },
+  {
+    id_cultivo: 84,
+    id_planta: 3,
+    fecha: '2024-03-03',
+    gdd: 4.6,
+    temp_avg: 28
+  },
+];
+
+Como podría utilizar los datos de gdd y temp_avg para hacer una grafica de dispersión en highcharts
+
+Tengo la siguiente información:
+const desarrollo = [
+        {
+          id_cultivo: 84,
+          id_planta: 3,
+          fecha: '2024-03-02',
+          gdd: 4.3,
+          temp_avg: 23
+        },
+        {
+          id_cultivo: 84,
+          id_planta: 3,
+          fecha: '2024-03-03',
+          gdd: 4.6,
+          temp_avg: 28
+        },
+      ];
+
+      const planta = {
+        emergencia:150,
+        establecimiento:650,
+        floracion:1250,
+        inicio_cosecha: 2050,
+        fin_cosecha: 2550
+      }
+
+      const plaga = [{
+          "nombre": "Mosca Blanca",
+          "emergencia": "100",
+          "establecimiento": "600",
+          "floracion": "1100",
+          "inicio_cosecha": "1900",
+          "fin_cosecha": "2300"
+      },
+      {
+          "nombre": "Trips",
+          "emergencia": "100",
+          "establecimiento": "600",
+          "floracion": "1100",
+          "inicio_cosecha": "1900",
+          "fin_cosecha": "2300"
+      }]
+
+En el arreglo desarrollo tengo una propiedad GDD, debe crearse un nuevo arreglo que realice la acumulación de los GDD en cada iteración.
+Con ese nuevo arreglo quiero crear una gráfica en highcharts para ver el desarrollo de la planta y de las plagas. Los arreglos planta y plaga contienen las etapas de desarrollo que son;
+emergencia, establecimiento, floracion, inicio_cosecha, fin_cosecha. Los valores están en gdd.

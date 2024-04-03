@@ -401,7 +401,7 @@ function Cultivos() {
     }, [navigate])
 
     return (
-        <div className="container-fluid p-0 m-0" style={{ background: '#f2f2f2', height: '100%' }}>
+        <div className="container-fluid p-0 m-0" style={{ background: '#f2f2f2'}}>
             <nav className="navbar navbar-expand-lg nav">
         <div className="container">
           <a className="navbar-brand" href="#inicio">SIMAP</a>
@@ -501,17 +501,6 @@ function Cultivos() {
                         />
                         <label htmlFor='regular' className='pe-2'>
                             Planta
-                        </label>
-                        <input
-                            onChange={(event) => {
-                                setParametro(event.target.value);
-                            }}
-                            type='radio'
-                            name='parametro'
-                            value='fecha'
-                        />
-                        <label htmlFor='regular' className='pe-2'>
-                            Fecha
                         </label>
                     </div>
                 </div>

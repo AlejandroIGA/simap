@@ -3,13 +3,15 @@ import { Link, useNavigate } from "react-router-dom";
 import conf from '../conf';
 import agricultor from '../images/Granjero.png';
 import google from '../images/google.png';
-import facebbok from '../images/facebook.png';
+import facebook from '../images/facebook.png';
 import GoogleLogin from 'react-google-login';
-import { gapi } from 'gapi-script';
+import {gapi} from 'gapi-script';
+import FacebookLogin from 'react-facebook-login';
 
 function Login() {
 
   const [id_usuario, setId_usuario] = useState('');
+  const [ nombre, setNombre ] = useState( "" );
   const [correo, setCorreo] = useState("");
   const [psw, setPsw] = useState("");
   const [cuenta, setCuenta] = useState("");
@@ -18,6 +20,7 @@ function Login() {
   const navigate = useNavigate();
 
   /*
+
   useEffect (() => {
     const start = () => {
       gapi.auth2.init({
@@ -115,6 +118,7 @@ function Login() {
 
   */
 
+
   const login = async () => {
     if (!correo || !psw) {
       alert("Por favor, complete todos los campos");
@@ -164,11 +168,55 @@ function Login() {
       console.error('Error');
       alert('Error al iniciar sesión, intenta de nuevo');
       console.error(error.message);
-      alert('Ya existe una cuenta iniciada con este usuario');
+      alert('Error al iniciar sesión, intenta de nuevo');
     }
   };
   
-
+  const responseFacebook = async (response) => {
+    try {
+      if (response.status === "unknown") {
+        // El usuario canceló el inicio de sesión con Facebook
+        console.log("Inicio de sesión cancelado por el usuario");
+        return;
+      }
+      
+      // El usuario ha iniciado sesión correctamente, puedes acceder a los datos del usuario desde "response"
+      console.log("Datos del usuario de Facebook:", response);
+      
+      // Aquí puedes enviar los datos del usuario a tu backend para autenticarlo
+      const formData = new FormData();
+      formData.append('facebookId', response.id); // Enviar el ID de Facebook al backend para identificar al usuario
+      
+      // Envía una solicitud POST a tu endpoint de inicio de sesión con Facebook
+      const responseBackend = await fetch(conf.url + '/loginFacebook', {
+        method: 'POST',
+        body: formData,
+      });
+  
+      if (responseBackend.ok) {
+        const dataResponse = await responseBackend.json();
+  
+        if (dataResponse.resultado) {
+          // Inicio de sesión con éxito, maneja la respuesta como lo haces con tu función de inicio de sesión normal
+          console.log("Inicio de sesión exitoso: ", dataResponse);
+          navigate('/mainAdmin');
+        } else {
+          // Error al iniciar sesión en tu backend
+          console.error("Error al iniciar sesión con Facebook en el backend: ", dataResponse.mensaje);
+          alert("Error al iniciar sesión, inténtalo de nuevo más tarde");
+        }
+      } else {
+        // Error en la solicitud al backend
+        console.error('Error al iniciar sesión con Facebook en el backend: ', responseBackend.statusText);
+        alert('Error al iniciar sesión, inténtalo de nuevo más tarde');
+      }
+    } catch (error) {
+      // Error en el proceso
+      console.error('Error al iniciar sesión con Facebook:', error);
+      alert('Error al iniciar sesión, inténtalo de nuevo más tarde');
+    }
+  };
+  
   return (
     <div>
       <nav className="navbar">
@@ -218,8 +266,15 @@ function Login() {
       */} 
       
       <div className="d-flex justify-content-center mt-3">
-        <img src={facebbok} style={{ width: '40px' }} alt="Imagen agricultor" />
-        <button type="button" className="btn btn-outline-primary mx-3">Inicio de sesión rápido con Facebbok</button>
+        <img src={facebook} style={{ width: '40px' }} alt="Imagen facebook" />
+        <FacebookLogin
+          appId="745129577370445"
+          autoLoad={false}
+          fields="name,email"
+          callback={responseFacebook}
+          cssClass="btn btn-outline-primary mx-3"
+          textButton="Inicio de sesión rápido con Facebook"
+        />
       </div>
     </div>
   );

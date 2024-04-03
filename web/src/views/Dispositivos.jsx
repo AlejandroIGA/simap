@@ -34,6 +34,7 @@ function Dispositivos() {
     const [dispositivoMaestro, setDispositivoMaestro] = useState('');
     const [idCosecha, setIdCosecha] = useState(0);
     let idUsuario = sessionStorage.getItem('id_usuario');
+    let tipo = sessionStorage.getItem('tipo');
     const [id_dispositivo, setIdDispositivo] = useState(0);
     const [dispositivos, setDispositivos] = useState([]);
     const [cosechas, setCosechas] = useState([]);
@@ -125,65 +126,71 @@ function Dispositivos() {
       };
 
     const handleSubmit = async () => {
-        if(cosechas != null) {
-          if(tipoDispositivo === "maestro"){
-            if (!nombre || !direccionMAC || !idCosecha) {
-                alert('Por favor completa todos los campos.');
-                return;
-              }
-              if (nombre.length < 5) {
-                alert('El nombre debe tener mínimo 5 caracteres.');
-                return;
-              }
-              if (direccionMAC.length < 8 || direccionMAC.length > 12) {
-                alert('La dirección MAC debe tener entre 8 y 12 caracteres.');
-                return;
-              }
-        } else if (tipoDispositivo === "esclavo") {
-            if (!nombre || !direccionMAC || !dispositivoMaestro) {
-                alert('Por favor completa todos los campos.');
-                return;
-              }
-              if (nombre.length < 5) {
-                alert('El nombre debe tener mínimo 5 caracteres.');
-                return;
-              }
-              if (direccionMAC.length < 0) {
-                alert('La dirección MAC debe tener exactamente 12 caracteres.');
-                return;
-              }       
-        }
-          
-    
-        const formData = new FormData();
-        formData.append('nombre', nombre);
-        formData.append('mac', direccionMAC);
-        formData.append('tipo', tipoDispositivo);
-        formData.append('maestro', dispositivoMaestro);
-        formData.append('id_usuario', idUsuario);
-        formData.append('id_cosecha', idCosecha);
-    
-        try {
-          const response = await fetch(conf.url + '/nuevoDispositivo', {
-            method: 'POST',
-            body: formData,
-          });
-    
-          const dataResponse = await response.json();
-    
-            if (dataResponse.resultado && dataResponse.id_dispositivo > '0') {
-              alert(dataResponse.mensaje);
-            } else {
-              alert(dataResponse.mensaje);
-            }
-        } catch (error) {
-          alert('Error agregar dispositivo. Por favor, inténtalo de nuevo.');
-        }
-        getDispositivos();
-        getDispositivosMaestros();
-        limpiarCampos();
+        if (tipo === "Free" && dispositivos.length === 3) {
+          alert("No puede dar de alta más dispositivos");
+        } else if (tipo === "Pro" && dispositivos.length === 10) {
+          alert("Máximo de dispositivos alcanzados")
         } else {
-          alert("Primero debes de dar de alta una cosecha")
+          if(cosechas != null) {
+            if(tipoDispositivo === "maestro"){
+              if (!nombre || !direccionMAC || !idCosecha) {
+                  alert('Por favor completa todos los campos.');
+                  return;
+                }
+                if (nombre.length < 5) {
+                  alert('El nombre debe tener mínimo 5 caracteres.');
+                  return;
+                }
+                if (direccionMAC.length < 8 || direccionMAC.length > 12) {
+                  alert('La dirección MAC debe tener entre 8 y 12 caracteres.');
+                  return;
+                }
+          } else if (tipoDispositivo === "esclavo") {
+              if (!nombre || !direccionMAC || !dispositivoMaestro) {
+                  alert('Por favor completa todos los campos.');
+                  return;
+                }
+                if (nombre.length < 5) {
+                  alert('El nombre debe tener mínimo 5 caracteres.');
+                  return;
+                }
+                if (direccionMAC.length < 0) {
+                  alert('La dirección MAC debe tener exactamente 12 caracteres.');
+                  return;
+                }       
+          }
+            
+      
+          const formData = new FormData();
+          formData.append('nombre', nombre);
+          formData.append('mac', direccionMAC);
+          formData.append('tipo', tipoDispositivo);
+          formData.append('maestro', dispositivoMaestro);
+          formData.append('id_usuario', idUsuario);
+          formData.append('id_cosecha', idCosecha);
+      
+          try {
+            const response = await fetch(conf.url + '/nuevoDispositivo', {
+              method: 'POST',
+              body: formData,
+            });
+      
+            const dataResponse = await response.json();
+      
+              if (dataResponse.resultado && dataResponse.id_dispositivo > '0') {
+                alert(dataResponse.mensaje);
+              } else {
+                alert(dataResponse.mensaje);
+              }
+          } catch (error) {
+            alert('Error agregar dispositivo. Por favor, inténtalo de nuevo.');
+          }
+          getDispositivos();
+          getDispositivosMaestros();
+          limpiarCampos();
+          } else {
+            alert("Primero debes de dar de alta una cosecha")
+          }
         }
       };
 
@@ -302,6 +309,7 @@ function Dispositivos() {
     getDispositivos();
     getDispositivosMaestros();
     limpiarCampos();
+    setAccion("alta");
   };
 
   useEffect(() => {

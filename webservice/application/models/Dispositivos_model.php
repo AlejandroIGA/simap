@@ -106,6 +106,15 @@ class Dispositivos_model extends CI_Model
         return $this->db->affected_rows() > 0;
     }
 
+    public function deleteDispositivoSuscripcion($id_dispositivo)
+    {
+        $this->db
+            ->query("CALL eliminar_dispositivo($id_dispositivo)");
+    
+        return $this->db->affected_rows() > 0;
+    }
+    
+
 
     public function getDatosDispositivo($id_usuario)
     {

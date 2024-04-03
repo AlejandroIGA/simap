@@ -13,9 +13,6 @@ const EliminarDispositivos = ({ visible, onClose}) => {
 
   // Función para manejar la selección de dispositivos
   const handleDeviceSelection = (id_dispositivo) => {
-    if (dispositivos.length - selectedDispositivos.length >= 3) {
-      alert('Limite de selección alcanzado', 'Ya has seleccionado los dispositivos necesarios.', [{ text: 'OK' }]);
-    } else {
       setSelectedDispositivos(prevSelected => {
         if (prevSelected.includes(id_dispositivo)) {
           return prevSelected.filter(id => id !== id_dispositivo);
@@ -23,7 +20,7 @@ const EliminarDispositivos = ({ visible, onClose}) => {
           return [...prevSelected, id_dispositivo];
         }
       });
-    }
+    
   };
 
   const getUserData = async () => {
@@ -79,14 +76,18 @@ const EliminarDispositivos = ({ visible, onClose}) => {
         const formData = new FormData();
         formData.append('id_dispositivo', id_dispositivo);
 
-        const response = await fetch(conf.url + '/borrarDispositivo', {
+        const response = await fetch(conf.url + '/borrarDispositivoSuscripcion', {
           method: 'POST',
           body: formData,
         });
+
+        const data = await response.json();
+        alert(data.mensaje);
+        console.log(data.mensaje);
       }
 
+      console.log("Eliminar los: " + selectedDispositivos);
       alert("Dispositivos eliminados exitosamente");
-      setSelectedDispositivos([]);
       onClose();
     } catch (error) {
       console.error('Error al eliminar dispositivos:', error);

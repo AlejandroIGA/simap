@@ -1,9 +1,10 @@
 <?php
 
-use function GuzzleHttp\json_encode;
+//use function GuzzleHttp\json_encode;
 
 class Back extends CI_Controller
 {
+
     //Constructor
     public function __construct()
     {
@@ -178,21 +179,23 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
-    public function loginFacebook() {
+
+    public function loginFacebook()
+    {
         $correo = $this->input->post("correo");
         $nombre = $this->input->post("nombre");
-    
+
         // Verificar si el usuario ya existe en la base de datos
         $row = $this->Usuarios_model->getUsuarioPorCorreo($correo);
-    
+
         // Si el usuario no existe, se crea uno nuevo
         if (!$row) {
             $this->Usuarios_model->guardarUsuarioFacebook($nombre, $correo);
         }
-    
+
         // Intentar iniciar sesión con los datos del usuario de Facebook
         $row = $this->Usuarios_model->login_facebook($nombre, $correo);
-    
+
         $obj["resultado"] = $row != NULL;
         if ($obj["resultado"] != NULL) {
             $token = $row->token;
@@ -221,10 +224,10 @@ class Back extends CI_Controller
             $obj["mensaje"] = "Correo o contraseña incorrecto";
             $obj["data"] = NULL;
         }
-    
+
         // Devolver la respuesta JSON utilizando la variable $obj
         echo json_encode($obj);
-    }    
+    }
 
     public function usuario()
     {
@@ -243,16 +246,15 @@ class Back extends CI_Controller
 
     //CRUD Usuarios
 
-    public function insertUser()
-    {
-
+    public function insertUser(){
+        $cuenta_main = $this->input->post('cuenta_main');
         $nombre = $this->input->post("nombre");
         $apellidos = $this->input->post("apellidos");
         $correo = $this->input->post("correo");
         $psw = $this->input->post("psw");
         $tipo_usuario = $this->input->post("tipo_usuario");
         $tipo_login = $this->input->post("tipo_login");
-        $row = $this->Usuarios_model->insert($nombre, $apellidos, $correo, $psw, $tipo_usuario, $tipo_login);
+        $row = $this->Usuarios_model->insert($cuenta_main, $nombre, $apellidos, $correo, $psw, $tipo_usuario, $tipo_login);
 
         $obj["resultado"] = $row != NULL;
         $obj["mensaje"] = $obj["resultado"] ?
@@ -298,10 +300,10 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
     //Consulta empleados
-    public function getEmpleados()
-    {
-        $rows = $this->Usuarios_model->empleados();
-
+    public function getEmpleados() {
+        $id_usuario = $this->input->post("id_usuario");
+        $rows = $this->Usuarios_model->empleados($id_usuario);
+    
         $obj["resultado"] = !empty($rows);
         $obj["mensaje"] = $obj["resultado"] ?
             "Usuarios obtenidos"
@@ -309,10 +311,11 @@ class Back extends CI_Controller
         $obj["data"] = $rows;
 
         echo json_encode($obj);
-    }
+    }        
     //Fin de CRUD
-   
-    public function registroUsuario(){
+
+    public function registroUsuario()
+    {
         $nombre = $this->input->post("nombre");
         $apellidos = $this->input->post("apellidos");
         $correo = $this->input->post("correo");
@@ -349,9 +352,10 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
-    public function facebookPerfil() {
-        $nombre = $this->input->post( "nombre" );
-        $correo = $this->input->post( "correo" );
+    public function facebookPerfil()
+    {
+        $nombre = $this->input->post("nombre");
+        $correo = $this->input->post("correo");
 
         $data = array(
             "nombre" => $nombre,
@@ -369,7 +373,8 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
-    public function getCultivos(){
+    public function getCultivos()
+    {
         $id_usuario = $this->input->post("id_usuario");
         $row = $this->Usuarios_model->getCultivos($id_usuario);
 
@@ -599,7 +604,19 @@ class Back extends CI_Controller
         $obj["resultado"] = $resultado;
         $obj["mensaje"] = $mensaje;
 
+        $idNuevoCultivo = $this->Cultivo_model->getUltimoId();
+        $idNuevoCultivo = $idNuevoCultivo[0]->id_cosecha;
+        $idPlanta = (int)$this->input->post("id_planta");
+        
+        $this->setGdd($idPlanta, $idNuevoCultivo);
+
         echo json_encode($obj);
+    }
+
+    public function getUltimoId(){
+        $data = $this->Cultivo_model->getUltimoId();
+        $data = $data[0]->id_cosecha;
+        echo json_encode($data);
     }
 
     //Actualizar un cultivo
@@ -702,6 +719,13 @@ class Back extends CI_Controller
 
         echo json_encode($obj);
     }
+    
+    public function terminarTransaccion(){
+        $estado = $this->input->post("estado");
+        $res = $this->Usuarios_model->terminarTransaccion($estado);
+        $obj["mensaje"] = $res;
+        echo json_encode($obj);
+    }
     //Obtener notificaciones
     public function notificaciones()
     {
@@ -732,14 +756,23 @@ class Back extends CI_Controller
 
     public function insertNotification()
     {
-        $id_usuario = $this->input->post('id_usuario');
-        $informacion = $this->input->post('informacion');
-        $fecha = $this->input->post('fecha');
+        if ($this->input->raw_input_stream[0] == "{") {
+            $input = json_decode($this->input->raw_input_stream);
+            $id_usuario = $input->id_usuario;
+            $informacion = $input->informacion;
+        } else {
+            $id_usuario = $this->input->post('id_usuario');
+            $informacion = $this->input->post('informacion');
+        }
+        
+        $fecha = new DateTime();
+        $nueva_zona_horaria = new DateTimeZone('America/Mexico_City');
+        $fecha->setTimezone($nueva_zona_horaria);
 
         $data = array(
             'id_usuario' => $id_usuario,
             'informacion' => $informacion,
-            'fecha' => $fecha
+            'fecha' => $fecha->format("Y-m-d H:i:s")
         );
 
         $id_notificacion = $this->Notificaciones_model->nuevaNotificacion($data);
@@ -905,14 +938,12 @@ class Back extends CI_Controller
     La función debe de ejecutarse en cuando se agrega un cultivo por primera vez
     La función se ejecuta cuando hace un login y el ultimo dia registrado en firebase es igual al día del login
     */
-    public function setGdd()
+    public function setGdd($id_planta, $id_cultivo)
     {
-        //
-        $id_planta= 2;
-        $id_cultivo = 84;
+        //MANDAR A LLAMAR CADA QUE SE CREA UN CULTIVO
         $temperaturaBase = $this->Sensor_model->setGdd($id_planta, $id_cultivo);
         $temperaturaBase = $temperaturaBase->temperatura;
-        
+
         //https://api.openweathermap.org/data/2.5/forecast?lat=20.58806&lon=-100.38806&units=metric&appid=eef355588b320115816599bad7abf8bf
         // Configura las opciones de la solicitud POST
         $clima_url = "https://api.openweathermap.org/data/2.5/forecast?lat=20.58806&lon=-100.38806&units=metric&appid=eef355588b320115816599bad7abf8bf";
@@ -956,59 +987,230 @@ class Back extends CI_Controller
         // Decodificar el JSON
         $data = json_decode($dataJson, true);
 
-       // Nuevo arreglo para almacenar el promedio de temp_avg por fecha
-$promedio_temp_avg_por_fecha = array();
+        // Nuevo arreglo para almacenar el promedio de temp_avg por fecha
+        $promedio_temp_avg_por_fecha = array();
 
-// Nuevo arreglo para almacenar la cantidad de valores por fecha
-$cantidad_valores_por_fecha = array();
+        // Nuevo arreglo para almacenar la cantidad de valores por fecha
+        $cantidad_valores_por_fecha = array();
 
-// Recorrer los datos y calcular el promedio de temp_avg por fecha
-foreach ($data as $item) {
-    $fecha = $item['fecha'];
-    $temp_avg = $item['temp_avg'];
+        // Recorrer los datos y calcular el promedio de temp_avg por fecha
+        foreach ($data as $item) {
+            $fecha = $item['fecha'];
+            $temp_avg = $item['temp_avg'];
+
+            // Verificar si la fecha ya existe en el nuevo arreglo
+            if (array_key_exists($fecha, $promedio_temp_avg_por_fecha)) {
+                // Sumar el temp_avg y la cantidad de valores para la fecha existente
+                $promedio_temp_avg_por_fecha[$fecha] += $temp_avg;
+                $cantidad_valores_por_fecha[$fecha]++;
+            } else {
+                // Crear una nueva entrada en el arreglo para la fecha
+                $promedio_temp_avg_por_fecha[$fecha] = $temp_avg;
+                $cantidad_valores_por_fecha[$fecha] = 1;
+            }
+        }
+        $responseData = [];
+
+        // Calcular el promedio para cada fecha
+        foreach ($promedio_temp_avg_por_fecha as $fecha => $suma_temp_avg) {
+            $pares["id_cosecha"] = $id_cultivo;
+            $pares["id_planta"] = $id_planta;
+
+            $cantidad_valores = $cantidad_valores_por_fecha[$fecha];
+            $promedio = $suma_temp_avg / $cantidad_valores;
+            $promedio = number_format($promedio, 2);
+            if ($promedio > $temperaturaBase) {
+                $pares["fecha"] = $fecha;
+                $pares["temp_avg"] = $promedio;
+                $pares["gdd"] = number_format($promedio - $temperaturaBase, 2);
+                array_push($responseData, $pares);
+            } else {
+                $pares["fecha"] = $fecha;
+                $pares["temp_avg"] = $promedio;
+                $pares["gdd"] = 0;
+                array_push($responseData, $pares);
+            }
+        }
+        //echo json_encode($responseData); //este response data debe de mandarse a firebase
     
-    // Verificar si la fecha ya existe en el nuevo arreglo
-    if (array_key_exists($fecha, $promedio_temp_avg_por_fecha)) {
-        // Sumar el temp_avg y la cantidad de valores para la fecha existente
-        $promedio_temp_avg_por_fecha[$fecha] += $temp_avg;
-        $cantidad_valores_por_fecha[$fecha]++;
-    } else {
-        // Crear una nueva entrada en el arreglo para la fecha
-        $promedio_temp_avg_por_fecha[$fecha] = $temp_avg;
-        $cantidad_valores_por_fecha[$fecha] = 1;
-    }
-}
-$responseData = [];
+        
+        //crear arreglo a mandar a firebase
+        foreach($responseData as $data){
+            $output = array(
+                "fields" => array(
+                    "id_cosecha" => array("integerValue" => $data['id_cosecha']),
+                    "id_planta" => array("integerValue" => $data['id_planta']),
+                    "fecha" => array("stringValue" => $data['fecha']),
+                    "temp_avg" => array("doubleValue" => $data['temp_avg']),
+                    "gdd" => array("doubleValue" => $data['gdd'])
+                )
+            );
+        //Madar datos al firebase
+        $firestore_url = "https://firestore.googleapis.com/v1/projects/testesp-36e82/databases/(default)/documents/desarrollo";
 
-// Calcular el promedio para cada fecha
-foreach ($promedio_temp_avg_por_fecha as $fecha => $suma_temp_avg) {
-    $pares["id_cultivo"] = $id_cultivo;
-    $pares["id_planta"] = $id_planta;
-
-    $cantidad_valores = $cantidad_valores_por_fecha[$fecha];
-    $promedio = $suma_temp_avg / $cantidad_valores;
-    $promedio = number_format($promedio,2);
-    if($promedio > $temperaturaBase){
-        $pares["fecha"] = $fecha;
-        $pares["temp_avg"] = $promedio;
-        $pares["gdd"] = number_format($promedio-$temperaturaBase,2);
-        array_push($responseData, $pares);
-    }else{
-        $pares["fecha"] = $fecha;
-        $pares["temp_avg"] = $promedio;
-        $pares["gdd"] = 0;
-        array_push($responseData, $pares);  
-    }
-    
-}
-        echo json_encode($responseData);
+        // Configura las opciones de la solicitud POST
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $firestore_url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Accept: application/json',
+            'Content-Type: application/json',
+        ));
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($output));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_close($ch);
+
+        // Realiza la solicitud POST a Firestore
+        if (!$response = curl_exec($ch)) {
+            echo $response;
+        } else {
+            echo $response;
+        }
+        }
+        
+        
     }
 
     public function getConfiguracion($mac)
     {
-        $data = $this->Sensor_model->getConfiguracion($mac);
+        $dataMaestro = $this->Sensor_model->getMaestro($mac);
+        $dataSensor = $this->Sensor_model->getConfiguracion($mac);
+        $obj["sensores"] = $dataSensor;
+        $obj["maestro"] = $dataMaestro[0];
+        echo json_encode($obj);
+    }
+
+    public function getSlaves($mac)
+    {
+        $data = $this->Sensor_model->getSlaves($mac);
         $obj["data"] = $data;
         echo json_encode($obj);
     }
+
+    public function insertConsumoAgua(){
+        if ($this->input->raw_input_stream[0] == "{") {
+            $input = json_decode($this->input->raw_input_stream);
+            $mac = $input->mac_maestro;
+        } else {
+            $mac = $this->input->post("mac_maestro");
+        }
+
+        $fecha = new DateTime();
+        $nueva_zona_horaria = new DateTimeZone('America/Mexico_City');
+        $fecha->setTimezone($nueva_zona_horaria);
+
+        $data = $this->Sensor_model->insertConsumoAgua($mac);
+
+        $iot = array(
+            "fields" => array(
+                "id_maestro" => array("integerValue" => $data->id_dispositivo),
+                "id_cosecha" => array("integerValue" => $data->id_cosecha),
+                "cosecha" =>  array("stringValue" => $data->cosecha),
+                "dispositivo" => array("stringValue" => $data->nombre),
+                "fecha" => array("stringValue" => $fecha->format("Y-m-d H:i:s")),
+                "agua" => array("doubleValue" => $input->agua),
+            )
+        );
+
+        //Madar datos al firebase
+        $firestore_url = "https://firestore.googleapis.com/v1/projects/testesp-36e82/databases/(default)/documents/consumoAgua";
+        // Configura las opciones de la solicitud POST
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $firestore_url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Accept: application/json',
+            'Content-Type: application/json',
+        ));
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($iot));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_close($ch);
+
+        // Realiza la solicitud POST a Firestore
+        if (!$response = curl_exec($ch)) {
+            echo $response;
+        } else {
+            echo $response;
+        }
+    }
+
+    public function automatizado($mac){
+        $data = $this->Sensor_model->automatizado($mac);
+        echo json_encode($data);
+    }
+
+    public function actualizarEstadoBomba(){
+        if ($this->input->raw_input_stream[0] == "{") {
+            $input = json_decode($this->input->raw_input_stream);
+            $mac = $input->mac;
+            $estado = $input->estado;
+        } else {
+            $mac = $this->input->post("mac");
+            $estado = $this->input->post("estado");
+        }
+
+        $data = $this->Sensor_model->actualizarEstadoBomba($mac,$estado);
+
+        $obj["mac"] = $mac;
+        $obj["estado"] = $estado;
+        $obj["respuesta"] = $data==true ? "Se actualizo estado" : "No se actualizo";
+
+        echo json_encode($obj);
+    }
+
+    public function getEtapasPlanta(){
+        $id_planta = $this->input->post("id_planta");
+        $data = $this->Sensor_model->getEtapasPlanta($id_planta);
+        echo json_encode($data);
+    }
+
+    public function getEtapasPlaga(){
+        $id_planta = $this->input->post("id_planta");
+        $data = $this->Sensor_model->getEtapasPlaga($id_planta);
+        echo json_encode($data);
+    }
+
+    public function getPorcentajes(){
+         $id_cosecha = $this->input->post("id_cosecha");    
+         $mesInicio = $this->input->post("mes_inicio");
+         $mesFin = $this->input->post("mes_fin");
+         $planta = $this->Sensor_model->getNombrePlanta($id_cosecha);    
+
+        $registros = $this->Sensor_model->getPorcentajes($id_cosecha,$mesInicio,$mesFin);
+        $resto = 1;
+        if($registros == !null){
+            foreach($registros as $registro){
+                $resto = $resto - $registro->porcentaje_afectados;
+                $finalizados = $registro->finalizados;
+            }
+            $porcentajes = [];
+            $data["estado"] = true;
+            $data["finalizados"] = $finalizados;
+            $data["planta"] = $planta;
+            for($i=0; $i<count($registros)+1;$i++){
+                if($i != count($registros)){
+                    $obj["y"] = (float)$registros[$i]->porcentaje_afectados;
+                    $obj["name"] = $registros[$i]->plaga;
+                }else{
+                    $obj["y"] = $resto;
+                    $obj["name"] = "Sin plaga";
+                }
+                array_push($porcentajes, $obj);
+            }
+            $data["porcentajes"] =$porcentajes;
+        }else{
+            $data["estado"] = false;
+        }
+        
+        //validar porcentajes 
+        echo json_encode($data);
+    }
+
+    public function getCultivosActivos(){
+        $id_usuario = $this->input->post("id_usuario");
+        $data = $this->Cultivo_model->getCultivosActivos($id_usuario);
+        echo json_encode($data);
+    }
+
+   
 }

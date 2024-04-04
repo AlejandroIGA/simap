@@ -9,6 +9,8 @@ import conf from '../conf';
 
 function Cuenta() {
   const [responseData, setResponseData] = useState({});
+  const [fechaInicio, setFechaInicio] = useState("");
+  const [fechaFin, setFechaFin] = useState("");
   const navigate = useNavigate();
 
   let tipo_usuario = sessionStorage.getItem('tipo_usuario');
@@ -66,6 +68,11 @@ function Cuenta() {
       const data = await response.json();
       console.log("RESPONSE", data)
       setResponseData(data);
+      let aux1 = data.data.fecha_inicio.split('-');
+      let aux2 = data.data.fecha_fin.split('-');
+      console.log("aux1:",aux1);
+      setFechaInicio(aux1[2].split(' ')[0]+"-"+aux1[1]+"-"+aux1[0]);
+      setFechaFin(aux2[2].split(' ')[0]+"-"+aux2[1]+"-"+aux2[0])
     } catch (error) {
       console.error("ERROR:", error.message);
     }
@@ -159,11 +166,11 @@ function Cuenta() {
                 </div>
                 <div className='row pt-3' style={{ fontSize: 25 }}>
                   <div className='col-4'>
-                    <p><span style={{ fontWeight: "bold" }}>Fecha de inicio: </span>{responseData.data.fecha_inicio}</p>
+                    <p><span style={{ fontWeight: "bold" }}>Fecha de inicio: </span>{fechaInicio}</p>
 
                   </div>
                   <div className='col-4'>
-                    <p><span style={{ fontWeight: "bold" }}>Fecha fin: </span>{responseData.data.fecha_fin}</p>
+                    <p><span style={{ fontWeight: "bold" }}>Fecha fin: </span>{fechaFin}</p>
                   </div>
                 </div>
                 <div className='row text-center pt-3'>

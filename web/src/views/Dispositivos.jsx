@@ -320,7 +320,7 @@ function Dispositivos() {
 
 
     return (
-        <div style={{ background: '#f2f2f2' }}>
+        <div style={{ background: '#f2f2f2', height:"100vh" }}>
                        <nav className="navbar navbar-expand-lg nav">
         <div className="container">
           <a className="navbar-brand" href="#inicio">SIMAP</a>

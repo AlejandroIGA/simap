@@ -33,7 +33,7 @@ export function Dispositivos() {
   };
 
   const openModal = async () => {
-    
+
     try {
       const userDataJSON = await AsyncStorage.getItem('userData');
       const userData = JSON.parse(userDataJSON);
@@ -60,12 +60,11 @@ export function Dispositivos() {
         } else {
           alert("Primero debes de dar de alta un cultivo");
         }
-      }
+
       
     } catch (error) {
       console.log(error);
     }
-    
   };
 
   const closeModal = () => {
@@ -161,7 +160,6 @@ export function Dispositivos() {
   useFocusEffect(
     React.useCallback(() => {
       getDispositivos();
-      console.log('use focus');
     }, [])
   );
 

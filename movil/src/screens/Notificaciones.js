@@ -12,10 +12,8 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import conf from '../data/conf';
 
-
 export function Notificaciones() {
   const [notificaciones, setNotificaciones] = useState([]);
-
 
   //OBTENER NOTIFICACIONES
   const getNotificaciones = async () => {
@@ -68,7 +66,6 @@ export function Notificaciones() {
   useFocusEffect(
     React.useCallback(() => {
       getNotificaciones();
-      console.log('use focus');
     }, [])
   );
 

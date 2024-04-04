@@ -14,8 +14,8 @@ function MainAdmin() {
   const [apellidos, setApellidos] = useState('');
   const [correo, setCorreo] = useState('');
   const [psw, setPsw] = useState('');
+  const [tipo_login] = useState('Sistema');
   const [tipo_usuario, setTipo_usuario] = useState('');
-  const [tipo_login, setTipo_login] = useState('');
   const [empleadosList, setEmpleadosList] = useState([]);
   const [editar, setEditar] = useState(false);
   const navigate = useNavigate();
@@ -71,8 +71,8 @@ function MainAdmin() {
     formData.append('apellidos', apellidos);
     formData.append('correo', correo);
     formData.append('psw', psw);
-    formData.append('tipo_usuario', tipo_usuario);
     formData.append('tipo_login', tipo_login);
+    formData.append('tipo_usuario', tipo_usuario);
 
     try {
       const response = await fetch(conf.url + '/insertUser', {
@@ -126,7 +126,6 @@ function MainAdmin() {
     formData.append('correo', correo);
     formData.append('psw', psw);
     formData.append('tipo_usuario', tipo_usuario);
-    formData.append('tipo_login', tipo_login);
 
     try {
       const response = await fetch(conf.url + '/updateUser', {
@@ -238,7 +237,6 @@ function MainAdmin() {
     setCorreo('');
     setPsw('');
     setTipo_usuario('');
-    setTipo_login('');
   };
 
   const editarEmpleado = (val) => {
@@ -249,7 +247,6 @@ function MainAdmin() {
     setCorreo(val.correo);
     setPsw(val.psw);
     setTipo_usuario(val.tipo_usuario);
-    setTipo_login(val.tipo_login);
   };
 
   const filterEmpleados = () => {
@@ -435,25 +432,6 @@ function MainAdmin() {
                   <option value='Colaborador'>Colaborador</option>
                 </select>
               </div>
-              <div className='input-group mb-3'>
-                <span className='input-group-text' id='basic-addon1'>
-                  Tipo de login:
-                </span>
-                <select
-                  className='form-control'
-                  aria-label='Tipo de login'
-                  aria-describedby='basic-addon1'
-                  value={tipo_login}
-                  onChange={(event) => {
-                    setTipo_login(event.target.value);
-                  }}
-                >
-                  <option value=''>Seleccione tipo de login</option>
-                  <option value='Sistema'>Sistema</option>
-                  <option value='Google'>Google</option>
-                  <option value='Facebook'>Facebook</option>
-                </select>
-              </div>
               <div className='mx-4'>
                 {editar ? (
                   <div>
@@ -487,7 +465,6 @@ function MainAdmin() {
                 <th scope='col'>Correo</th>
                 <th scope='col'>Contraseña</th>
                 <th scope='col'>Tipo usuario</th>
-                <th scope='col'>Tipo login</th>
                 <th scope='col'>Acciones</th>
               </tr>
             </thead>
@@ -500,7 +477,6 @@ function MainAdmin() {
                   <td>{val.correo}</td>
                   <td>{val.psw}</td>
                   <td>{val.tipo_usuario}</td>
-                  <td>{val.tipo_login}</td>
                   <td>
                     <div className='btn-group' role='group' aria-label='Basic example'>
                       <button

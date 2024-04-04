@@ -23,6 +23,15 @@ class Dispositivos_model extends CI_Model
             $id_dispositivo : 0;
     }
 
+    //Método para actualizar estado de bomba y automatizado
+    public function update($id_dispositivo, $data)
+{
+    $this->db->where('id_dispositivo', $id_dispositivo);
+    $this->db->update('dispositivo', $data);
+
+    return $this->db->affected_rows() > 0;
+}
+
    public function getDispositivos($id_usuario)
 {
     $query = $this->db->query("
@@ -110,7 +119,7 @@ class Dispositivos_model extends CI_Model
     public function getDatosDispositivo($id_usuario)
     {
         $rs = $this->db
-            ->select('dp.id_dispositivo, dp.mac, co.nombre')
+            ->select('dp.id_dispositivo, dp.mac, co.nombre, dp.bomba, dp.automatizado')
             ->from('dispositivo AS dp')
             ->join('cosecha AS co', 'dp.id_cosecha = co.id_cosecha')
             ->join('usuario AS us', 'dp.id_usuario = us.id_usuario')
@@ -123,4 +132,43 @@ class Dispositivos_model extends CI_Model
             return NULL;
         }
     }
+
+    public function activarBomba($id_dispositivo, $bomba){
+        $data = array(
+            'bomba' => $bomba
+        );
+    
+        $this->db->where('id_dispositivo', $id_dispositivo);
+        $this->db->set($data);
+        $this->db->update('dispositivo');
+        
+        return $this->db->affected_rows() > 0;
+    }
+    
+    public function activarAutomatizado($id_dispositivo, $automatizado){
+        $data = array(
+            'automatizado' => $automatizado
+        );
+    
+        $this->db->where('id_dispositivo', $id_dispositivo);
+        $this->db->set($data);
+        $this->db->update('dispositivo');
+        
+        return $this->db->affected_rows() > 0;
+    }
+
+    public function obtenerEstadoDispositivo($id_dispositivo){
+        $rs = $this->db
+        ->select('id_dispositivo, bomba, automatizado')
+        ->from('dispositivo')
+        ->where('id_dispositivo', $id_dispositivo)
+        ->get();
+
+    if ($rs->num_rows() > 0) {
+        return $rs->result();
+    } else {
+        return NULL;
+    }
+    }
+    
 }

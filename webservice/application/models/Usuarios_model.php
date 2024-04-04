@@ -5,16 +5,16 @@ class Usuarios_model extends CI_Model
     public function login($correo, $psw)
     {
         $rs = $this->db
-            ->select("us.id_usuario,us.tipo_usuario,us.estatus,us.correo,us.psw,us.token, su.tipo")
+            ->select("us.id_usuario, us.tipo_usuario, us.estatus, us.correo, us.psw, us.token, us.cuenta_main, su.tipo")
             ->from("usuario AS us")
-            ->join("suscripcion AS su", "su.id_usuario = us.id_usuario")
-            ->where("correo", $correo)
-            ->where("psw", $psw)
+            ->join("suscripcion AS su", "su.id_usuario = IFNULL(us.cuenta_main, us.id_usuario)")
+            ->where("us.correo", $correo)
+            ->where("us.psw", $psw)
             ->get();
         //die($this->db->last_query());
-        return $rs->num_rows() > 0 ?
-        $rs->row() : NULL;
+        return $rs->num_rows() > 0 ? $rs->row() : NULL;
     }
+    
 
 
     public function login_Web($correo, $psw)

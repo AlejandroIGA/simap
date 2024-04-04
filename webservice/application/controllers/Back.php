@@ -36,12 +36,12 @@ class Back extends CI_Controller
         $tokenNotificacion = $this->input->post("token_notificacion");
         $token = bin2hex(random_bytes(32));
 
-        $row = $this->Usuarios_model->login($correo, $psw);
+        $row = $this->Usuarios_model->login($correo, md5($psw));
 
         $obj["resultado"] = $row != NULL;
         if ($obj["resultado"] != NULL) {
             $tokenU = $row->token;
-            if ($row->psw == $psw and $row->correo == $correo) {
+            if ($row->psw == md5($psw) and $row->correo == $correo) {
                 if ($row->estatus == 0) {
                     $obj["mensaje"] = "Cuenta desactivada";
                     $obj["data"] = NULL;
@@ -52,6 +52,8 @@ class Back extends CI_Controller
                             'id_usuario' => $row->id_usuario,
                             'tipo_usuario' => $row->tipo_usuario,
                             'estatus' => $row->estatus,
+                            'token' => $row->token,
+                            'cuenta_main' => $row->cuenta_main,
                             'tipo' => $row->tipo
                         );
                         $this->Usuarios_model->saveUserToken($row->id_usuario, $token, $tokenNotificacion);
@@ -124,12 +126,12 @@ class Back extends CI_Controller
         $psw = $this->input->post("psw");
         $token = bin2hex(random_bytes(32));
 
-        $row = $this->Usuarios_model->login_Web($correo, $psw);
+        $row = $this->Usuarios_model->login_Web($correo, md5($psw));
 
         $obj["resultado"] = $row != NULL;
         if ($obj["resultado"] != NULL) {
             $tokenU = $row->token;
-            if ($row->psw == $psw and $row->correo == $correo) {
+            if ($row->psw == md5($psw) and $row->correo == $correo) {
                 if ($row->estatus == 0) {
                     $obj["mensaje"] = "Cuenta desactivada";
                     $obj["data"] = NULL;
@@ -325,7 +327,7 @@ class Back extends CI_Controller
             "nombre" => $nombre,
             "apellidos" => $apellidos,
             "correo" => $correo,
-            "psw" => $psw,
+            "psw" => md5($psw),
             "estatus" => 1,
             "tipo_usuario" => $tipo,
             "tipo_login" => $tipo_login
@@ -514,6 +516,17 @@ class Back extends CI_Controller
 
         $obj["resultado"] = $this->Dispositivos_model->deleteDispositivo($id_dispositivo);
         $obj['mensaje'] = $obj["resultado"] ? "Dispositivo borrado exitosamente" : "Imposible borrar dispositivo, tiene una cosecha en curso";
+
+        echo json_encode($obj);
+    }
+
+    public function borrarDispositivoSuscripcion()
+    {
+
+        $id_dispositivo = $this->input->post("id_dispositivo");
+
+        $obj["resultado"] = $this->Dispositivos_model->deleteDispositivoSuscripcion($id_dispositivo);
+        $obj['mensaje'] = $obj["resultado"] ? "Dispositivo borrado exitosamente" : "Imposible borrar dispositivo";
 
         echo json_encode($obj);
     }

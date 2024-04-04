@@ -105,7 +105,15 @@ const MainColaborador = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       getDatos();
+      eliminarDispositivos();
     }, 20000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      eliminarDispositivos();
+    }, 10000);
     return () => clearInterval(interval);
   }, []);
 

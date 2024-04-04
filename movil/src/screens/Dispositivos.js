@@ -22,6 +22,7 @@ import conf from '../data/conf';
 export function Dispositivos() {
   const [showModal, setShowModal] = useState(false);
   const [dispositivos, setDispositivos] = useState([]);
+  const [dispositivosTotales, setDispositivosTotales] = useState(0);
   const [dispositivoEditar, setDispositivoEditar] = useState(null);
   const screenWidth = Dimensions.get('window').width;
   const deviceItemWidth = (screenWidth - 40 - 20) / 2;
@@ -32,26 +33,35 @@ export function Dispositivos() {
   };
 
   const openModal = async () => {
+
     try {
       const userDataJSON = await AsyncStorage.getItem('userData');
       const userData = JSON.parse(userDataJSON);
       const id_usuario = userData.id_usuario;
-      const formData = new FormData();
-      formData.append('id_usuario', id_usuario);
-
-      const response = await fetch(conf.url + '/getCultivos', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const dataResponse = await response.json();
-
-      if (dataResponse.resultado) {
-        setDispositivoEditar(null);
-        setShowModal(true);
+      const tipo = userData.tipo;
+      if(tipo === "Free" && dispositivosTotales === 3) {
+        alert("No puede agregar más dispositivos");
+      } else if (tipo === "Pro" && dispositivosTotales === 10) {
+        alert("Máximo de dispositivos alcanzado.");
       } else {
-        alert('Primero debes de dar de alta un cultivo');
-      }
+        const formData = new FormData();
+        formData.append('id_usuario', id_usuario);
+
+        const response = await fetch(conf.url + '/getCultivos', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const dataResponse = await response.json();
+
+        if(dataResponse.resultado) {
+          setDispositivoEditar(null);
+          setShowModal(true);
+        } else {
+          alert("Primero debes de dar de alta un cultivo");
+        }
+
+      
     } catch (error) {
       console.log(error);
     }
@@ -93,6 +103,38 @@ export function Dispositivos() {
     }
   };
 
+  const dispositivosGeneral = async () => {
+    try {
+      const userDataJSON = await AsyncStorage.getItem('userData');
+
+      if (userDataJSON) {
+        const userData = JSON.parse(userDataJSON);
+        const id_usuario = userData.id_usuario;
+        const cuenta_main = userData.cuenta_main;
+        const formData = new FormData();
+
+        if(cuenta_main > 0 ) {
+          formData.append('id_usuario', cuenta_main);
+        } else {
+          formData.append('id_usuario', id_usuario);
+        }
+
+        const response = await fetch(conf.url + '/dispositivos', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        setDispositivosTotales(data.dispositivos.length);
+      }
+    } catch (error) {
+      console.error('ERROR:', error.message);
+    }
+  };
+
   //ELIMINAR DISPOSITIVO
   const deleteDispositivo = async (id_dispositivo) => {
     try {
@@ -122,7 +164,14 @@ export function Dispositivos() {
   );
 
   useEffect(() => {
-    getDispositivos();
+    const intervalId = setInterval(() => {
+      getDispositivos();
+      dispositivosGeneral();
+    }, 40000);
+      getDispositivos();
+      dispositivosGeneral();
+
+    return () => clearInterval(intervalId);
   }, []);
 
   return (
@@ -152,7 +201,12 @@ export function Dispositivos() {
       <TouchableOpacity style={styles.floatingButton} onPress={openModal}>
         <Icon name='plus' size={30} color={theme.colors.backgroundPrimary} />
       </TouchableOpacity>
-      <Formulario visible={showModal} onClose={closeModal} />
+      <Formulario
+        visible={showModal}
+        onClose={closeModal}
+        actualizarDispositivos={actualizarDispositivos}
+        dispositivoEditar={dispositivoEditar}
+      />
     </View>
   );
 }
@@ -182,8 +236,6 @@ const DeviceItem = ({ dispositivo, width, onDelete, onEdit }) => {
     >
       <Text style={styles.deviceText}>Nombre: {dispositivo.nombre}</Text>
       <Text style={styles.deviceTextInfo}>MAC: {dispositivo.mac}</Text>
-      <Text style={styles.deviceTextInfo}>Red: {dispositivo.ssid}</Text>
-      <Text style={styles.deviceTextInfo}>Contraseña: {dispositivo.psw}</Text>
       <Text style={styles.deviceTextInfo}>Tipo: {dispositivo.tipo}</Text>
       <Text style={styles.deviceTextInfo}>Cosecha: {dispositivo.cosecha}</Text>
       <View style={styles.btnCenter}>

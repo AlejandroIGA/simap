@@ -25,6 +25,13 @@ class Dispositivos_model extends CI_Model
 
    public function getDispositivos($id_usuario)
 {
+    //1.determinar si tiene cuenta main
+    $aux = $this->db
+    ->select("cuenta_main")
+    ->from("usuario")
+    ->where("id_usuario",$id_usuario)
+    ->get();
+
     $query = $this->db->query("
         SELECT dispositivo.*, cosecha.nombre as cosecha
         FROM dispositivo
@@ -35,13 +42,13 @@ class Dispositivos_model extends CI_Model
                 SELECT dispositivo.id_dispositivo
                 FROM usuario 
                 INNER JOIN dispositivo ON usuario.id_usuario = dispositivo.id_usuario
-                WHERE usuario.id_usuario = $id_usuario AND dispositivo.tipo = 'maestro'
+                WHERE usuario.id_usuario = IFNULL((SELECT cuenta_main FROM usuario WHERE id_usuario = $id_usuario), $id_usuario) AND dispositivo.tipo = 'maestro'
             )
             OR dispositivo.id_dispositivo IN (
                 SELECT dispositivo.id_dispositivo
                 FROM usuario 
                 INNER JOIN dispositivo ON usuario.id_usuario = dispositivo.id_usuario
-                WHERE usuario.id_usuario = $id_usuario AND dispositivo.tipo = 'maestro'
+                WHERE usuario.id_usuario = IFNULL((SELECT cuenta_main FROM usuario WHERE id_usuario = $id_usuario), $id_usuario) AND dispositivo.tipo = 'maestro'
             )
             OR (
                 dispositivo.maestro IN (
@@ -51,11 +58,11 @@ class Dispositivos_model extends CI_Model
                     WHERE usuario.id_usuario IN (
                         SELECT cuenta_main 
                         FROM usuario 
-                        WHERE id_usuario = $id_usuario
+                        WHERE id_usuario = IFNULL((SELECT cuenta_main FROM usuario WHERE id_usuario = $id_usuario), $id_usuario)
                     ) 
                     AND dispositivo.tipo = 'maestro'
                 )
-                AND dispositivo.id_usuario = $id_usuario
+                AND dispositivo.id_usuario = IFNULL((SELECT cuenta_main FROM usuario WHERE id_usuario = $id_usuario), $id_usuario)
             )
         )
     ");

@@ -19,13 +19,30 @@ class Usuarios_model extends CI_Model
 
     public function login_Web($correo, $psw)
     {
-        $rs = $this->db
+        //1.determinar si tiene cuenta main
+        $aux = $this->db
+        ->select("cuenta_main")
+        ->from("usuario")
+        ->where("correo",$correo)
+        ->get();
+
+        if($aux->row()->cuenta_main == null){
+            $rs = $this->db
             ->select("us.id_usuario,us.tipo_usuario,us.estatus,us.correo,us.psw,us.token,su.tipo")
             ->from("usuario AS us")
             ->join("suscripcion AS su", "su.id_usuario = us.id_usuario")
             ->where("correo", $correo)
             ->where("psw", $psw)
             ->get();
+        }else{
+            $rs = $this->db
+            ->select("us.id_usuario,us.tipo_usuario,us.estatus,us.correo,us.psw,us.token,su.tipo")
+            ->from("usuario AS us")
+            ->join("suscripcion AS su", "su.id_usuario = $aux->row()->cuenta_main")
+            ->where("correo", $correo)
+            ->where("psw", $psw)
+            ->get();
+        }
 
         return $rs->num_rows() > 0 ?
         $rs->row() : NULL;
@@ -88,7 +105,7 @@ class Usuarios_model extends CI_Model
                 ->select("nombre,apellidos,correo,fecha_inicio,fecha_fin, suscripcion.estatus, suscripcion.tipo")
                 ->from("usuario")
                 ->join("suscripcion", "suscripcion.id_usuario = usuario.id_usuario", "inner join")
-                ->where("usuario.id_usuario", $id_usuario)
+                ->where("usuario.id_usuario", "IFNULL((SELECT cuenta_main FROM usuario WHERE id_usuario = $id_usuario), $id_usuario)", FALSE)
                 ->where("suscripcion.estatus", 1)
                 ->get();
             //die($this->db->last_query());

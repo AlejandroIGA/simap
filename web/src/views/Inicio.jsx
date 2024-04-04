@@ -19,7 +19,7 @@ function Inicio() {
   const navigate = useNavigate();
   const [showGrafica, setShowGrafica] = useState(false);
   const [btnGrafica, setBtnGrafica] = useState(false);
-  const [options, setOptions] = useState({});
+  const [options, setOptionsGraf] = useState({});
   const [tipoGrafica, setTipoGrafica] = useState("temp_amb");
   const [fechInicio, setFechInicio] = useState(null);
   const [fechFin, setFechFin] = useState(null);
@@ -109,7 +109,7 @@ function Inicio() {
       setShowGrafica(false);
       return;
     }
-
+    setOptionsGraf({});
     /*
     1.Identificar el tipo de datos a gráficar.
     2.Apuntar a la colección correcta.
@@ -141,7 +141,7 @@ function Inicio() {
         data: seriesDataAgua
       });
 
-      setOptions({
+      setOptionsGraf({
         chart: {
           type: 'spline',
           zoomType: 'x'
@@ -208,9 +208,7 @@ function Inicio() {
       })
 
       const datos = series.map(item => [item.temp_avg, item.gdd]);
-
-
-      setOptions({
+      setOptionsGraf({
         chart: {
             type: 'scatter',
             zoomType: 'xy'
@@ -263,6 +261,93 @@ function Inicio() {
         }]
     });
     }
+    else if(tipo === "plagas"){
+      alert("Esta gráfica trabaja con los meses de las fechas ingresadas");
+      const fechaInicioFormateada = fechaInicio.split("-");
+      const fechaFinFormateada = fechaFin.split("-");
+      const mesInicio = parseInt(fechaInicioFormateada[1]);
+      const mesFin = parseInt(fechaFinFormateada[1]);
+      console.log("meses:", fechaInicioFormateada, fechInicio)
+
+      try {
+        //const userDataJSON = await AsyncStorage.getItem('userData');
+        if (true) {
+          //const userData = JSON.parse(userDataJSON);
+          //const id_usuario = userData.id_usuario;
+          const formData = new FormData();
+          formData.append("id_cosecha", id_cultivo);
+          formData.append("mes_inicio", mesInicio);
+          formData.append("mes_fin", mesFin);
+          const response = await fetch(conf.url + "/getPorcentajes/", {
+            method: 'POST',
+            body: formData
+          });
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          const data = await response.json();
+          if(!data.estado){
+           alert("No hay cultivos finalizados en el periodo indicado");
+           setShowGrafica(false);
+           setOptionsGraf({});
+           return; 
+          }
+          const dataGrafica = data.porcentajes;
+          const finalizados = data.finalizados;
+          const plantaNombre = data.planta[0].nombre;
+          
+          setOptionsGraf({
+            chart: {
+                type: 'pie'
+            },
+            title: {
+                text: 'Plagas en cultivos finalizados'
+            },
+            tooltip: {
+                valueSuffix: '%'
+            },
+            subtitle: {
+                text:
+            `Cultivos finalizados: ${finalizados} de ${plantaNombre}`
+            },
+            plotOptions: {
+                series: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    dataLabels: [{
+                        enabled: true,
+                        distance: 20
+                    }, {
+                        enabled: true,
+                        distance: -40,
+                        format: '{point.percentage:.1f}%',
+                        style: {
+                            fontSize: '1.2em',
+                            textOutline: 'none',
+                            opacity: 0.7
+                        },
+                        filter: {
+                            operator: '>',
+                            property: 'percentage',
+                            value: 10
+                        }
+                    }]
+                }
+            },
+            series: [
+              {
+                  name: 'Porcentaje',
+                  colorByPoint: true,
+                  data: dataGrafica
+              }
+          ]
+        });
+        }
+      } catch (error) {
+        console.error("ERROR:", error.message);
+      }
+
+    }
     else if(tipo === "desarrollo"){
       const desarrollo = [
         {
@@ -306,83 +391,51 @@ function Inicio() {
           "fin_cosecha": "2300"
       }]
 
-      // Paso 1: Calcular la acumulación de los valores de GDD en cada iteración
-const acumulacionGDD = [];
-desarrollo.forEach((item, index) => {
-    if (index === 0) {
-        acumulacionGDD.push(item.gdd);
-    } else {
-        acumulacionGDD.push(item.gdd + acumulacionGDD[index - 1]);
-    }
-});
+// Calcular el total de GDD necesario para cada etapa de la planta
+const totalPlanta = Object.values(planta).reduce((acc, value) => acc + value, 0);
 
-// Paso 2: Calcular el porcentaje de desarrollo de la planta y de la plaga
-const desarrolloPlanta = {};
-const desarrolloPlaga = {};
-
+// Calcular el porcentaje de desarrollo para cada etapa de la planta
+const porcentajePlanta = {};
 Object.keys(planta).forEach(etapa => {
-    desarrolloPlanta[etapa] = planta[etapa];
+    porcentajePlanta[etapa] = (planta[etapa] / totalPlanta) * 100;
 });
 
-plaga.forEach(plaga => {
-    desarrolloPlaga[plaga.nombre] = {};
-    Object.keys(plaga).forEach(etapa => {
-        desarrolloPlaga[plaga.nombre][etapa] = plaga[etapa];
-    });
-});
-
-// Paso 3: Crear el arreglo de datos para Highcharts
-const seriesData = [];
-Object.keys(desarrolloPlanta).forEach(etapa => {
-    const dataItem = {
-        name: etapa,
-        data: []
-    };
-
-    plaga.forEach(plagaItem => {
-        dataItem.data.push({
-            name: plagaItem.nombre,
-            y: parseInt(plagaItem[etapa])
-        });
-    });
-
-    seriesData.push(dataItem);
-});
+// Determinar la etapa actual de la planta
+const etapaActualPlanta = Object.keys(planta).find(etapa => planta[etapa] <= totalPlanta);
 
 // Crear el gráfico en Highcharts
-setOptions({
+setOptionsGraf({
     chart: {
         type: 'column'
     },
     title: {
-        text: 'Porcentaje de Desarrollo de Planta y Plaga por Etapa'
+        text: 'Porcentaje de Desarrollo de la Planta por Etapa'
     },
     xAxis: {
-        categories: acumulacionGDD,
+        categories: Object.keys(planta),
         title: {
-            text: 'GDD Acumulados'
+            text: 'Etapa de Desarrollo'
         }
     },
     yAxis: {
         title: {
-            text: 'Etapas'
-        },
-        categories: Object.keys(desarrolloPlanta)
+            text: 'Porcentaje de Desarrollo'
+        }
     },
     tooltip: {
         shared: true,
-        headerFormat: '<b>{point.x} GDD</b><br/>',
-        pointFormat: '{point.y} % de desarrollo en {series.name}<br/>'
+        crosshairs: true,
+        headerFormat: '<b>{point.key}</b><br/>',
+        pointFormat: '{series.name}: {point.y:.2f}%<br/>'
     },
-    plotOptions: {
-        column: {
-            stacking: 'normal'
-        }
-    },
-    series: seriesData
+    series: [{
+        name: 'Planta',
+        data: Object.keys(planta).map(etapa => ({
+            y: porcentajePlanta[etapa],
+            color: etapa === etapaActualPlanta ? 'red' : null // Resaltar la etapa actual de la planta
+        }))
+    }]
 });
-
-
     }
     else {
       const dataCollection = collection(db, 'pruebas');
@@ -423,7 +476,7 @@ setOptions({
           data: seriesData
         });
       }
-      setOptions({
+      setOptionsGraf({
         chart: {
           type: 'spline',
           zoomType: 'x'
@@ -470,9 +523,6 @@ setOptions({
         series: allSeries
       });
     }
-
-
-
     setShowGrafica(true);
   };
 
@@ -541,7 +591,7 @@ setOptions({
         ],
       },
     });
-  }, [])
+  }, [options])
   return (
     <div style={{ background: '#f2f2f2', height: "100vh" }}>
       <nav className="navbar navbar-expand-lg nav">

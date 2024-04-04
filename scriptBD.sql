@@ -129,3 +129,42 @@ drop TRIGGER endCosecha;
 
 #PROCEDIMIENTO ALMACENADO PARA ENCONTRAR UN NOMBRE DUPLICADO de una cosecha activa
 
+#Grafica de plagas
+SHOW PROCEDURE STATUS;
+drop PROCEDURE calcular_porcentaje
+
+
+CREATE PROCEDURE calcular_porcentaje(IN cosecha_id INT, IN mes_inicio INT, IN mes_fin INT)
+BEGIN
+    DECLARE planta_id INT;
+    DECLARE total_finalizados INT;
+    
+    -- Obtener el id_planta de la cosecha especificada
+    SELECT id_planta INTO planta_id
+    FROM cosecha
+    WHERE id_cosecha = cosecha_id;
+
+    -- Calcular el total de cultivos finalizados para la planta de la cosecha especificada
+    SELECT COUNT(*) INTO total_finalizados
+    FROM cosecha
+    WHERE id_planta = planta_id AND Month(fecha_inicio) = mes_inicio AND MONTH(fecha_fin) = mes_fin;
+
+    -- Realizar la consulta para calcular el porcentaje de afectados
+    SELECT
+        COUNT(*) * 1.0 / total_finalizados AS porcentaje_afectados,
+        plaga,
+        total_finalizados AS finalizados
+    FROM
+        cosecha
+    WHERE
+        plaga != '0'
+        AND id_planta = planta_id
+        AND Month(fecha_inicio) = mes_inicio AND MONTH(fecha_fin) = mes_fin
+    GROUP BY
+        plaga, total_finalizados;
+END
+call calcular_porcentaje(108,3,4);
+
+SELECT COUNT(*) 
+    FROM cosecha
+    WHERE id_planta = 1 AND Month(fecha_inicio) = 4 AND MONTH(fecha_fin) = 4;

@@ -1,6 +1,6 @@
 <?php
 
-use function GuzzleHttp\json_encode;
+//use function GuzzleHttp\json_encode;
 
 class Back extends CI_Controller
 {
@@ -599,7 +599,19 @@ class Back extends CI_Controller
         $obj["resultado"] = $resultado;
         $obj["mensaje"] = $mensaje;
 
+        $idNuevoCultivo = $this->Cultivo_model->getUltimoId();
+        $idNuevoCultivo = $idNuevoCultivo[0]->id_cosecha;
+        $idPlanta = (int)$this->input->post("id_planta");
+        
+        $this->setGdd($idPlanta, $idNuevoCultivo);
+
         echo json_encode($obj);
+    }
+
+    public function getUltimoId(){
+        $data = $this->Cultivo_model->getUltimoId();
+        $data = $data[0]->id_cosecha;
+        echo json_encode($data);
     }
 
     //Actualizar un cultivo
@@ -914,11 +926,9 @@ class Back extends CI_Controller
     La función debe de ejecutarse en cuando se agrega un cultivo por primera vez
     La función se ejecuta cuando hace un login y el ultimo dia registrado en firebase es igual al día del login
     */
-    public function setGdd()
+    public function setGdd($id_planta, $id_cultivo)
     {
         //MANDAR A LLAMAR CADA QUE SE CREA UN CULTIVO
-        $id_planta = 2;
-        $id_cultivo = 84;
         $temperaturaBase = $this->Sensor_model->setGdd($id_planta, $id_cultivo);
         $temperaturaBase = $temperaturaBase->temperatura;
 
@@ -1143,6 +1153,42 @@ class Back extends CI_Controller
 
     public function getEtapasPlaga($id_planta){
         $data = $this->Sensor_model->getEtapasPlaga($id_planta);
+        echo json_encode($data);
+    }
+
+    public function getPorcentajes(){
+         $id_cosecha = $this->input->post("id_cosecha");    
+         $mesInicio = $this->input->post("mes_inicio");
+         $mesFin = $this->input->post("mes_fin");
+         $planta = $this->Sensor_model->getNombrePlanta($id_cosecha);    
+
+        $registros = $this->Sensor_model->getPorcentajes($id_cosecha,$mesInicio,$mesFin);
+        $resto = 1;
+        if($registros == !null){
+            foreach($registros as $registro){
+                $resto = $resto - $registro->porcentaje_afectados;
+                $finalizados = $registro->finalizados;
+            }
+            $porcentajes = [];
+            $data["estado"] = true;
+            $data["finalizados"] = $finalizados;
+            $data["planta"] = $planta;
+            for($i=0; $i<count($registros)+1;$i++){
+                if($i != count($registros)){
+                    $obj["y"] = (float)$registros[$i]->porcentaje_afectados;
+                    $obj["name"] = $registros[$i]->plaga;
+                }else{
+                    $obj["y"] = $resto;
+                    $obj["name"] = "Sin plaga";
+                }
+                array_push($porcentajes, $obj);
+            }
+            $data["porcentajes"] =$porcentajes;
+        }else{
+            $data["estado"] = false;
+        }
+        
+        //validar porcentajes 
         echo json_encode($data);
     }
 

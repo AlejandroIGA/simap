@@ -78,7 +78,6 @@ const Cultivos = () => {
     useFocusEffect(
         React.useCallback(() => {
             getCultivos();
-            console.log("use focus");
         }, [])
     );
 

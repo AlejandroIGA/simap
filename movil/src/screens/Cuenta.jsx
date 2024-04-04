@@ -86,7 +86,6 @@ const Cuenta = ({ onLogout }) => {
     useFocusEffect(
         React.useCallback(() => {
             getUsuario();
-            console.log("use focus");
         }, [])
     );
 

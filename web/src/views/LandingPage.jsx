@@ -112,12 +112,6 @@ function LandingPage() {
                                     <li>
                                         2 dispositivos esclavo.
                                     </li>
-                                    <li>
-                                        Lectura cada 5 minutos.
-                                    </li>
-                                    <li>
-                                        Gráficas limitadas.
-                                    </li>
                                 </ul>
                                 <p style={{fontWeight:"bold"}}>Gratuita.</p>
                                 <button class="btn" style={{background:"#ABBF15",fontWeight:"bold"}} onClick={()=>navigate("/login")}>Obtener</button>
@@ -141,12 +135,6 @@ function LandingPage() {
                                     </li>
                                     <li>
                                         30 dispositivos esclavo.
-                                    </li>
-                                    <li>
-                                        Lectura cada 2 minutos.
-                                    </li>
-                                    <li>
-                                        Gráficas avanzadas.
                                     </li>
                                 </ul>
                                 <p style={{fontWeight:"bold"}}>$285 al mes.</p>

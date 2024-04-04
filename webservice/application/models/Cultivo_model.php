@@ -1,6 +1,7 @@
 <?php
 class Cultivo_model extends CI_Model
 {
+
     //Método para agregar un cultivo
     function addCultivo($data)
     {
@@ -22,6 +23,12 @@ class Cultivo_model extends CI_Model
             ->insert("cosecha");
         return $this->db->affected_rows() > 0;
         }        
+    }
+
+    //Obtener el ultimo id
+    function getUltimoId(){
+        $query = $this->db->query("SELECT MAX(id_cosecha) AS id_cosecha FROM cosecha");
+        return $query->result();
     }
 
     //Método para actualizar un cultivo

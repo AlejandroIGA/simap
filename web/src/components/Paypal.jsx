@@ -59,8 +59,6 @@ function Paypal() {
                             <li className="informacion">10 colaboradores.</li>
                             <li className="informacion">5 dispositivos maestro.</li>
                             <li className="informacion">30 dispositivos esclavo.</li>
-                            <li className="informacion">Lectura cada 2 minutos.</li>
-                            <li className="informacion">Gráficas avanzadas.</li>
                         </ul>
                     </div>
                     <div className="row" style={{ align: "center" }}>

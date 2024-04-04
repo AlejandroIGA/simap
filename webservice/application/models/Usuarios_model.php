@@ -122,15 +122,27 @@ class Usuarios_model extends CI_Model
             $rs->result() : NULL;
     }
 
-    //Hacer una suscripción de usuario
+    //Hacer una suscripción de usuario (iniciar transaccion)
     public function suscribirse($id_usuario){
+        $this->db->trans_start();
         $this->db
         ->set("tipo","Pro")
         ->set("fecha_inicio","NOW()", false) // Establece el valor de fecha_inicio como la función SQL NOW() sin escapar
         ->set("fecha_fin","DATE_ADD(NOW(), INTERVAL 30 DAY)", false) // Establece el valor de fecha_fin como la función SQL DATE_ADD() sin escapar
         ->where("id_usuario",$id_usuario)
         ->update("suscripcion");
+        $this->db->trans_complete();
         return $this->db->affected_rows()>0;
+    }
+
+    public function terminarTransaccion($estado){
+        if($estado == "true"){
+            $this->db->trans_complete();
+            return "Operación realizada";
+        }else{
+            $this->db->trans_rollback();
+            return "Se cancelo la operación"; 
+        }    
     }
     
     //CRUD Usuarios

@@ -32,8 +32,6 @@ export function Dispositivos() {
   };
 
   const openModal = async () => {
-    
-
     try {
       const userDataJSON = await AsyncStorage.getItem('userData');
       const userData = JSON.parse(userDataJSON);
@@ -48,16 +46,15 @@ export function Dispositivos() {
 
       const dataResponse = await response.json();
 
-      if(dataResponse.resultado) {
+      if (dataResponse.resultado) {
         setDispositivoEditar(null);
         setShowModal(true);
       } else {
-        alert("Primero debes de dar de alta un cultivo");
+        alert('Primero debes de dar de alta un cultivo');
       }
     } catch (error) {
       console.log(error);
     }
-    
   };
 
   const closeModal = () => {
@@ -121,7 +118,6 @@ export function Dispositivos() {
   useFocusEffect(
     React.useCallback(() => {
       getDispositivos();
-      console.log('use focus');
     }, [])
   );
 
@@ -156,10 +152,7 @@ export function Dispositivos() {
       <TouchableOpacity style={styles.floatingButton} onPress={openModal}>
         <Icon name='plus' size={30} color={theme.colors.backgroundPrimary} />
       </TouchableOpacity>
-      <Formulario
-        visible={showModal}
-        onClose={closeModal}
-      />
+      <Formulario visible={showModal} onClose={closeModal} />
     </View>
   );
 }

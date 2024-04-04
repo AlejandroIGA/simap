@@ -706,6 +706,13 @@ class Back extends CI_Controller
 
         echo json_encode($obj);
     }
+    
+    public function terminarTransaccion(){
+        $estado = $this->input->post("estado");
+        $res = $this->Usuarios_model->terminarTransaccion($estado);
+        $obj["mensaje"] = $res;
+        echo json_encode($obj);
+    }
     //Obtener notificaciones
     public function notificaciones()
     {
@@ -1138,12 +1145,14 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
-    public function getEtapasPlanta($id_planta){
+    public function getEtapasPlanta(){
+        $id_planta = $this->input->post("id_planta");
         $data = $this->Sensor_model->getEtapasPlanta($id_planta);
         echo json_encode($data);
     }
 
-    public function getEtapasPlaga($id_planta){
+    public function getEtapasPlaga(){
+        $id_planta = $this->input->post("id_planta");
         $data = $this->Sensor_model->getEtapasPlaga($id_planta);
         echo json_encode($data);
     }
@@ -1181,6 +1190,12 @@ class Back extends CI_Controller
         }
         
         //validar porcentajes 
+        echo json_encode($data);
+    }
+
+    public function getCultivosActivos(){
+        $id_usuario = $this->input->post("id_usuario");
+        $data = $this->Cultivo_model->getCultivosActivos($id_usuario);
         echo json_encode($data);
     }
 

@@ -114,7 +114,7 @@ class Sensor_model extends CI_Model
         establecimiento,
         floracion,
         inicio_cosecha,
-        fin_cosecha")
+        ")
         ->from("planta")
         ->where("id_planta",$id_planta)
         ->get();
@@ -124,11 +124,11 @@ class Sensor_model extends CI_Model
 
     function getEtapasPlaga($id_planta){
         $rs = $this->db
-        ->select("plaga.nombre,emergencia,
-        establecimiento,
-        floracion,
-        inicio_cosecha,
-        fin_cosecha")
+        ->select("plaga.nombre,huevo as emergencia,
+        larva as establecimiento,
+        pupa as floracion,
+        adulto as inicio_cosecha,
+        ")
         ->from("plaga")
         ->join("planta_plaga","plaga.id_plaga = planta_plaga.id_plaga")
         ->join("planta","planta.id_planta = planta_plaga.id_planta")
@@ -136,5 +136,15 @@ class Sensor_model extends CI_Model
         ->get();
         return $rs->num_rows() > 0 ?
             $rs->result() : NULL;
+    }
+
+    function getPorcentajes($id_cosecha,$mesInicio, $mesFin){
+        $query = $this->db->query("CALL calcular_porcentaje($id_cosecha,$mesInicio, $mesFin)");
+        return $query->result();
+    }
+
+    function getNombrePlanta($id_cosecha){
+        $query = $this->db->query("select nombre from planta where id_planta in (select id_planta from cosecha where id_cosecha = $id_cosecha)");
+        return $query->result();
     }
 }

@@ -5,27 +5,44 @@ class Usuarios_model extends CI_Model
     public function login($correo, $psw)
     {
         $rs = $this->db
-            ->select("us.id_usuario,us.tipo_usuario,us.estatus,us.correo,us.psw,us.token, su.tipo")
+            ->select("us.id_usuario, us.tipo_usuario, us.estatus, us.correo, us.psw, us.token, us.cuenta_main, su.tipo")
             ->from("usuario AS us")
-            ->join("suscripcion AS su", "su.id_usuario = us.id_usuario")
-            ->where("correo", $correo)
-            ->where("psw", $psw)
+            ->join("suscripcion AS su", "su.id_usuario = IFNULL(us.cuenta_main, us.id_usuario)")
+            ->where("us.correo", $correo)
+            ->where("us.psw", $psw)
             ->get();
         //die($this->db->last_query());
-        return $rs->num_rows() > 0 ?
-        $rs->row() : NULL;
+        return $rs->num_rows() > 0 ? $rs->row() : NULL;
     }
+    
 
 
     public function login_Web($correo, $psw)
     {
-        $rs = $this->db
+        //1.determinar si tiene cuenta main
+        $aux = $this->db
+        ->select("cuenta_main")
+        ->from("usuario")
+        ->where("correo",$correo)
+        ->get();
+
+        if($aux->row()->cuenta_main == null){
+            $rs = $this->db
             ->select("us.id_usuario,us.tipo_usuario,us.estatus,us.correo,us.psw,us.token,su.tipo")
             ->from("usuario AS us")
             ->join("suscripcion AS su", "su.id_usuario = us.id_usuario")
             ->where("correo", $correo)
             ->where("psw", $psw)
             ->get();
+        }else{
+            $rs = $this->db
+            ->select("us.id_usuario,us.tipo_usuario,us.estatus,us.correo,us.psw,us.token,su.tipo")
+            ->from("usuario AS us")
+            ->join("suscripcion AS su", "su.id_usuario = $aux->row()->cuenta_main")
+            ->where("correo", $correo)
+            ->where("psw", $psw)
+            ->get();
+        }
 
         return $rs->num_rows() > 0 ?
         $rs->row() : NULL;
@@ -88,7 +105,7 @@ class Usuarios_model extends CI_Model
                 ->select("nombre,apellidos,correo,fecha_inicio,fecha_fin, suscripcion.estatus, suscripcion.tipo")
                 ->from("usuario")
                 ->join("suscripcion", "suscripcion.id_usuario = usuario.id_usuario", "inner join")
-                ->where("usuario.id_usuario", $id_usuario)
+                ->where("usuario.id_usuario", "IFNULL((SELECT cuenta_main FROM usuario WHERE id_usuario = $id_usuario), $id_usuario)", FALSE)
                 ->where("suscripcion.estatus", 1)
                 ->get();
             //die($this->db->last_query());
@@ -122,15 +139,27 @@ class Usuarios_model extends CI_Model
             $rs->result() : NULL;
     }
 
-    //Hacer una suscripción de usuario
+    //Hacer una suscripción de usuario (iniciar transaccion)
     public function suscribirse($id_usuario){
+        $this->db->trans_start();
         $this->db
         ->set("tipo","Pro")
         ->set("fecha_inicio","NOW()", false) // Establece el valor de fecha_inicio como la función SQL NOW() sin escapar
         ->set("fecha_fin","DATE_ADD(NOW(), INTERVAL 30 DAY)", false) // Establece el valor de fecha_fin como la función SQL DATE_ADD() sin escapar
         ->where("id_usuario",$id_usuario)
         ->update("suscripcion");
+        $this->db->trans_complete();
         return $this->db->affected_rows()>0;
+    }
+
+    public function terminarTransaccion($estado){
+        if($estado == "true"){
+            $this->db->trans_complete();
+            return "Operación realizada";
+        }else{
+            $this->db->trans_rollback();
+            return "Se cancelo la operación"; 
+        }    
     }
     
     //CRUD Usuarios

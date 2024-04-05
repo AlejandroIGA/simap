@@ -157,6 +157,7 @@ function Login() {
           sessionStorage.setItem('id_usuario', dataResponse.data.id_usuario);
           // Almacenar tipo de usuario
           sessionStorage.setItem('tipo_usuario', dataResponse.data.tipo_usuario);
+          sessionStorage.setItem('tipo', dataResponse.data.tipo);
           // Redirigir según el tipo de cuenta
           if (dataResponse.data.tipo === "Pro") {
             navigate('/mainAdmin');

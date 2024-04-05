@@ -26,6 +26,7 @@ class Usuarios_model extends CI_Model
         ->where("correo",$correo)
         ->get();
 
+
         if($aux->row()->cuenta_main == null){
             $rs = $this->db
             ->select("us.id_usuario,us.tipo_usuario,us.estatus,us.correo,us.psw,us.token,su.tipo")
@@ -171,27 +172,12 @@ class Usuarios_model extends CI_Model
             'apellidos' => $apellidos,
             'correo' => $correo,
             'psw' => $psw,
-            'tipo_usuario' => $tipo_usuario,
-            'tipo_login' => $tipo_login
+            'tipo_usuario' => strtolower($tipo_usuario),
+            'tipo_login' => $tipo_login,
+            'estatus' => 1
         );
     
         $this->db->insert('usuario', $data);
-        
-        $id_usuario = $this->db->insert_id();
-    
-        // Verificar si el usuario insertado es un propietario
-        if ($tipo_usuario === 'Propietario') {
-            // Insertar suscripción para propietarios
-            $suscripcion = array(
-                "id_usuario" => $id_usuario,
-                "fecha_inicio" => date('Y-m-d H:i:s'),
-                "tipo" => "Free",
-                "estatus" => 1
-            );
-    
-            $this->db->insert('suscripcion', $suscripcion);
-        }
-    
         return $this->db->affected_rows() > 0;
     }
     
@@ -202,7 +188,7 @@ class Usuarios_model extends CI_Model
             'apellidos' => $apellidos,
             'correo' => $correo,
             'psw' => $psw,
-            'tipo_usuario' => $tipo_usuario,
+            'tipo_usuario' => strtolower($tipo_usuario),
             'tipo_login' => $tipo_login
         );
     

@@ -33,16 +33,15 @@ export function Dispositivos() {
   };
 
   const openModal = async () => {
-
     try {
       const userDataJSON = await AsyncStorage.getItem('userData');
       const userData = JSON.parse(userDataJSON);
       const id_usuario = userData.id_usuario;
       const tipo = userData.tipo;
-      if(tipo === "Free" && dispositivosTotales === 3) {
-        alert("No puede agregar más dispositivos");
-      } else if (tipo === "Pro" && dispositivosTotales === 10) {
-        alert("Máximo de dispositivos alcanzado.");
+      if (tipo === 'Free' && dispositivosTotales === 3) {
+        alert('No puede agregar más dispositivos');
+      } else if (tipo === 'Pro' && dispositivosTotales === 10) {
+        alert('Máximo de dispositivos alcanzado.');
       } else {
         const formData = new FormData();
         formData.append('id_usuario', id_usuario);
@@ -54,14 +53,13 @@ export function Dispositivos() {
 
         const dataResponse = await response.json();
 
-        if(dataResponse.resultado) {
+        if (dataResponse.resultado) {
           setDispositivoEditar(null);
           setShowModal(true);
         } else {
-          alert("Primero debes de dar de alta un cultivo");
+          alert('Primero debes de dar de alta un cultivo');
         }
-
-      
+      }
     } catch (error) {
       console.log(error);
     }
@@ -113,7 +111,7 @@ export function Dispositivos() {
         const cuenta_main = userData.cuenta_main;
         const formData = new FormData();
 
-        if(cuenta_main > 0 ) {
+        if (cuenta_main > 0) {
           formData.append('id_usuario', cuenta_main);
         } else {
           formData.append('id_usuario', id_usuario);
@@ -168,8 +166,8 @@ export function Dispositivos() {
       getDispositivos();
       dispositivosGeneral();
     }, 40000);
-      getDispositivos();
-      dispositivosGeneral();
+    getDispositivos();
+    dispositivosGeneral();
 
     return () => clearInterval(intervalId);
   }, []);

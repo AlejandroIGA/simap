@@ -10,7 +10,7 @@ import {
   Image,
   ScrollView,
 } from 'react-native';
-import EliminarDispositivos from "../components/suscripcion/eliminarDispositivos.jsx";
+import EliminarDispositivos from '../components/suscripcion/eliminarDispositivos.jsx';
 
 const MainAdmin = () => {
   const [showModal, setShowModal] = useState(false);
@@ -34,14 +34,14 @@ const MainAdmin = () => {
         });
 
         const data = await response.json();
-        if (data.dispositivos.length > 3 && tipo === "Free") {
+        if (data.dispositivos.length > 3 && tipo === 'Free') {
           openModal();
         }
       }
     } catch (error) {
       console.error('ERROR:', error.message);
     }
-  }
+  };
 
   const openModal = async () => {
     setShowModal(true);
@@ -52,17 +52,19 @@ const MainAdmin = () => {
   };
 
   const handleColor = (index) => {
-    setDispositivos(prevState => {
+    setDispositivos((prevState) => {
       const updatedDispositivos = [...prevState];
-      updatedDispositivos[index].conectado = !updatedDispositivos[index].conectado;
+      updatedDispositivos[index].conectado =
+        !updatedDispositivos[index].conectado;
       return updatedDispositivos;
     });
   };
 
   const handleColorBomb = (index) => {
-    setDispositivos(prevState => {
+    setDispositivos((prevState) => {
       const updatedDispositivos = [...prevState];
-      updatedDispositivos[index].conectadoBomb = !updatedDispositivos[index].conectadoBomb;
+      updatedDispositivos[index].conectadoBomb =
+        !updatedDispositivos[index].conectadoBomb;
       // Desactivar el automatizado si se activa la bomba
       updatedDispositivos[index].conectadoAuto = false;
       return updatedDispositivos;
@@ -70,9 +72,10 @@ const MainAdmin = () => {
   };
 
   const handleColorAuto = (index) => {
-    setDispositivos(prevState => {
+    setDispositivos((prevState) => {
       const updatedDispositivos = [...prevState];
-      updatedDispositivos[index].conectadoAuto = !updatedDispositivos[index].conectadoAuto;
+      updatedDispositivos[index].conectadoAuto =
+        !updatedDispositivos[index].conectadoAuto;
       // Desactivar la bomba si se activa el automatizado
       updatedDispositivos[index].conectadoBomb = false;
       return updatedDispositivos;
@@ -86,30 +89,34 @@ const MainAdmin = () => {
       const id_usuario = userData.id_usuario;
       const formData = new FormData();
       formData.append('id_usuario', id_usuario);
-  
-      const response = await fetch(conf.url + '/datosDispositivo', {
+
+      const response = await fetch(conf.url + '/dispositivos', {
         method: 'POST',
         body: formData,
       });
-  
+
       if (!response.ok) {
         throw new Error('Error al obtener los datos del dispositivo');
       }
-  
+
       const dataResponse = await response.json();
       // Mapea sobre los dispositivos y convierte el campo "bomba" a booleano
-      const dispositivosActualizados = dataResponse['Datos del Dispositivo'].map(dispositivo => {
-        dispositivo.conectadoBomb = Boolean(parseInt(dispositivo.bomba));
-        dispositivo.conectadoAuto = dispositivo.automatizado === "1";
-        return dispositivo;
-      });
+      const dispositivosActualizados = dataResponse['dispositivos'].map(
+        (dispositivo) => {
+          dispositivo.conectadoBomb = Boolean(parseInt(dispositivo.bomba));
+          dispositivo.conectadoAuto = dispositivo.automatizado === '1';
+          return dispositivo;
+        }
+      );
       setDispositivos(dispositivosActualizados);
-      setTarjeta(dataResponse['Datos del Dispositivo'] !== null && dataResponse['Datos del Dispositivo'].length > 0);
-      console.log(dataResponse);
+      setTarjeta(
+        dataResponse['dispositivos'] !== null &&
+          dataResponse['dispositivos'].length > 0
+      );
     } catch (error) {
       console.error('Error al obtener los datos del dispositivo:', error);
     }
-  };  
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -134,8 +141,8 @@ const MainAdmin = () => {
     const formData = new FormData();
     formData.append('id_dispositivo', idDispositivo);
     formData.append('bomba', bomba);
-    console.log("Dispositivo: ", idDispositivo);
-    console.log("Estatus: ", bomba);
+    console.log('Dispositivo: ', idDispositivo);
+    console.log('Estatus: ', bomba);
     try {
       const response = await fetch(conf.url + '/activarBomba', {
         method: 'POST',
@@ -144,8 +151,7 @@ const MainAdmin = () => {
 
       if (response.ok) {
         const data = await response.json();
-        console.log(response);
-        console.log("Éxito: ", data.mensaje);
+        console.log('Éxito: ', data.mensaje);
       } else {
         console.log('Error al activar bomba');
       }
@@ -158,9 +164,6 @@ const MainAdmin = () => {
     const formData = new FormData();
     formData.append('id_dispositivo', idDispositivo);
     formData.append('automatizado', automatizado);
-    console.log("Dispositivo: ", idDispositivo);
-    console.log("Automatizado: ", automatizado);
-
     try {
       const response = await fetch(conf.url + '/activarAutomatizado', {
         method: 'POST',
@@ -169,8 +172,6 @@ const MainAdmin = () => {
 
       if (response.ok) {
         const data = await response.json();
-        console.log(response);
-        console.log(data.mensaje);
       } else {
         throw new Error('Error al activar automatizado');
       }
@@ -183,7 +184,6 @@ const MainAdmin = () => {
     try {
       const formData = new FormData();
       formData.append('id_dispositivo', idDispositivo);
-      console.log("Id del dispositivo: ", idDispositivo);
 
       const response = await fetch(conf.url + '/obtenerEstadoDispositivo', {
         method: 'POST',
@@ -202,89 +202,116 @@ const MainAdmin = () => {
     }
   };
 
-
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
-          <Text style={styles.mainText}>Información del cultivo</Text>
+          <Text style={styles.mainText}>Estado dispositivos</Text>
           {tarjeta && dispositivos.length > 0 ? (
             <View>
-              {dispositivos.map((dispositivo, index) => (
-                <View style={styles.formContainer} key={index}>
-                  <View style={styles.row}>
-                    <Text>Master {index + 1}</Text>
-                    <Text>Mac: {dispositivo.mac}</Text>
-                    <Text>Nombre de red: {dispositivo.ssid}</Text>
-                    <TouchableOpacity
-                      style={[
-                        styles.button,
-                        { backgroundColor: dispositivo.conectado ? 'red' : '#ABBF15' },
-                      ]}
-                      onPress={() => handleColor(index)}
+              {dispositivos.map((dispositivo, index) =>
+                dispositivo.tipo == 'maestro' ? (
+                  <View style={styles.formContainer} key={index}>
+                    <View
+                      flexDirection={'row'}
+                      alignItems={'center'}
+                      justifyContent={'space-around'}
                     >
-                      <Text style={styles.buttonText}>
-                        {dispositivo.conectado ? 'Desconectar' : 'Conectar'}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={[styles.formContainer, styles.bombaContainer]}>
-                    <View style={styles.row}>
-                      <Text style={{ textAlign: 'center' }}>Estado de bomba</Text>
-                      <Image
-                        source={require('../../assets/bomba.png')}
-                        style={styles.image}
-                      />
-                      <View style={styles.buttonColumn}>
-                        <TouchableOpacity
-                          style={[
-                            styles.buttonBomb,
-                            {
-                              backgroundColor: dispositivo.conectadoBomb ? 'red' : '#ABBF15',
-                              ...(dispositivo.conectadoAuto && styles.disabledButton),
-                            },
-                          ]}
-                          onPress={() => {
-                            activarBomba(dispositivo.id_dispositivo, dispositivo.conectadoBomb ? 0 : 1);
-                            handleColorBomb(index); // Actualizar estado de la bomba
-                          }}
-                          disabled={dispositivo.conectadoAuto}
+                      <View style={styles.row}>
+                        <Text>Tipo: {dispositivo.tipo}</Text>
+                        <Text>Cultivo: {dispositivo.cosecha}</Text>
+                        <Text>Dispositivo: {dispositivo.nombre}</Text>
+                        <Text>Mac: {dispositivo.mac}</Text>
+                      </View>
+                      <View style={styles.row}>
+                        <Image
+                          source={require('../../assets/bomba.png')}
+                          style={styles.image}
+                        />
+                      </View>
+                    </View>
+                    <View style={[styles.bombaContainer]}>
+                      <View style={styles.row}>
+                        <Text style={{ textAlign: 'center' }}>
+                          Estado de bomba
+                        </Text>
+                        <View
+                          style={styles.buttonColumn}
+                          justifyContent={'center'}
                         >
-                          <Text style={styles.buttonText}>
-                            {dispositivo.conectadoBomb ? 'Apagar' : 'Prender'}
-                          </Text>
-                        </TouchableOpacity>
+                          <TouchableOpacity
+                            style={[
+                              styles.buttonBomb,
+                              {
+                                backgroundColor: dispositivo.conectadoBomb
+                                  ? 'red'
+                                  : '#ABBF15',
+                                ...(dispositivo.conectadoAuto &&
+                                  styles.disabledButton),
+                              },
+                            ]}
+                            onPress={() => {
+                              activarBomba(
+                                dispositivo.id_dispositivo,
+                                dispositivo.conectadoBomb ? 0 : 1
+                              );
+                              handleColorBomb(index); // Actualizar estado de la bomba
+                            }}
+                            disabled={dispositivo.conectadoAuto}
+                          >
+                            <Text style={styles.buttonText}>
+                              {dispositivo.conectadoBomb ? 'Apagar' : 'Prender'}
+                            </Text>
+                          </TouchableOpacity>
 
-                        <TouchableOpacity
-                          style={[
-                            styles.buttonBomb,
-                            { backgroundColor: dispositivo.conectadoAuto ? 'red' : '#ABBF15' },
-                          ]}
-                          onPress={() => {
-                            activarAutomatizado(dispositivo.id_dispositivo, dispositivo.conectadoAuto ? 0 : 1);
-                            handleColorAuto(index); // Actualizar estado del automatizado
-                          }}
-                        >
-                          <Text style={styles.buttonText}>
-                            {dispositivo.conectadoAuto ? 'Automatizado' : 'Automatizar'}
-                          </Text>
-                        </TouchableOpacity>
-
+                          <TouchableOpacity
+                            style={[
+                              styles.buttonBomb,
+                              {
+                                backgroundColor: dispositivo.conectadoAuto
+                                  ? 'red'
+                                  : '#ABBF15',
+                              },
+                            ]}
+                            onPress={() => {
+                              activarAutomatizado(
+                                dispositivo.id_dispositivo,
+                                dispositivo.conectadoAuto ? 0 : 1
+                              );
+                              handleColorAuto(index); // Actualizar estado del automatizado
+                            }}
+                          >
+                            <Text style={styles.buttonText}>
+                              {dispositivo.conectadoAuto
+                                ? 'Automatizado'
+                                : 'Automatizar'}
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
                       </View>
                     </View>
                   </View>
-                </View>
-              ))}
+                ) : (
+                  <View style={styles.formContainer} key={index}>
+                    <View style={styles.row}>
+                      <Text>Tipo: {dispositivo.tipo}</Text>
+                      <Text>Cultivo: {dispositivo.cosecha}</Text>
+                      <Text>Dispositivo: {dispositivo.nombre}</Text>
+                      <Text>Mac: {dispositivo.mac}</Text>
+                      <Text>
+                        Responsable: {dispositivo.nomus} {dispositivo.appus}
+                      </Text>
+                    </View>
+                  </View>
+                )
+              )}
             </View>
           ) : (
             <Text>No se encontraron dispositivos</Text>
           )}
         </View>
       </ScrollView>
-      <EliminarDispositivos
-        visible={showModal}
-        onClose={closeModal}
-      />
+      <EliminarDispositivos visible={showModal} onClose={closeModal} />
     </View>
   );
 };
@@ -298,8 +325,8 @@ const styles = StyleSheet.create({
     width: 300,
   },
   image: {
-    width: 50,
-    height: 50,
+    width: 70,
+    height: 70,
     marginRight: 10,
     marginHorizontal: 50,
   },
@@ -314,7 +341,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   formContainer: {
-    marginTop: 20,
+    marginTop: '1%',
     borderWidth: 2,
     borderColor: '#ABBF15',
     borderRadius: 10,
@@ -336,14 +363,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 10,
     marginTop: 10,
-    width: 120,
+    width: 150,
   },
   buttonBomb: {
     padding: 10,
     alignItems: 'center',
     borderRadius: 10,
     marginTop: 10,
-    width: 100,
+    width: '50%',
     marginLeft: 20,
   },
   buttonColumn: {
@@ -356,7 +383,7 @@ const styles = StyleSheet.create({
   disabledButton: {
     backgroundColor: '#CCCCCC',
     opacity: 0.5,
-  }
+  },
 });
 
 export default MainAdmin;

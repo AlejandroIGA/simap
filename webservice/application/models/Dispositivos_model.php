@@ -34,15 +34,9 @@ class Dispositivos_model extends CI_Model
 
    public function getDispositivos($id_usuario)
 {
-    //1.determinar si tiene cuenta main
-    $aux = $this->db
-    ->select("cuenta_main")
-    ->from("usuario")
-    ->where("id_usuario",$id_usuario)
-    ->get();
 
     $query = $this->db->query("
-        SELECT dispositivo.*, cosecha.nombre as cosecha
+        SELECT dispositivo.*, cosecha.nombre as cosecha, usuario.nombre as nomus, usuario.apellidos as appus, temp_amb_min, temp_amb_max, hum_amb_min, hum_amb_max, hum_sue_min, hum_sue_max
         FROM dispositivo
         INNER JOIN usuario ON usuario.id_usuario = dispositivo.id_usuario
         INNER JOIN cosecha ON cosecha.id_cosecha = dispositivo.id_cosecha
@@ -51,13 +45,13 @@ class Dispositivos_model extends CI_Model
                 SELECT dispositivo.id_dispositivo
                 FROM usuario 
                 INNER JOIN dispositivo ON usuario.id_usuario = dispositivo.id_usuario
-                WHERE usuario.id_usuario = IFNULL((SELECT cuenta_main FROM usuario WHERE id_usuario = $id_usuario), $id_usuario) AND dispositivo.tipo = 'maestro'
+                WHERE usuario.id_usuario = $id_usuario AND dispositivo.tipo = 'maestro'
             )
             OR dispositivo.id_dispositivo IN (
                 SELECT dispositivo.id_dispositivo
                 FROM usuario 
                 INNER JOIN dispositivo ON usuario.id_usuario = dispositivo.id_usuario
-                WHERE usuario.id_usuario = IFNULL((SELECT cuenta_main FROM usuario WHERE id_usuario = $id_usuario), $id_usuario) AND dispositivo.tipo = 'maestro'
+                WHERE usuario.id_usuario = $id_usuario AND dispositivo.tipo = 'maestro'
             )
             OR (
                 dispositivo.maestro IN (
@@ -67,11 +61,11 @@ class Dispositivos_model extends CI_Model
                     WHERE usuario.id_usuario IN (
                         SELECT cuenta_main 
                         FROM usuario 
-                        WHERE id_usuario = IFNULL((SELECT cuenta_main FROM usuario WHERE id_usuario = $id_usuario), $id_usuario)
+                        WHERE id_usuario = $id_usuario
                     ) 
                     AND dispositivo.tipo = 'maestro'
                 )
-                AND dispositivo.id_usuario = IFNULL((SELECT cuenta_main FROM usuario WHERE id_usuario = $id_usuario), $id_usuario)
+                AND dispositivo.id_usuario = $id_usuario
             )
         )
     ");
@@ -135,7 +129,7 @@ class Dispositivos_model extends CI_Model
     public function getDatosDispositivo($id_usuario)
     {
         $rs = $this->db
-            ->select('dp.id_dispositivo, dp.mac, co.nombre, dp.bomba, dp.automatizado')
+            ->select('dp.id_dispositivo, dp.mac, co.nombre as cosecha, dp.nombre as dispositivo,dp.bomba, dp.automatizado, dp.tipo, us.nombre as nomus, us.apellidos as appus')
             ->from('dispositivo AS dp')
             ->join('cosecha AS co', 'dp.id_cosecha = co.id_cosecha')
             ->join('usuario AS us', 'dp.id_usuario = us.id_usuario')

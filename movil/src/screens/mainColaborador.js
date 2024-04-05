@@ -24,7 +24,7 @@ const MainColaborador = () => {
       const formData = new FormData();
       formData.append('id_usuario', id_usuario);
 
-      const response = await fetch(conf.url + '/datosDispositivo', {
+      const response = await fetch(conf.url + '/dispositivos', {
         method: 'POST',
         body: formData,
       });
@@ -34,10 +34,11 @@ const MainColaborador = () => {
       }
 
       const dataResponse = await response.json();
-      setDispositivos(dataResponse['Datos del Dispositivo']);
+      setDispositivos(dataResponse['dispositivos']);
+      console.log(dataResponse.dispositivos);
       setMostrarTarjeta(
-        dataResponse['Datos del Dispositivo'] !== null &&
-          dataResponse['Datos del Dispositivo'].length > 0
+        dataResponse['dispositivos'] !== null &&
+          dataResponse['dispositivos'].length > 0
       );
     } catch (error) {
       console.error('Error al obtener los datos del dispositivo:', error);
@@ -64,19 +65,28 @@ const MainColaborador = () => {
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
-          <Text style={styles.textLogin}>Información del cultivo</Text>
+          <Text style={styles.textLogin}>Estado dispositivos</Text>
           {mostrarTarjeta && dispositivos ? (
             dispositivos.map((dispositivo, index) => (
               <View style={styles.formContainer} key={index}>
-                <Text style={styles.label}>Dispositivo {index + 1}</Text>
-                <Text style={styles.label}>Mac: {dispositivo.mac}</Text>
                 <Text style={styles.label}>
-                  Nombre de red: {dispositivo.ssid}
+                  Dispositivo: {dispositivo.nombre}
                 </Text>
-                <Text style={styles.label}>Cultivo: {dispositivo.nombre}</Text>
-                <Text style={styles.label}>Temperatura: {}</Text>
-                <Text style={styles.label}>Humedad/suelo: {}</Text>
-                <Text style={styles.label}>Humedad/ambiente: {}</Text>
+                <Text style={styles.label}>Tipo: {dispositivo.tipo}</Text>
+                <Text style={styles.label}>Mac: {dispositivo.mac}</Text>
+                <Text style={styles.label}>Cultivo: {dispositivo.cosecha}</Text>
+                <Text style={styles.label}>
+                  Conf Temp Amb: {dispositivo.temp_amb_min}°C -{' '}
+                  {dispositivo.temp_amb_max}°C
+                </Text>
+                <Text style={styles.label}>
+                  Conf Hum Amb: {dispositivo.hum_amb_min}% -{' '}
+                  {dispositivo.hum_amb_max}%
+                </Text>
+                <Text style={styles.label}>
+                  Conf Hum Sue: {dispositivo.hum_sue_min}% -{' '}
+                  {dispositivo.hum_sue_max}%
+                </Text>
               </View>
             ))
           ) : (

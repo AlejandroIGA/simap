@@ -254,7 +254,7 @@ class Back extends CI_Controller
         $psw = $this->input->post("psw");
         $tipo_usuario = $this->input->post("tipo_usuario");
         $tipo_login = $this->input->post("tipo_login");
-        $row = $this->Usuarios_model->insert($cuenta_main, $nombre, $apellidos, $correo, $psw, $tipo_usuario, $tipo_login);
+        $row = $this->Usuarios_model->insert($cuenta_main, $nombre, $apellidos, $correo, md5($psw), $tipo_usuario, $tipo_login);
 
         $obj["resultado"] = $row != NULL;
         $obj["mensaje"] = $obj["resultado"] ?
@@ -274,7 +274,7 @@ class Back extends CI_Controller
         $psw = $this->input->post("psw");
         $tipo_usuario = $this->input->post("tipo_usuario");
         $tipo_login = $this->input->post("tipo_login");
-        $row = $this->Usuarios_model->update($id_usuario, $nombre, $apellidos, $correo, $psw, $tipo_usuario, $tipo_login);
+        $row = $this->Usuarios_model->update($id_usuario, $nombre, $apellidos, $correo, md5($psw), $tipo_usuario, $tipo_login);
         $obj["resultado"] = $row != NULL;
         $obj["mensaje"] = $obj["resultado"] ?
             "Usuario actualizado"

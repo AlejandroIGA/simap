@@ -547,6 +547,47 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
+    public function activarBomba()
+{
+    $id_dispositivo = $this->input->post("id_dispositivo");
+    $bomba = $this->input->post("bomba");
+    $row = $this->Dispositivos_model->activarBomba($id_dispositivo, $bomba);
+    $obj["resultado"] = $row != NULL;
+    $obj["mensaje"] = $obj["resultado"] ?
+        "Se activó bomba"
+        : " Error: Algo ocurrió al activar bomba";
+    $obj["data"] = $row;
+
+    echo json_encode($obj);
+}
+
+public function activarAutomatizado()
+{
+    $id_dispositivo = $this->input->post("id_dispositivo");
+    $automatizado = $this->input->post("automatizado");
+    $row = $this->Dispositivos_model->activarAutomatizado($id_dispositivo, $automatizado);
+    $obj["resultado"] = $row != NULL;
+    $obj["mensaje"] = $obj["resultado"] ?
+        "Se activó automatizado"
+        : " Error: Algo ocurrió al activar automatizado";
+    $obj["data"] = $row;
+
+    echo json_encode($obj);
+}
+
+public function obtenerEstadoDispositivo()
+{
+    $id_dispositivo = $this->input->post("id_dispositivo");
+
+        $data = $this->Dispositivos_model->obtenerEstadoDispositivo($id_dispositivo);
+
+        $obj['resultado'] = $data != NULL;
+        $obj['mensaje'] = $obj['resultado'] ? "Se recuperó estado de dispositivo $id_dispositivo" : "Sin estado";
+        $obj['Estado del bomba'] = $data;
+
+        echo json_encode($obj);
+}
+
     //Obtener las plantas registradas
     public function getPlantas()
     {

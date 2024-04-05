@@ -163,7 +163,7 @@ function Login() {
             navigate('/mainAdmin');
           } else if (dataResponse.data.tipo === "Free") {
             navigate('/mainAdminFree');
-          } else if (dataResponse.data.tipo_usuario === "colaborador") {
+          } else if (dataResponse.data.tipo_usuario === "Colaborador") {
             alert("Acceso único a usuarios propietarios");
           }
         }

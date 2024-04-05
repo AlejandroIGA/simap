@@ -176,6 +176,21 @@ class Usuarios_model extends CI_Model
         );
     
         $this->db->insert('usuario', $data);
+        
+        $id_usuario = $this->db->insert_id();
+    
+        // Verificar si el usuario insertado es un propietario
+        if ($tipo_usuario === 'Propietario') {
+            // Insertar suscripción para propietarios
+            $suscripcion = array(
+                "id_usuario" => $id_usuario,
+                "fecha_inicio" => date('Y-m-d H:i:s'),
+                "tipo" => "Free",
+                "estatus" => 1
+            );
+    
+            $this->db->insert('suscripcion', $suscripcion);
+        }
     
         return $this->db->affected_rows() > 0;
     }

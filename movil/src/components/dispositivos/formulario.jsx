@@ -393,10 +393,11 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 5,
     marginBottom: 10,
+    marginTop: 10,
   },
   picker: {
     height: Platform.OS === 'ios' ? 60 : 30,
-    overflow: Platform.OS === 'hidden' ? 60 : '',
+    overflow:'hidden',
     justifyContent: 'center'
   },
   input: {

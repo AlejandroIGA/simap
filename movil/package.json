@@ -22,11 +22,14 @@
     "expo-auth-session": "~5.4.0",
     "expo-av": "^13.10.5",
     "expo-constants": "^15.4.5",
+    "expo-dev-client": "~3.3.11",
     "expo-device": "~5.9.3",
     "expo-notifications": "~0.27.6",
     "expo-permissions": "^14.4.0",
+    "expo-random": "~13.6.0",
     "expo-server-sdk": "^3.7.0",
     "expo-status-bar": "~1.11.1",
+    "expo-web-browser": "~12.8.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-native": "0.73.4",
@@ -37,10 +40,7 @@
     "react-native-reanimated": "~3.6.2",
     "react-native-vector-icons": "^10.0.3",
     "react-native-web": "~0.19.6",
-    "react-native-webview": "^13.8.1",
-    "expo-random": "~13.6.0",
-    "expo-dev-client": "~3.3.11",
-    "expo-web-browser": "~12.8.2"
+    "react-native-webview": "^13.8.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

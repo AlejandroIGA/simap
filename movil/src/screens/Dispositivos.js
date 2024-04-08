@@ -60,13 +60,13 @@ export function Dispositivos() {
         } else {
           alert("Primero debes de dar de alta un cultivo");
         }
-
+      }
       
     } catch (error) {
       console.log(error);
     }
-  };
-
+  }
+  
   const closeModal = () => {
     setDispositivoEditar(null);
     setShowModal(false);

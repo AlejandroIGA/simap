@@ -271,8 +271,7 @@ class Back extends CI_Controller
         $correo = $this->input->post("correo");
         $psw = $this->input->post("psw");
         $tipo_usuario = $this->input->post("tipo_usuario");
-        $tipo_login = $this->input->post("tipo_login");
-        $row = $this->Usuarios_model->update($id_usuario, $nombre, $apellidos, $correo, $psw, $tipo_usuario, $tipo_login);
+        $row = $this->Usuarios_model->update($id_usuario, $nombre, $apellidos, $correo, $psw, $tipo_usuario);
         $obj["resultado"] = $row != NULL;
         $obj["mensaje"] = $obj["resultado"] ?
             "Usuario actualizado"
@@ -287,7 +286,8 @@ class Back extends CI_Controller
     {
 
         $id_usuario = $this->input->post("id_usuario");
-        $row = $this->Usuarios_model->delete($id_usuario);
+        $tipo_usuario = $this->input->post("tipo_usuario");
+        $row = $this->Usuarios_model->delete($id_usuario, $tipo_usuario);
 
         $obj["resultado"] = $row != NULL;
         $obj["mensaje"] = $obj["resultado"] ?

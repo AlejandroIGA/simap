@@ -61,8 +61,26 @@ function MainAdminFree() {
   };
 
 
-
   const add = async () => {
+    if (!nombre || !apellidos || !correo || !psw) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Por favor completa todos los campos.'
+      });
+      return;
+    }
+  
+    const correoRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!correoRegex.test(correo)) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Por favor introduce un correo electrónico válido.'
+      });
+      return;
+    }
+    
     const formData = new FormData();
     const cuenta_main = sessionStorage.getItem('id_usuario');
     formData.append('cuenta_main', cuenta_main);
@@ -70,18 +88,17 @@ function MainAdminFree() {
     formData.append('apellidos', apellidos);
     formData.append('correo', correo);
     formData.append('psw', psw);
-    formData.append('tipo_login', tipo_login);
-
+   
     try {
       const response = await fetch(conf.url + '/insertUser', {
         method: 'POST',
         body: formData,
       });
-
+  
       if (response.ok) {
         const dataResponse = await response.json();
         console.log(dataResponse);
-
+  
         if (dataResponse.resultado) {
           Swal.fire({
             title: "<strong>¡Registro exitoso!</strong>",
@@ -89,8 +106,8 @@ function MainAdminFree() {
             icon: 'success',
             timer: 3000
           },
-            getEmpleados(),
-            limpiarCampos());
+          getEmpleados(),
+          limpiarCampos());
         } else {
           Swal.fire({
             icon: 'error',
@@ -114,9 +131,29 @@ function MainAdminFree() {
         text: 'Error al insertar usuario'
       });
     }
-  };
+  }; 
 
   const update = async () => {
+
+    if (!nombre || !apellidos || !correo || !psw) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Por favor completa todos los campos.'
+      });
+      return;
+    }
+  
+    const correoRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!correoRegex.test(correo)) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Por favor introduce un correo electrónico válido.'
+      });
+      return;
+    }
+    
     const formData = new FormData();
     formData.append('id_usuario', id_usuario);
     formData.append('nombre', nombre);

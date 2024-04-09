@@ -167,28 +167,55 @@ class Usuarios_model extends CI_Model
     }
     
 
-    public function update($id_usuario, $nombre, $apellidos, $correo, $psw, $tipo_usuario, $tipo_login){
+    public function update($id_usuario, $nombre, $apellidos, $correo, $psw, $tipo_usuario){
         $data = array(
             'nombre' => $nombre,
             'apellidos' => $apellidos,
             'correo' => $correo,
             'psw' => $psw,
             'tipo_usuario' => $tipo_usuario,
-            'tipo_login' => $tipo_login
         );
+
+        // Verificar si el usuario actualizado es un propietario
+        if ($tipo_usuario === 'Propietario') {
+            // Insertar suscripción para propietarios
+            $suscripcion = array(
+                "id_usuario" => $id_usuario,
+                "fecha_inicio" => date('Y-m-d H:i:s'),
+                "tipo" => "Free",
+                "estatus" => 1
+            );
+    
+            $this->db->insert('suscripcion', $suscripcion);
+        }
     
         $this->db->where('id_usuario', $id_usuario);
         $this->db->update('usuario', $data);
+
+        if ($tipo_usuario === 'Colaborador') {
+
+            $suscripcion = array(
+                "id_usuario" => $id_usuario
+            );
+           
+            $this->db->where('id_usuario', $id_usuario);
+            $this->db->delete('suscripcion', $suscripcion);
+        }
     
         return $this->db->affected_rows() > 0;
     }
     
-    public function delete( $id_usuario ) {
-		$this->db
-				->where( "id_usuario", $id_usuario )
-				->delete( "usuario" );
-		return $this->db->affected_rows() > 0;
-	}
+    public function delete($id_usuario, $tipo_usuario) {
+        if ($tipo_usuario === 'Propietario') {
+            // Si es propietario, eliminar también el campo asociado en suscripcion
+            $this->db->where('id_usuario', $id_usuario)->delete('suscripcion');
+        }
+        
+        // Siempre eliminar el campo en usuario
+        $this->db->where('id_usuario', $id_usuario)->delete('usuario');
+    
+        return $this->db->affected_rows() > 0;
+    }    
 
     //Consulta de usuarios
     public function empleados($cuenta_main) {

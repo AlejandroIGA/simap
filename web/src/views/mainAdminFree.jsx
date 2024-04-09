@@ -15,22 +15,18 @@ function MainAdminFree() {
   const [correo, setCorreo] = useState('');
   const [psw, setPsw] = useState('');
   const [tipo_login] = useState('Sistema');
-  const [empleadosList, setEmpleadosList] = useState([]);
+  const [empleadosList, setEmpleadosList] = useState(null);
   const [editar, setEditar] = useState(false);
   const navigate = useNavigate();
   const storedSession = sessionStorage.getItem('id_usuario');
   const sesion = JSON.parse(storedSession);
 
-  useEffect(() => {
-    if (!sesion) {
-      alert("Inicia sesión primero");
-      navigate('/login');
-    } else if (sesion.tipo === 'Cliente') {
-      navigate('/catalogoCliente');
-    }
-  }, [sesion, navigate]);
 
   useEffect(() => {
+    if (!sessionStorage.getItem('id_usuario')) {
+      alert("Debes iniciar sesión primero");
+      navigate('/login');
+    }
     getEmpleados();
   }, []);
 
@@ -63,8 +59,33 @@ function MainAdminFree() {
 
 
   const add = async () => {
-    const formData = new FormData();
     const cuenta_main = sessionStorage.getItem('id_usuario');
+    if (!nombre || !apellidos || !correo || !psw || !tipo_login) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Por favor completa todos los campos.'
+      });
+      return;
+    }
+    
+    const formData2 = new FormData();
+    formData2.append("cuenta_main", cuenta_main );
+    formData2.append("tipo_usuario", "colaborador");
+    const response = await fetch(conf.url + '/getCantidadUsuarios',{
+      method: 'POST',
+      body: formData2,
+    })
+
+    const dataResponse = await response.json();
+    if(dataResponse.cantidad==2){
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: "Solo se puedan dar de alta 2 usuarios colaborador"
+      });
+    }else{
+      const formData = new FormData();
     formData.append('cuenta_main', cuenta_main);
     formData.append('nombre', nombre);
     formData.append('apellidos', apellidos);
@@ -114,10 +135,33 @@ function MainAdminFree() {
         text: 'Error al insertar usuario'
       });
     }
+    }
   };
 
   const update = async () => {
-    const formData = new FormData();
+    const cuenta_main = sessionStorage.getItem('id_usuario');
+    if (!nombre || !apellidos || !correo || !psw ) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Por favor completa todos los campos.'
+      });
+      return;
+    }
+
+    const formData2 = new FormData();
+    formData2.append("cuenta_main", cuenta_main );
+    formData2.append("tipo_usuario", "colaborador");
+    const response = await fetch(conf.url + '/getCantidadUsuarios',{
+      method: 'POST',
+      body: formData2,
+    })
+
+    const dataResponse = await response.json();
+    if(dataResponse.cantidad==2){
+      alert("Solo se pueden dar de alta 2 usuarios colaborador")
+    }else{
+      const formData = new FormData();
     formData.append('id_usuario', id_usuario);
     formData.append('nombre', nombre);
     formData.append('apellidos', apellidos);
@@ -168,6 +212,7 @@ function MainAdminFree() {
         text: 'Error al actualizar usuario'
       });
     }
+    }
   };
 
   const deleteEmple = async (val) => {
@@ -197,12 +242,12 @@ function MainAdminFree() {
           console.log(dataResponse);
 
           if (dataResponse.resultado) {
-            getEmpleados();
             Swal.fire({
               text: val.nombre + ' fue eliminado',
               icon: 'success',
               timer: 3000
             });
+            getEmpleados();
           } else {
             Swal.fire({
               icon: 'error',
@@ -448,37 +493,45 @@ function MainAdminFree() {
               </tr>
             </thead>
             <tbody>
-              {filterEmpleados().map((val, key) => (
-                <tr key={key}>
-                  <td>{val.id_usuario}</td>
-                  <td>{val.nombre}</td>
-                  <td>{val.apellidos}</td>
-                  <td>{val.correo}</td>
-                  <td>{val.psw}</td>
-                  <td>
-                    <div className='btn-group' role='group' aria-label='Basic example'>
-                      <button
-                        type='button'
-                        className='btn btn-danger text-white'
-                        onClick={() => {
-                          deleteEmple(val);
-                        }}
-                      >
-                        Eliminar
-                      </button>
-                      <button
-                        type='button'
-                        className='btn btn-primary'
-                        onClick={() => {
-                          editarEmpleado(val);
-                        }}
-                      >
-                        Editar
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {empleadosList ? (
+                empleadosList.map((val, key) => (
+                  <tr key={key}>
+                    <td>{val.id_usuario}</td>
+                    <td>{val.nombre}</td>
+                    <td>{val.apellidos}</td>
+                    <td>{val.correo}</td>
+                    <td>{val.psw}</td>
+                    <td>
+                      <div className='btn-group' role='group' aria-label='Basic example'>
+                        <button
+                          type='button'
+                          className='btn btn-danger text-white'
+                          onClick={() => {
+                            deleteEmple(val);
+                          }}
+                        >
+                          Eliminar
+                        </button>
+                        <button
+                          type='button'
+                          className='btn btn-primary'
+                          onClick={() => {
+                            editarEmpleado(val);
+                          }}
+                        >
+                          Editar
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )
+            :
+            <tr>
+    <td colSpan="6">No hay empleados disponibles</td>
+  </tr>
+            }
+              
             </tbody>
 
           </table>

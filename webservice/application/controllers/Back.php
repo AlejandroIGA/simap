@@ -36,12 +36,12 @@ class Back extends CI_Controller
         $tokenNotificacion = $this->input->post("token_notificacion");
         $token = bin2hex(random_bytes(32));
 
-        $row = $this->Usuarios_model->login($correo, $psw);
+        $row = $this->Usuarios_model->login($correo, md5($psw));
 
         $obj["resultado"] = $row != NULL;
         if ($obj["resultado"] != NULL) {
             $tokenU = $row->token;
-            if ($row->psw == $psw and $row->correo == $correo) {
+            if ($row->psw == md5($psw) and $row->correo == $correo) {
                 if ($row->estatus == 0) {
                     $obj["mensaje"] = "Cuenta desactivada";
                     $obj["data"] = NULL;
@@ -52,6 +52,8 @@ class Back extends CI_Controller
                             'id_usuario' => $row->id_usuario,
                             'tipo_usuario' => $row->tipo_usuario,
                             'estatus' => $row->estatus,
+                            'token' => $row->token,
+                            'cuenta_main' => $row->cuenta_main,
                             'tipo' => $row->tipo
                         );
                         $this->Usuarios_model->saveUserToken($row->id_usuario, $token, $tokenNotificacion);
@@ -124,12 +126,12 @@ class Back extends CI_Controller
         $psw = $this->input->post("psw");
         $token = bin2hex(random_bytes(32));
 
-        $row = $this->Usuarios_model->login_Web($correo, $psw);
+        $row = $this->Usuarios_model->login_Web($correo, md5($psw));
 
         $obj["resultado"] = $row != NULL;
         if ($obj["resultado"] != NULL) {
             $tokenU = $row->token;
-            if ($row->psw == $psw and $row->correo == $correo) {
+            if ($row->psw == md5($psw) and $row->correo == $correo) {
                 if ($row->estatus == 0) {
                     $obj["mensaje"] = "Cuenta desactivada";
                     $obj["data"] = NULL;
@@ -325,7 +327,7 @@ class Back extends CI_Controller
             "nombre" => $nombre,
             "apellidos" => $apellidos,
             "correo" => $correo,
-            "psw" => $psw,
+            "psw" => md5($psw),
             "estatus" => 1,
             "tipo_usuario" => $tipo,
             "tipo_login" => $tipo_login
@@ -518,6 +520,17 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
+    public function borrarDispositivoSuscripcion()
+    {
+
+        $id_dispositivo = $this->input->post("id_dispositivo");
+
+        $obj["resultado"] = $this->Dispositivos_model->deleteDispositivoSuscripcion($id_dispositivo);
+        $obj['mensaje'] = $obj["resultado"] ? "Dispositivo borrado exitosamente" : "Imposible borrar dispositivo";
+
+        echo json_encode($obj);
+    }
+
     //Obtener datos de dispositivos
 
     public function datosDispositivo()
@@ -632,7 +645,19 @@ public function obtenerEstadoDispositivo()
         $obj["resultado"] = $resultado;
         $obj["mensaje"] = $mensaje;
 
+        $idNuevoCultivo = $this->Cultivo_model->getUltimoId();
+        $idNuevoCultivo = $idNuevoCultivo[0]->id_cosecha;
+        $idPlanta = (int)$this->input->post("id_planta");
+        
+        $this->setGdd($idPlanta, $idNuevoCultivo);
+
         echo json_encode($obj);
+    }
+
+    public function getUltimoId(){
+        $data = $this->Cultivo_model->getUltimoId();
+        $data = $data[0]->id_cosecha;
+        echo json_encode($data);
     }
 
     //Actualizar un cultivo
@@ -733,6 +758,13 @@ public function obtenerEstadoDispositivo()
             "Suscripción actualiza"
             : "Surgio un error";
 
+        echo json_encode($obj);
+    }
+    
+    public function terminarTransaccion(){
+        $estado = $this->input->post("estado");
+        $res = $this->Usuarios_model->terminarTransaccion($estado);
+        $obj["mensaje"] = $res;
         echo json_encode($obj);
     }
     //Obtener notificaciones
@@ -947,11 +979,9 @@ public function obtenerEstadoDispositivo()
     La función debe de ejecutarse en cuando se agrega un cultivo por primera vez
     La función se ejecuta cuando hace un login y el ultimo dia registrado en firebase es igual al día del login
     */
-    public function setGdd()
+    public function setGdd($id_planta, $id_cultivo)
     {
         //MANDAR A LLAMAR CADA QUE SE CREA UN CULTIVO
-        $id_planta = 2;
-        $id_cultivo = 84;
         $temperaturaBase = $this->Sensor_model->setGdd($id_planta, $id_cultivo);
         $temperaturaBase = $temperaturaBase->temperatura;
 
@@ -1169,13 +1199,57 @@ public function obtenerEstadoDispositivo()
         echo json_encode($obj);
     }
 
-    public function getEtapasPlanta($id_planta){
+    public function getEtapasPlanta(){
+        $id_planta = $this->input->post("id_planta");
         $data = $this->Sensor_model->getEtapasPlanta($id_planta);
         echo json_encode($data);
     }
 
-    public function getEtapasPlaga($id_planta){
+    public function getEtapasPlaga(){
+        $id_planta = $this->input->post("id_planta");
         $data = $this->Sensor_model->getEtapasPlaga($id_planta);
+        echo json_encode($data);
+    }
+
+    public function getPorcentajes(){
+         $id_cosecha = $this->input->post("id_cosecha");    
+         $mesInicio = $this->input->post("mes_inicio");
+         $mesFin = $this->input->post("mes_fin");
+         $planta = $this->Sensor_model->getNombrePlanta($id_cosecha);    
+
+        $registros = $this->Sensor_model->getPorcentajes($id_cosecha,$mesInicio,$mesFin);
+        $resto = 1;
+        if($registros == !null){
+            foreach($registros as $registro){
+                $resto = $resto - $registro->porcentaje_afectados;
+                $finalizados = $registro->finalizados;
+            }
+            $porcentajes = [];
+            $data["estado"] = true;
+            $data["finalizados"] = $finalizados;
+            $data["planta"] = $planta;
+            for($i=0; $i<count($registros)+1;$i++){
+                if($i != count($registros)){
+                    $obj["y"] = (float)$registros[$i]->porcentaje_afectados;
+                    $obj["name"] = $registros[$i]->plaga;
+                }else{
+                    $obj["y"] = $resto;
+                    $obj["name"] = "Sin plaga";
+                }
+                array_push($porcentajes, $obj);
+            }
+            $data["porcentajes"] =$porcentajes;
+        }else{
+            $data["estado"] = false;
+        }
+        
+        //validar porcentajes 
+        echo json_encode($data);
+    }
+
+    public function getCultivosActivos(){
+        $id_usuario = $this->input->post("id_usuario");
+        $data = $this->Cultivo_model->getCultivosActivos($id_usuario);
         echo json_encode($data);
     }
 

@@ -125,6 +125,7 @@ const MainAdmin = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       getDatos();
+      eliminarDispositivos();
     }, 20000);
     return () => clearInterval(interval);
   }, []);
@@ -200,6 +201,7 @@ const MainAdmin = () => {
       return null;
     }
   };
+
 
   return (
     <View style={styles.container}>

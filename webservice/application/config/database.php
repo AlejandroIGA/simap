@@ -75,6 +75,10 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
+	'hostname' => 'localhost',
+	'username' => 'root',
+	'password' => '230304',
+	'database' => 'simap',
 	'hostname' => '127.0.0.1',
 	'username' => 'aleinf214',
 	'password' => 'iga@2022371049',

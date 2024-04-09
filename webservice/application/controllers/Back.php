@@ -426,32 +426,39 @@ class Back extends CI_Controller
         $id_cosecha = $this->input->post("id_cosecha");
         $id_usuario = $this->input->post("id_usuario");
 
-        if ($maestro > 0) {
-            $data = array(
-                "nombre" => $nombre,
-                "mac" => $mac,
-                "tipo" => $tipo,
-                "maestro" => $maestro,
-                "automatizado" => NULL,
-                "id_usuario" => $id_usuario,
-                "id_cosecha" => $id_cosecha
-            );
+        $mac_repetida = $this->Dispositivos_model->getMac($mac);
+
+        if($mac_repetida !== NULL) {
+            $obj["resultado"] = 0;
+            $obj['mensaje'] = "La dirección MAC ya fue utilizada.";
         } else {
-            $data = array(
-                "nombre" => $nombre,
-                "mac" => $mac,
-                "tipo" => $tipo,
-                "automatizado" => NULL,
-                "id_usuario" => $id_usuario,
-                "id_cosecha" => $id_cosecha
-            );
+            if ($maestro > 0) {
+                $data = array(
+                    "nombre" => $nombre,
+                    "mac" => $mac,
+                    "tipo" => $tipo,
+                    "maestro" => $maestro,
+                    "automatizado" => NULL,
+                    "id_usuario" => $id_usuario,
+                    "id_cosecha" => $id_cosecha
+                );
+            } else {
+                $data = array(
+                    "nombre" => $nombre,
+                    "mac" => $mac,
+                    "tipo" => $tipo,
+                    "automatizado" => NULL,
+                    "id_usuario" => $id_usuario,
+                    "id_cosecha" => $id_cosecha
+                );
+            }
+    
+            $id_dispositivo = $this->Dispositivos_model->nuevoDispositivo($data);
+    
+            $obj["resultado"] = $id_dispositivo != 0;
+            $obj['mensaje'] = $obj["resultado"] ? "Dispositivo nuevo agregado" : "Imposible insertar dispositivo";
+            $obj["id_dispositivo"] = $id_dispositivo;
         }
-
-        $id_dispositivo = $this->Dispositivos_model->nuevoDispositivo($data);
-
-        $obj["resultado"] = $id_dispositivo != 0;
-        $obj['mensaje'] = $obj["resultado"] ? "Dispositivo nuevo agregado" : "Imposible insertar dispositivo";
-        $obj["id_dispositivo"] = $id_dispositivo;
 
         echo json_encode($obj);
     }

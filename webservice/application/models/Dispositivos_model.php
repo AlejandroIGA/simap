@@ -142,6 +142,20 @@ class Dispositivos_model extends CI_Model
         }
     }
 
+    public function getMac($mac)
+    {
+        $rs = $this->db
+            ->select('id_dispositivo')
+            ->from('dispositivo')
+            ->where('mac', $mac)
+            ->get();
+
+        if ($rs->num_rows() > 0) {
+            return $rs->row()->id_dispositivo;
+        } else {
+            return NULL;
+        }
+    }
     public function activarBomba($id_dispositivo, $bomba){
         $data = array(
             'bomba' => $bomba

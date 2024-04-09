@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, Modal, Button, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Modal, Button, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { Picker } from "@react-native-picker/picker";
@@ -166,6 +166,7 @@ const FormularioAgregar = ({ visible, onClose, onCambio }) => {
         <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
             <View style={style.container} flexDirection="column">
                 <Text style={style.sectionHeader} alignSelf="center">Añadir cultivo</Text>
+                <ScrollView>
                 <View>
                     <Text style={style.label}>Nombre</Text>
                     <TextInput
@@ -284,6 +285,7 @@ const FormularioAgregar = ({ visible, onClose, onCambio }) => {
                     <Button color={theme.button.danger} style={style.boton} title="Cancelar" onPress={cerrar} />
                     <Button color={theme.button.success} title="Guardar" onPress={addCultivo} />
                 </View>
+                </ScrollView>
             </View>
         </Modal>
 
@@ -352,6 +354,9 @@ const style = StyleSheet.create({
         borderRadius: 10,
         maxWidth: 200,
         width: 200,
+        overflow: 'hidden',
+        height: Platform.OS === 'ios' ? 100 : 30,
+        justifyContent: 'center'
     },
     pickerInput: {
         backgroundColor: theme.colors.backgroundPrimary,

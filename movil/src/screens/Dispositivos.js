@@ -63,8 +63,8 @@ export function Dispositivos() {
     } catch (error) {
       console.log(error);
     }
-  };
-
+  }
+  
   const closeModal = () => {
     setDispositivoEditar(null);
     setShowModal(false);

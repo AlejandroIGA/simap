@@ -20,41 +20,12 @@ function PaypalWeb() {
         });
         const data = await response.json();
         console.log(data.mensaje);
-        try {
-          const response = await fetch(conf.url + '/logout', {
-            method: 'POST',
-            body: formData
-          });
-    
-          if (response.ok) {
-            sessionStorage.clear()
-            console.log("Sesión terminada, id_usuario: " + id_usuario)
-            navigate("/login");
-          } else {
-            console.error('Error al cerrar sesión:', response.statusText);
-          }
-        } catch (error) {
-          console.error("Error al cerrar sesión:", error);
-        }
+        alert(data.mensaje);
     }catch(error){
         console.error("ERROR PAYPAL: ", error.message);
     }
 }
 
-const terminarTransaccion = async(estado) =>{
-  try{
-    const formData = new FormData();
-    formData.append("estado", estado);
-    const response = await fetch(conf.url + "/terminarTransaccion/", {
-        method: 'POST',
-        body: formData
-    });
-    const data = await response.json();
-    console.log(data.mensaje);
-}catch(error){
-    console.error("ERROR PAYPAL: ", error.message);
-}
-}
 
   const createOrder = (data, actions) => {
     return actions.order.create({
@@ -68,16 +39,41 @@ const terminarTransaccion = async(estado) =>{
     });
   };
 
+  const logout = async()=>{
+    const id_usuario = sessionStorage.getItem('id_usuario');
+    const formData = new FormData();
+    formData.append("id_usuario", id_usuario);
+    try {
+      const response = await fetch(conf.url + '/logout', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        sessionStorage.clear()
+        console.log("Sesión terminada, id_usuario: " + id_usuario)
+        navigate("/login");
+      } else {
+        console.error('Error al cerrar sesión:', response.statusText);
+      }
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+    }
+  }
+
   async function onApprove(data, actions) {
     let order = await actions.order.capture();
     console.log("onApprove: ",order);
-    terminarTransaccion(true);
+    suscribirse();
+    setTimeout(() => {
+      logout(); 
+    }, 1000);
     return order;
   }
 
   function onError(err) {
     console.log("onError: ",err);
-    terminarTransaccion(false);
+    alert("Error: ",err);
     let errObj = {
       err: err,
       status: "FAILED",
@@ -86,7 +82,6 @@ const terminarTransaccion = async(estado) =>{
   }
 
   useEffect(()=>{
-    suscribirse();
   },[])
 
   return (

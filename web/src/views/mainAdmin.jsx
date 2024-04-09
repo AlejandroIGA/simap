@@ -16,22 +16,19 @@ function MainAdmin() {
   const [psw, setPsw] = useState('');
   const [tipo_login] = useState('Sistema');
   const [tipo_usuario, setTipo_usuario] = useState('');
-  const [empleadosList, setEmpleadosList] = useState([]);
+  const [empleadosList, setEmpleadosList] = useState(null);
   const [editar, setEditar] = useState(false);
   const navigate = useNavigate();
   const storedSession = sessionStorage.getItem('id_usuario');
   const sesion = JSON.parse(storedSession);
 
-  useEffect(() => {
-    if (!sesion) {
-      alert("Inicia sesión primero");
-      navigate('/login');
-    } else if (sesion.tipo === 'Cliente') {
-      navigate('/catalogoCliente');
-    }
-  }, [sesion, navigate]);
+
 
   useEffect(() => {
+    if (!sessionStorage.getItem('id_usuario')) {
+      alert("Debes iniciar sesión primero");
+      navigate('/login');
+    }
     getEmpleados();
   }, []);
 
@@ -64,8 +61,41 @@ function MainAdmin() {
 
 
   const add = async () => {
-    const formData = new FormData();
     const cuenta_main = sessionStorage.getItem('id_usuario');
+    if (!nombre || !apellidos || !correo || !psw || !tipo_usuario) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Por favor completa todos los campos.'
+      });
+      return;
+    }
+
+    const formData2 = new FormData();
+    formData2.append("cuenta_main", cuenta_main );
+    formData2.append("tipo_usuario", tipo_usuario.toLowerCase());
+    const response = await fetch(conf.url + '/getCantidadUsuarios',{
+      method: 'POST',
+      body: formData2,
+    })
+
+    const dataResponse = await response.json()
+    console.log("cantidad: ", tipo_usuario, dataResponse.cantidad, tipo_usuario.toLowerCase() === "propietario", dataResponse.cantidad >= 2)
+
+    if(tipo_usuario.toLowerCase() === "colaborador" && dataResponse.cantidad >= 8){
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: "Solo se puedan dar de alta 8 usuarios colaborador"
+      });
+    }else if(tipo_usuario.toLowerCase() === "propietario" && dataResponse.cantidad >= 2){
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: "Solo se puedan dar de alta 2 usuarios propietarios"
+      });
+    }else{
+      const formData = new FormData();
     formData.append('cuenta_main', cuenta_main);
     formData.append('nombre', nombre);
     formData.append('apellidos', apellidos);
@@ -116,9 +146,47 @@ function MainAdmin() {
         text: 'Error al insertar usuario'
       });
     }
+    }
+    
+    
   };
 
   const update = async () => {
+    const cuenta_main = sessionStorage.getItem('id_usuario');
+
+    if (!nombre || !apellidos || !correo || !psw || !tipo_usuario) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Por favor completa todos los campos.'
+      });
+      return;
+    }
+
+    const formData2 = new FormData();
+    formData2.append("cuenta_main", cuenta_main );
+    formData2.append("tipo_usuario", tipo_usuario.toLowerCase());
+    const response = await fetch(conf.url + '/getCantidadUsuarios',{
+      method: 'POST',
+      body: formData2,
+    })
+
+    const dataResponse = await response.json()
+    console.log("cantidad: ", tipo_usuario, dataResponse.cantidad, tipo_usuario.toLowerCase() === "propietario", dataResponse.cantidad >= 2)
+
+    if(tipo_usuario.toLowerCase() === "colaborador" && dataResponse.cantidad >= 8){
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: "Solo se puedan dar de alta 8 usuarios colaborador"
+      });
+    }else if(tipo_usuario.toLowerCase() === "propietario" && dataResponse.cantidad >= 2){
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: "Solo se puedan dar de alta 2 usuarios propietarios"
+      });
+    }else{
     const formData = new FormData();
     formData.append('id_usuario', id_usuario);
     formData.append('nombre', nombre);
@@ -170,6 +238,7 @@ function MainAdmin() {
         text: 'Error al actualizar usuario'
       });
     }
+  }
   };
 
   const deleteEmple = async (val) => {
@@ -199,12 +268,12 @@ function MainAdmin() {
           console.log(dataResponse);
 
           if (dataResponse.resultado) {
-            getEmpleados();
             Swal.fire({
               text: val.nombre + ' fue eliminado',
               icon: 'success',
               timer: 3000
             });
+            getEmpleados();
           } else {
             Swal.fire({
               icon: 'error',
@@ -249,10 +318,6 @@ function MainAdmin() {
     setTipo_usuario(val.tipo_usuario);
   };
 
-  const filterEmpleados = () => {
-    return empleadosList;
-  };
-
   const getEmpleados = async () => {
     const id_usuario = sessionStorage.getItem('id_usuario');
     const formData = new FormData();
@@ -269,11 +334,8 @@ function MainAdmin() {
         console.log(dataResponse);
         // Accede a la clave "data" para obtener los detalles de los empleados
         const empleadosData = dataResponse.data;
-        if (empleadosData && Array.isArray(empleadosData)) {
-          setEmpleadosList(empleadosData);
-        } else {
-          console.error('Error: Datos de empleados no válidos');
-        }
+        setEmpleadosList(empleadosData);
+        
       } else {
         console.error('Error al obtener empleados: ', response.statusText);
       }
@@ -420,14 +482,14 @@ function MainAdmin() {
                 </span>
                 <select
                   className='form-control'
-                  aria-label='Tipo de login'
+                  aria-label='Tipo de usuario'
                   aria-describedby='basic-addon1'
                   value={tipo_usuario}
                   onChange={(event) => {
                     setTipo_usuario(event.target.value);
                   }}
                 >
-                  <option value=''>Seleccione tipo de login</option>
+                  <option value=''>Seleccione tipo de usuario</option>
                   <option value='Propietario'>Propietario</option>
                   <option value='Colaborador'>Colaborador</option>
                 </select>
@@ -469,38 +531,45 @@ function MainAdmin() {
               </tr>
             </thead>
             <tbody>
-              {filterEmpleados().map((val, key) => (
-                <tr key={key}>
-                  <td>{val.id_usuario}</td>
-                  <td>{val.nombre}</td>
-                  <td>{val.apellidos}</td>
-                  <td>{val.correo}</td>
-                  <td>{val.psw}</td>
-                  <td>{val.tipo_usuario}</td>
-                  <td>
-                    <div className='btn-group' role='group' aria-label='Basic example'>
-                      <button
-                        type='button'
-                        className='btn btn-danger text-white'
-                        onClick={() => {
-                          deleteEmple(val);
-                        }}
-                      >
-                        Eliminar
-                      </button>
-                      <button
-                        type='button'
-                        className='btn btn-primary'
-                        onClick={() => {
-                          editarEmpleado(val);
-                        }}
-                      >
-                        Editar
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+            {empleadosList ? (
+  empleadosList.map((val, key) => (
+    <tr key={key}>
+      <td>{val.id_usuario}</td>
+      <td>{val.nombre}</td>
+      <td>{val.apellidos}</td>
+      <td>{val.correo}</td>
+      <td>{val.psw}</td>
+      <td>{val.tipo_usuario}</td>
+      <td>
+        <div className='btn-group' role='group' aria-label='Basic example'>
+          <button
+            type='button'
+            className='btn btn-danger text-white'
+            onClick={() => {
+              deleteEmple(val);
+            }}
+          >
+            Eliminar
+          </button>
+          <button
+            type='button'
+            className='btn btn-primary'
+            onClick={() => {
+              editarEmpleado(val);
+            }}
+          >
+            Editar
+          </button>
+        </div>
+      </td>
+    </tr>
+  ))
+) : (
+  <tr>
+    <td colSpan="7">No hay empleados disponibles</td>
+  </tr>
+)}
+
             </tbody>
 
           </table>

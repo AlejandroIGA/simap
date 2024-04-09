@@ -324,6 +324,15 @@ class Back extends CI_Controller
 
         echo json_encode($obj);
     }        
+
+    public function getCantidadUsuarios(){
+        $cuenta_main = $this->input->post("cuenta_main");
+        $tipo_usuario = $this->input->post("tipo_usuario");
+        $row = $this->Usuarios_model->getCantidadUsuarios($cuenta_main, $tipo_usuario);
+
+        $obj["cantidad"] = $row->cantidad;
+        echo json_encode($obj);
+    }
     //Fin de CRUD
 
     public function registroUsuario()

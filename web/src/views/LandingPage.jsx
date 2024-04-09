@@ -8,29 +8,20 @@ function LandingPage() {
         <div style={{ background: '#f2f2f2' }}>
             <nav className="navbar navbar-expand-lg nav fixed-top">
                 <div className="container">
-                    <a className="navbar-brand" href="#inicio">SIMAP</a>
+                <button style={{ color: "white" }} className="nav-link" onClick={()=>navigate("/")}>SIMAP</button>
                     <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                         <span className="navbar-toggler-icon"></span>
                     </button>
                     <div className="collapse navbar-collapse justify-content-end" id="navbarNav">
                         <ul className="navbar-nav">
                             <li className="nav-item">
-                                <a className="nav-link" href="#inicio">Inicio</a>
-                            </li>
-                            <li className="nav-item">
-                                <a className="nav-link" href="#nosotros">Nosotros</a>
-                            </li>
-                            <li className="nav-item">
-                                <a className="nav-link" href="#suscripciones">Suscripciones</a>
-                            </li>
-                            <li className="nav-item">
-                                <a className="nav-link" href="/login">Ingresar</a>
+                                <button style={{ color: "white" }} className="nav-link" onClick={()=>navigate("/login")}>Ingresar</button>
                             </li>
                         </ul>
                     </div>
                 </div>
             </nav>
-            <div className='container-fluid p-0' id="inicio">
+            <div className='container-fluid p-0' id="home">
                 <img src={fondo} className="img-fluid m-0 p-0" />
             </div>
             <div className='container pt-3 pb-3' id="nosotros" style={{ fontSize: 25, background: '#f2f2f2' }}>

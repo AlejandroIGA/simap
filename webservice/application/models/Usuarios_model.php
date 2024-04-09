@@ -14,6 +14,36 @@ class Usuarios_model extends CI_Model
         //die($this->db->last_query());
         return $rs->num_rows() > 0 ? $rs->row() : NULL;
     }
+
+    public function correoDuplicado($correo){
+        $rs = $this->db
+        ->select("correo")
+        ->from("usuario")
+        ->where("correo",$correo)
+        ->get();
+
+        return $rs->num_rows() > 0 ? true: false;
+    }
+
+    public function correoDuplicadoUpdate($correo, $id_usuario){
+        $rs = $this->db
+        ->select("correo")
+        ->from("usuario")
+        ->where("correo",$correo)
+        ->where("id_usuario",$id_usuario)
+        ->get();
+        $aux = $rs->num_rows() > 0 ? true: false;
+        if($aux){
+            return false;
+        }else{
+            $rs = $this->db
+        ->select("correo")
+        ->from("usuario")
+        ->where("correo",$correo)
+        ->get();
+        }
+        return $rs->num_rows() > 0 ? true: false;
+    }
     
 
 

@@ -79,17 +79,7 @@ fin_cosecha
 FROM plantas
 WHERE id_planta = 7;
 
-#TRIGEER PARA ELIMINAR UN CULTIVO
-CREATE TRIGGER eliminarCultivo BEFORE DELETE ON cosecha 
-FOR EACH ROW
-BEGIN
-    DECLARE conexiones INT;
-    SET conexiones = (SELECT COUNT(id_cosecha) FROM dispositivo WHERE id_cosecha = OLD.id_cosecha);
-    IF conexiones > 0 THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Hay dispositivos conectados';
-    END IF;
-END;
+
 
 drop trigger eliminarCultivo;
 delete from cosecha where id_cosecha = 48;
@@ -127,7 +117,6 @@ END;
 
 drop TRIGGER endCosecha;
 
-#PROCEDIMIENTO ALMACENADO PARA ENCONTRAR UN NOMBRE DUPLICADO de una cosecha activa
 
 #Grafica de plagas
 SHOW PROCEDURE STATUS;

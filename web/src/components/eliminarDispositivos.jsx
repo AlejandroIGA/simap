@@ -58,7 +58,6 @@ function EliminarDispositivos ({ visible, onClose }) {
         });
 
         const data = await response.json();
-        alert(data.mensaje);
         console.log(data.mensaje);
       }
 

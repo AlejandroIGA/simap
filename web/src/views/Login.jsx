@@ -19,26 +19,20 @@ function Login() {
   const tipoCuenta = localStorage.setItem('cuenta', JSON.stringify(cuenta));
   const navigate = useNavigate();
 
-  /*
+  
 
   useEffect(() => {
-    const start = () => {
-      gapi.auth2.init({
-        clientId: "191244130158-qmn4snu41sfu0tfrc0u3ktb1kdubtdjo.apps.googleusercontent.com",
-      })
-    }
-    gapi.load("client:auth2", start)
-    if (!sessionStorage.getItem('id_usuario')) {
-            navigate('/login');
+        if (!sessionStorage.getItem('id_usuario')) {
+            navigate("/login");
           } else if (sessionStorage.getItem('id_usuario')) {
             if(sessionStorage.getItem('tipo_usuario')==="Pro"){
-              navigate('/mainAdmin');
+              navigate("/mainAdmin");
             }else if(sessionStorage.getItem('tipo_usuario')==="Free"){
-              navigate('/mainAdminFree');
+              navigate("/mainAdminFree");
             }
           }
   }, []);
-
+/*
   //INICIO DE SESION CON GOOGLE
   const onSuccess = async (response) => {
     console.log(response);
@@ -160,10 +154,10 @@ function Login() {
           sessionStorage.setItem('tipo', dataResponse.data.tipo);
           // Redirigir según el tipo de cuenta
           if (dataResponse.data.tipo === "Pro") {
-            navigate('/mainAdmin');
+            navigate("/mainAdmin");
           } else if (dataResponse.data.tipo === "Free") {
-            navigate('/mainAdminFree');
-          } else if (dataResponse.data.tipo_usuario === "colaborador") {
+            navigate("/mainAdminFree");
+          } else if (dataResponse.data.tipo_usuario === "Colaborador") {
             alert("Acceso único a usuarios propietarios");
           }
         }

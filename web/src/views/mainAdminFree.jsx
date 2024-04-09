@@ -71,7 +71,7 @@ function MainAdminFree() {
     formData.append('correo', correo);
     formData.append('psw', psw);
     formData.append('tipo_login', tipo_login);
-
+    formData.append('tipo_usuario', "colaborador");
     try {
       const response = await fetch(conf.url + '/insertUser', {
         method: 'POST',
@@ -123,6 +123,7 @@ function MainAdminFree() {
     formData.append('apellidos', apellidos);
     formData.append('correo', correo);
     formData.append('psw', psw);
+    formData.append('tipo_usuario', "colaborador");
 
     try {
       const response = await fetch(conf.url + '/updateUser', {
@@ -226,6 +227,7 @@ function MainAdminFree() {
         });
       }
     }
+    getEmpleados();
   };
 
   const limpiarCampos = () => {
@@ -291,7 +293,7 @@ function MainAdminFree() {
           <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span className="navbar-toggler-icon"></span>
           </button>
-          <div className="collapse navbar-collapse justify-content-end" id="navbarNav">
+          <div style={{ zIndex: 1000, backgroundColor: '#658C7A', paddingLeft:10 }} className="collapse navbar-collapse justify-content-end" id="navbarNav">
             <ul className="navbar-nav">
               <li className="nav-item">
                 <Link type='button' to='/inicio' className='nav-link'>
@@ -324,7 +326,7 @@ function MainAdminFree() {
                     />
                   </Dropdown.Toggle>
                   <Dropdown.Menu style={{ backgroundColor: '#658C7A', boxShadow: 'none' }}>
-                    <Dropdown.Item href='/cuenta'>Perfil</Dropdown.Item>
+                    <Dropdown.Item onClick={()=>navigate('/cuenta')}>Perfil</Dropdown.Item>
                     <Dropdown.Item onClick={handleLogout}>
                       Cerrar Sesión
                     </Dropdown.Item>

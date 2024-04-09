@@ -1,6 +1,7 @@
 {
   "name": "web",
   "version": "0.1.0",
+  "homepage":"http://dtai.uteq.edu.mx/~aleinf214/practicas/simapApp/web",
   "private": true,
   "dependencies": {
     "@paypal/react-paypal-js": "^8.1.3",

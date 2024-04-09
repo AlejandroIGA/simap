@@ -293,10 +293,10 @@ function MainAdmin() {
       <nav className="navbar navbar-expand-lg nav">
         <div className="container">
           <a className="navbar-brand" href="#inicio">SIMAP</a>
-          <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <button style={{ zIndex: 1000 }} className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span className="navbar-toggler-icon"></span>
           </button>
-          <div className="collapse navbar-collapse justify-content-end" id="navbarNav">
+          <div style={{ zIndex: 1000, backgroundColor: '#658C7A', paddingLeft:10 }} className="collapse navbar-collapse justify-content-end" id="navbarNav">
             <ul className="navbar-nav">
               <li className="nav-item">
                 <Link type='button' to='/inicio' className='nav-link'>
@@ -329,7 +329,7 @@ function MainAdmin() {
                     />
                   </Dropdown.Toggle>
                   <Dropdown.Menu style={{ backgroundColor: '#658C7A', boxShadow: 'none' }}>
-                    <Dropdown.Item href='/cuenta'>Perfil</Dropdown.Item>
+                    <Dropdown.Item onClick={()=>navigate('/cuenta')}>Perfil</Dropdown.Item>
                     <Dropdown.Item onClick={handleLogout}>
                       Cerrar Sesión
                     </Dropdown.Item>

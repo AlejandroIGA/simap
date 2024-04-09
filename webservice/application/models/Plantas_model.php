@@ -24,11 +24,8 @@ class Plantas_model extends CI_Model{
     //Método para recuperar los valores de las plagas (ver si se puede en procedure)
     public function getPlagas($id_cosecha){
         $rs = $this->db
-        ->select("plaga.nombre as plaga, plaga.id_plaga as id_plaga ")
-        ->from("plaga")
-        ->join("planta_plaga","planta_plaga.id_plaga = plaga.id_plaga","inner join")
-        ->join("planta","planta_plaga.id_planta = planta.id_planta","inner join")
-        ->join("cosecha","planta.id_planta = cosecha.id_planta","inner join")
+        ->select("*")
+        ->from("plagas")
         ->where("id_cosecha",$id_cosecha)
         ->get();
 

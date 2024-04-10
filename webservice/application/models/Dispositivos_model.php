@@ -16,8 +16,24 @@ class Dispositivos_model extends CI_Model
     {
         $this->db
             ->where("id_dispositivo", $id_dispositivo)
-            ->where("id_cosecha IN (SELECT id_cosecha FROM cosecha WHERE fecha_fin IS NOT NULL OR fecha_inicio > CURDATE())")
             ->update("dispositivo", $data);
+
+        return $this->db->affected_rows() > 0 ?
+            $id_dispositivo : 0;
+    }
+
+
+    public function editMaestroDispositivo($id_cosecha, $maestro, $id_dispositivo)
+    {
+        $data = array(
+            "maestro" => $maestro,
+            "id_cosecha" => $id_cosecha
+        );
+    
+        $this->db
+            ->set($data)
+            ->where("id_dispositivo", $id_dispositivo)
+            ->update("dispositivo"); 
 
         return $this->db->affected_rows() > 0 ?
             $id_dispositivo : 0;
@@ -31,6 +47,7 @@ class Dispositivos_model extends CI_Model
 
     return $this->db->affected_rows() > 0;
 }
+
 
    public function getDispositivos($id_usuario)
 {
@@ -75,6 +92,27 @@ class Dispositivos_model extends CI_Model
     return $resultados;
 }
 
+public function getDispositivosSinMaestro($id_usuario)
+{
+
+    $rs = $this->db->query("
+        SELECT dispositivo.*
+        FROM dispositivo
+        WHERE dispositivo.id_usuario = $id_usuario
+        AND dispositivo.tipo = 'esclavo'
+        AND dispositivo.maestro IS NULL
+        OR (
+            dispositivo.id_usuario IN (
+                    SELECT id_usuario 
+                    FROM usuario 
+                    WHERE cuenta_main = $id_usuario
+            )
+        );
+    ");
+
+    return $rs->num_rows() > 0 ?
+        $rs->result() : NULL;
+}
 
 
 /*public function getDispositivos($id_usuario) {
@@ -100,6 +138,52 @@ class Dispositivos_model extends CI_Model
             ->where("id_usuario", "IFNULL((SELECT cuenta_main FROM usuario WHERE id_usuario = $id_usuario), $id_usuario)", FALSE)
             ->where("dp.tipo", "maestro")
             ->get();
+
+        return $rs->num_rows() > 0 ?
+            $rs->result() : NULL;
+    }
+
+    public function getMaestrosSusucripcion($id_usuario)
+    {
+
+        $rs = $this->db->query("
+            SELECT dp.*
+            FROM dispositivo AS dp
+            WHERE (
+                dp.id_usuario IN (
+                    $id_usuario
+                )
+                OR dp.id_usuario IN (
+                    SELECT id_usuario
+                    FROM usuario 
+                    WHERE cuenta_main = $id_usuario
+                )
+            )
+            AND dp.tipo = 'maestro';
+        ");
+
+        return $rs->num_rows() > 0 ?
+            $rs->result() : NULL;
+    }
+
+    public function getEsclavosSuscripcion($id_usuario)
+    {
+
+        $rs = $this->db->query("
+            SELECT dp.*
+            FROM dispositivo AS dp
+            WHERE (
+                dp.id_usuario IN (
+                    $id_usuario
+                )
+                OR dp.id_usuario IN (
+                    SELECT id_usuario
+                    FROM usuario 
+                    WHERE cuenta_main = $id_usuario
+                )
+            )
+            AND dp.tipo = 'esclavo';
+        ");
 
         return $rs->num_rows() > 0 ?
             $rs->result() : NULL;

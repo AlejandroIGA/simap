@@ -143,6 +143,7 @@ function Login() {
 
         if (dataResponse.resultado) {
           console.log("OK: ", dataResponse);
+          alert(dataResponse.mensaje);
           // Obtener el tipo de cuenta (tipo de usuario) de la respuesta
           const tipoCuenta = dataResponse.data.tipo;
           // Almacenar el tipo de cuenta en el estado cuenta
@@ -169,7 +170,6 @@ function Login() {
         alert('Error al iniciar sesión');
       }
     } catch (error) {
-      console.error(error.message);
       alert('Error al iniciar sesión, intenta de nuevo');
     }
   };

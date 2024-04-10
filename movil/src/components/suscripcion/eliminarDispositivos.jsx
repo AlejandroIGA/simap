@@ -7,21 +7,33 @@ import { useFocusEffect } from '@react-navigation/native';
 
 const EliminarDispositivos = ({ visible, onClose}) => {
   const [dispositivos, setDispositivos] = useState([]);
+  const [dispositivosEsclavo, setDispositivosEsclavo] = useState([]);
   const [tipoUsuario, setTipoUsuario] = useState('');
   const [idUsuario, setIdUsuario] = useState(0);
   const [selectedDispositivos, setSelectedDispositivos] = useState([]);
+  const [selectedDispositivosEsclavo, setSelectedDispositivosEsclavo] = useState([]);
 
   // Función para manejar la selección de dispositivos
   const handleDeviceSelection = (id_dispositivo) => {
-      setSelectedDispositivos(prevSelected => {
-        if (prevSelected.includes(id_dispositivo)) {
-          return prevSelected.filter(id => id !== id_dispositivo);
-        } else {
-          return [...prevSelected, id_dispositivo];
-        }
-      });
-    
+    setSelectedDispositivos((prevSelected) => {
+      if (prevSelected.includes(id_dispositivo)) {
+        return prevSelected.filter((id) => id !== id_dispositivo);
+      } else {
+        return [...prevSelected, id_dispositivo];
+      }
+    });
   };
+
+  const handleDeviceSelectionEsclavo = (id_dispositivo) => {
+    setSelectedDispositivosEsclavo((prevSelected) => {
+      if (prevSelected.includes(id_dispositivo)) {
+        return prevSelected.filter((id) => id !== id_dispositivo);
+      } else {
+        return [...prevSelected, id_dispositivo];
+      }
+    });
+  };
+
 
   const getUserData = async () => {
     try {
@@ -38,41 +50,77 @@ const EliminarDispositivos = ({ visible, onClose}) => {
     }
   };
 
-    //OBTENER TODOS LOS DISPOSITIVOS DEL USUARIO
-    const getDispositivos = async () => {
-      try {
-        const userDataJSON = await AsyncStorage.getItem('userData');
-  
-        if (userDataJSON) {
-          const userData = JSON.parse(userDataJSON);
-          const id_usuario = userData.id_usuario;
-          const formData = new FormData();
-          formData.append('id_usuario', id_usuario);
-  
-          const response = await fetch(conf.url + '/dispositivos', {
-            method: 'POST',
-            body: formData,
-          });
-  
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          const data = await response.json();
-          setDispositivos(data.dispositivos);
+     //OBTENER TODOS LOS DISPOSITIVOS DEL USUARIO
+  const getDispositivosMaestro = async () => {
+    try {
+        const userDataString = await AsyncStorage.getItem('userData');
+        const userData = JSON.parse(userDataString);
+        let id_usuario = userData.id_usuario;
+        const formData = new FormData();
+        formData.append('id_usuario', id_usuario);
+
+        const response = await fetch(conf.url + '/dispositivosMaestrosSuscripcion', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
         }
-      } catch (error) {
-        console.error('ERROR:', error.message);
-      }
-    };
+        const data = await response.json();
+        setDispositivos(data.dispositivosMaestro);
+    } catch (error) {
+      console.error('ERROR:', error.message);
+    }
+  };
+
+  const getDispositivosEsclavo = async () => {
+    try {
+        const userDataString = await AsyncStorage.getItem('userData');
+        const userData = JSON.parse(userDataString);
+        let id_usuario = userData.id_usuario;
+        const formData = new FormData();
+        formData.append('id_usuario', id_usuario);
+
+        const response = await fetch(conf.url + '/dispositivosEsclavosSuscripcion', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        setDispositivosEsclavo(data.dispositivosEsclavo);
+    } catch (error) {
+      console.error('ERROR:', error.message);
+    }
+  };
 
   useEffect(() => {
     getUserData();
-    getDispositivos();
+    getDispositivosMaestro();
+    getDispositivosEsclavo();
   }, []);
 
   const handleSubmit = async () => {
     try {
+      //ELIMINAR DISPOSITIVOS MAESTRO SELECCIONADOS
       for (const id_dispositivo of selectedDispositivos) {
+        const formData = new FormData();
+        formData.append('id_dispositivo', id_dispositivo);
+
+        const response = await fetch(conf.url + '/borrarDispositivoSuscripcion', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const data = await response.json();
+        console.log(data.mensaje);
+      }
+
+      //ELIMINAR DISPOSITIVOS ESCLAVO SELECCIONADOS
+      for (const id_dispositivo of selectedDispositivosEsclavo) {
         const formData = new FormData();
         formData.append('id_dispositivo', id_dispositivo);
 
@@ -85,7 +133,7 @@ const EliminarDispositivos = ({ visible, onClose}) => {
         alert(data.mensaje);
         console.log(data.mensaje);
       }
-
+      
       console.log("Eliminar los: " + selectedDispositivos);
       alert("Dispositivos eliminados exitosamente");
       onClose();
@@ -106,22 +154,64 @@ const EliminarDispositivos = ({ visible, onClose}) => {
         <View style={styles.modalContent}>
 
           <Text style={styles.title}>Tu suscripción ha caducado</Text> 
-          <Text style={styles.text}>Selecciona los dispositivos que deseas eliminar ({dispositivos.length - selectedDispositivos.length - 3} restantes) </Text>
+          {
+            dispositivos && dispositivos.length > 1 ? (
+              <>
+                <Text style={styles.text}>Tienes que eliminar ({dispositivos.length - selectedDispositivos.length - 1}) dispositivos maestro </Text>
+                <ScrollView contentContainerStyle={styles.scrollViewContent}>
+                  {dispositivos.map(dispositivo => (
+                    <TouchableOpacity key={dispositivo.id_dispositivo} style={styles.itemContainer} onPress={() => handleDeviceSelection(dispositivo.id_dispositivo)}>
+                      <View style={styles.checkboxContainer}>
+                        <Text style={styles.checkbox}>{selectedDispositivos.includes(dispositivo.id_dispositivo) ? '✓' : ''}</Text>
+                      </View>
+                      <Text style={styles.deviceName}>{dispositivo.nombre}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </>
+            ) : (
+              <>
+              </>
+            )
+          }
+          {
+            dispositivosEsclavo && dispositivosEsclavo.length > 2 ? (
+              <>
+                <Text style={styles.text}>Tienes que eliminar ({dispositivosEsclavo.length - selectedDispositivosEsclavo.length - 2}) dispositivos esclavo</Text>
+                <ScrollView contentContainerStyle={styles.scrollViewContent}>
+                  {dispositivosEsclavo.map(dispositivo => (
+                    <TouchableOpacity key={dispositivo.id_dispositivo} style={styles.itemContainer} onPress={() => handleDeviceSelectionEsclavo(dispositivo.id_dispositivo)}>
+                      <View style={styles.checkboxContainer}>
+                        <Text style={styles.checkbox}>{selectedDispositivosEsclavo.includes(dispositivo.id_dispositivo) ? '✓' : ''}</Text>
+                      </View>
+                      <Text style={styles.deviceName}>{dispositivo.nombre}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </>
+            ) : (
+              <>
+              </>
+            )
+          }
 
-          <ScrollView contentContainerStyle={styles.scrollViewContent}>
-            {dispositivos.map(dispositivo => (
-              <TouchableOpacity key={dispositivo.id_dispositivo} style={styles.itemContainer} onPress={() => handleDeviceSelection(dispositivo.id_dispositivo)}>
-                <View style={styles.checkboxContainer}>
-                  <Text style={styles.checkbox}>{selectedDispositivos.includes(dispositivo.id_dispositivo) ? '✓' : ''}</Text>
-                </View>
-                <Text style={styles.deviceName}>{dispositivo.nombre}</Text>
+          {dispositivos && dispositivos.length !== 0 && dispositivosEsclavo && dispositivosEsclavo.length !== 0 && (
+            <TouchableOpacity disabled={dispositivos.length - selectedDispositivos.length !== 1 || dispositivosEsclavo.length - selectedDispositivosEsclavo.length !== 2} style={styles.button} onPress={() => handleSubmit({ onClose })} >
+              <Text style={styles.buttonText}>Confirmar</Text>
+            </TouchableOpacity>
+          )}
+          {dispositivos && dispositivos.length !== 0 && dispositivosEsclavo&& dispositivosEsclavo.length === 0 && (
+            <TouchableOpacity disabled={dispositivos.length - selectedDispositivos.length !== 1 } style={styles.button} onPress={() => handleSubmit({ onClose })} >
+              <Text style={styles.buttonText}>Confirmar</Text>
+            </TouchableOpacity>
+          )}
+          {dispositivos && dispositivos.length === 0 && dispositivosEsclavo && dispositivosEsclavo.length !== 0 && (
+              <TouchableOpacity disabled={dispositivosEsclavo.length - selectedDispositivosEsclavo.length !== 2} style={styles.button} onPress={() => handleSubmit({ onClose })} >
+                <Text style={styles.buttonText}>Confirmar</Text>
               </TouchableOpacity>
-            ))}
-          </ScrollView>
+          )}
           
-          <TouchableOpacity disabled={dispositivos.length - selectedDispositivos.length != 3} style={styles.button} onPress={() => handleSubmit({ onClose })} >
-            <Text style={styles.buttonText}>Confirmar</Text>
-          </TouchableOpacity>
+
         </View>
       </View>
     </Modal>

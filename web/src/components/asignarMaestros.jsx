@@ -9,7 +9,6 @@ function AsignarMaestros ({ visible, onClose }) {
   const [dispositivosMaestros, setDispositivosMaestros] = useState([]);
   const [maestro, setMaestro] = useState(0);
   const [id_cosecha, setCosecha] = useState(0);
-  const [selectedDispositivosEsclavo, setSelectedDispositivosEsclavo] = useState([]);
 
   const asignarMaestros = async () => {
     try {

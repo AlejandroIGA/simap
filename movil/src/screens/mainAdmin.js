@@ -10,46 +10,11 @@ import {
   Image,
   ScrollView,
 } from 'react-native';
-import EliminarDispositivos from '../components/suscripcion/eliminarDispositivos.jsx';
 
 const MainAdmin = () => {
-  const [showModal, setShowModal] = useState(false);
   const [dispositivos, setDispositivos] = useState([]);
   const [tarjeta, setTarjeta] = useState(false);
 
-  const eliminarDispositivos = async () => {
-    try {
-      const userDataJSON = await AsyncStorage.getItem('userData');
-
-      if (userDataJSON) {
-        const userData = JSON.parse(userDataJSON);
-        const id_usuario = userData.id_usuario;
-        const tipo = userData.tipo;
-        const formData = new FormData();
-        formData.append('id_usuario', id_usuario);
-
-        const response = await fetch(conf.url + '/dispositivos', {
-          method: 'POST',
-          body: formData,
-        });
-
-        const data = await response.json();
-        if (data.dispositivos.length > 3 && tipo === 'Free') {
-          openModal();
-        }
-      }
-    } catch (error) {
-      console.error('ERROR:', error.message);
-    }
-  };
-
-  const openModal = async () => {
-    setShowModal(true);
-  };
-
-  const closeModal = () => {
-    setShowModal(false);
-  };
 
   const handleColor = (index) => {
     setDispositivos((prevState) => {
@@ -126,13 +91,8 @@ const MainAdmin = () => {
   );
 
   useEffect(() => {
-    eliminarDispositivos();
-  }, []);
-
-  useEffect(() => {
     const interval = setInterval(() => {
       getDatos();
-      eliminarDispositivos();
     }, 20000);
     return () => clearInterval(interval);
   }, []);
@@ -311,7 +271,6 @@ const MainAdmin = () => {
           )}
         </View>
       </ScrollView>
-      <EliminarDispositivos visible={showModal} onClose={closeModal} />
     </View>
   );
 };

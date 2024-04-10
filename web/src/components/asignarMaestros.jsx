@@ -82,7 +82,8 @@ function AsignarMaestros ({ visible, onClose }) {
     <Modal show={visible} onHide={onClose} animation={false}>
       <Modal.Body>
         <h3>Dispositivos sin Maestro asignado</h3>
-        { dispositivos.length > 1 ? (
+        
+        { dispositivos && dispositivos.length > 1 ? (
           <>
             <p>Debes asignar un dispositivo maestro a los siguientes dispositivos</p>
             <div style={{ maxHeight: '200px', overflowY: 'auto' }}>

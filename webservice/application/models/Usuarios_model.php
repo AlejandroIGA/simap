@@ -56,6 +56,9 @@ class Usuarios_model extends CI_Model
         ->where("correo",$correo)
         ->get();
 
+        //die($this->db->last_query());
+        echo $aux->row();
+
 
         if($aux->row()->cuenta_main == null){
             $rs = $this->db

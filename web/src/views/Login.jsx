@@ -167,7 +167,7 @@ function Login() {
         }
       } else {
         console.error('Error al iniciar sesión: ', response.statusText);
-        alert('Error al iniciar sesión');
+        alert('Error en credenciales');
       }
     } catch (error) {
       alert('Error al iniciar sesión, intenta de nuevo');

@@ -17,32 +17,6 @@ const MainAdmin = () => {
   const [dispositivos, setDispositivos] = useState([]);
   const [tarjeta, setTarjeta] = useState(false);
 
-  const eliminarDispositivos = async () => {
-    try {
-      const userDataJSON = await AsyncStorage.getItem('userData');
-
-      if (userDataJSON) {
-        const userData = JSON.parse(userDataJSON);
-        const id_usuario = userData.id_usuario;
-        const tipo = userData.tipo;
-        const formData = new FormData();
-        formData.append('id_usuario', id_usuario);
-
-        const response = await fetch(conf.url + '/dispositivos', {
-          method: 'POST',
-          body: formData,
-        });
-
-        const data = await response.json();
-        if (data.dispositivos.length > 3 && tipo === 'Free') {
-          openModal();
-        }
-      }
-    } catch (error) {
-      console.error('ERROR:', error.message);
-    }
-  };
-
   const openModal = async () => {
     setShowModal(true);
   };
@@ -83,6 +57,7 @@ const MainAdmin = () => {
   };
 
   const getDatos = async () => {
+    setTarjeta(false);
     try {
       const userDataJson = await AsyncStorage.getItem('userData');
       const userData = JSON.parse(userDataJson);
@@ -109,12 +84,38 @@ const MainAdmin = () => {
         }
       );
       setDispositivos(dispositivosActualizados);
+      const promises = [];
+      for (let i = 0; i < dispositivosActualizados.length; i++) {
+        // Aquí usamos dispositivosActualizados en lugar de dispositivos
+        let id_dispositivo = dispositivosActualizados[i].nombre;
+        if (dispositivosActualizados[i].tipo == 'esclavo') {
+          //mando a llamar los datos de sensores
+          const promise = fetch(
+            conf.url + `/getValoresSensor/${id_dispositivo}`,
+            {
+              method: 'GET',
+            }
+          )
+            .then((response) => response.json())
+            .then((dataResponse) => {
+              //console.log('dataResponse', dataResponse[0].document.fields);
+              try {
+                dispositivosActualizados[i].fields =
+                  dataResponse[0].document.fields;
+              } catch (error) {}
+            });
+          promises.push(promise);
+        }
+      }
+      await Promise.all(promises);
+      //console.log('estado', dispositivosActualizados);
+      setDispositivos(dispositivosActualizados);
       setTarjeta(
         dataResponse['dispositivos'] !== null &&
           dataResponse['dispositivos'].length > 0
       );
     } catch (error) {
-      console.error('Error al obtener los datos del dispositivo:', error);
+      console.error('Error al obtener los datos sensores:', error);
     }
   };
 
@@ -126,13 +127,8 @@ const MainAdmin = () => {
   );
 
   useEffect(() => {
-    eliminarDispositivos();
-  }, []);
-
-  useEffect(() => {
     const interval = setInterval(() => {
       getDatos();
-      eliminarDispositivos();
     }, 20000);
     return () => clearInterval(interval);
   }, []);
@@ -294,12 +290,30 @@ const MainAdmin = () => {
                 ) : (
                   <View style={styles.formContainer} key={index}>
                     <View style={styles.row}>
+                      <Text>
+                        Responsable: {dispositivo.nomus} {dispositivo.appus}
+                      </Text>
                       <Text>Tipo: {dispositivo.tipo}</Text>
                       <Text>Cultivo: {dispositivo.cosecha}</Text>
                       <Text>Dispositivo: {dispositivo.nombre}</Text>
                       <Text>Mac: {dispositivo.mac}</Text>
                       <Text>
-                        Responsable: {dispositivo.nomus} {dispositivo.appus}
+                        Hum_amb:{' '}
+                        {dispositivo.fields &&
+                          dispositivo.fields.hum_amb.doubleValue}
+                        %
+                      </Text>
+                      <Text>
+                        Temp_amb:{' '}
+                        {dispositivo.fields &&
+                          dispositivo.fields.temp_amb.doubleValue}
+                        °C
+                      </Text>
+                      <Text>
+                        Hum_sue:{' '}
+                        {dispositivo.fields &&
+                          dispositivo.fields.hum_sue.doubleValue}
+                        %
                       </Text>
                     </View>
                   </View>
@@ -307,7 +321,7 @@ const MainAdmin = () => {
               )}
             </View>
           ) : (
-            <Text>No se encontraron dispositivos</Text>
+            <Text>Obteniendo datos...</Text>
           )}
         </View>
       </ScrollView>

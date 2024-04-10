@@ -93,7 +93,7 @@ function Dispositivos() {
   
           const data = await response.json();
   
-          if (data.dispositivos.length > 1) {
+          if (data.dispositivos) {
             openModalDos();
           }
         
@@ -560,7 +560,7 @@ function Dispositivos() {
                         </div>
                     </div>
                     <div className="col-md-6" style={{ overflowY: 'auto', maxHeight: '80vh' }}>
-                        {dispositivos.length > 0 ? (
+                        {dispositivos && dispositivos.length > 0 ? (
                             dispositivos.map((dispositivo, index) => (
                               <div key={index} className="border rounded p-3 m-2 d-flex justify-content-between align-items-center" style={{ background: '#658C7A' }}>
                                 <div>

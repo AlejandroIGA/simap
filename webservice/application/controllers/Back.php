@@ -157,7 +157,7 @@ class Back extends CI_Controller
                 $obj["data"] = NULL;
             }
         } else {
-            $obj["mensaje"] = "Su cuenta no es main";
+            $obj["mensaje"] = "Error credenciales";
             $obj["data"] = NULL;
         }
 
@@ -1373,6 +1373,91 @@ public function obtenerEstadoDispositivo()
         $data = $this->Cultivo_model->getCultivosActivos($id_usuario);
         echo json_encode($data);
     }
+
+    public function getValoresSensor($dispositivo){
+        // URL de la colección en Firebase Firestore
+        $firestore_url = "https://firestore.googleapis.com/v1/projects/testesp-36e82/databases/(default)/documents";
+    
+        // Construye la consulta para filtrar por ID de dispositivo y fecha, ordenando por fecha descendente y limitando a 1 resultado
+        $query = [
+            'structuredQuery' => [
+                'select' => [
+                    'fields' => [
+                        [
+                            'fieldPath' => 'hum_amb'
+                        ],
+                        [
+                            'fieldPath' => 'temp_amb'
+                        ],
+                        [
+                            'fieldPath' => 'hum_sue'
+                        ]
+                    ]
+                        ],
+                'from' => [
+                    [
+                        'collectionId' => 'pruebas'
+                    ]
+                ],
+                'where' => [
+                    'compositeFilter' => [
+                        'op' => 'AND',
+                        'filters' => [
+                            [
+                                'fieldFilter' => [
+                                    'field' => [
+                                        'fieldPath' => 'dispositivo'
+                                    ],
+                                    'op' => 'EQUAL',
+                                    'value' => [
+                                        'stringValue' => $dispositivo
+                                    ]
+                                ]
+                            ],
+                        ]
+                    ]
+                ],
+                'orderBy' => [
+                    [
+                        'field' => [
+                            'fieldPath' => 'fecha'
+                        ],
+                        'direction' => 'DESCENDING'
+                    ]
+                ],
+                'limit' => 1
+            ]
+        ];
+    
+    
+        // Configura las opciones de la solicitud POST con la consulta
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $firestore_url . ':runQuery');
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Accept: application/json',
+            'Content-Type: application/json',
+        ));
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($query));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    
+        // Realiza la solicitud POST a Firestore
+        $response = curl_exec($ch);
+        curl_close($ch);
+    
+        // Verifica si la solicitud fue exitosa
+        if ($response) {
+            // Decodifica la respuesta JSON
+            $data = json_decode($response, true);
+            // Maneja los datos obtenidos según tus necesidades
+            // Por ejemplo, puedes imprimir los datos obtenidos
+            echo $response;
+        } else {
+            // Maneja el error si la solicitud falla
+            echo "Error al obtener datos desde Firestore.";
+        }
+    }
+    
 
    
 }

@@ -17,6 +17,7 @@ const MainColaborador = () => {
   const [mostrarTarjeta, setMostrarTarjeta] = useState(false);
 
   const getDatos = async () => {
+    setMostrarTarjeta(false);
     try {
       const userDataJson = await AsyncStorage.getItem('userData');
       const userData = JSON.parse(userDataJson);
@@ -34,7 +35,33 @@ const MainColaborador = () => {
       }
 
       const dataResponse = await response.json();
-      setDispositivos(dataResponse['dispositivos']);
+      let auxDispositivos = dataResponse['dispositivos'];
+
+      const promises = [];
+      for (let i = 0; i < auxDispositivos.length; i++) {
+        // Aquí usamos dispositivosActualizados en lugar de dispositivos
+        let id_dispositivo = auxDispositivos[i].nombre;
+        if (auxDispositivos[i].tipo == 'esclavo') {
+          //mando a llamar los datos de sensores
+          const promise = fetch(
+            conf.url + `/getValoresSensor/${id_dispositivo}`,
+            {
+              method: 'GET',
+            }
+          )
+            .then((response) => response.json())
+            .then((dataResponse) => {
+              //console.log('dataResponse', dataResponse[0].document.fields);
+              try {
+                auxDispositivos[i].fields = dataResponse[0].document.fields;
+              } catch (error) {}
+            });
+          promises.push(promise);
+        }
+      }
+      await Promise.all(promises);
+
+      setDispositivos(auxDispositivos);
       console.log(dataResponse.dispositivos);
       setMostrarTarjeta(
         dataResponse['dispositivos'] !== null &&
@@ -87,10 +114,26 @@ const MainColaborador = () => {
                   Conf Hum Sue: {dispositivo.hum_sue_min}% -{' '}
                   {dispositivo.hum_sue_max}%
                 </Text>
+                <Text style={styles.label}>
+                  Hum_amb:{' '}
+                  {dispositivo.fields && dispositivo.fields.hum_amb.doubleValue}
+                  %
+                </Text>
+                <Text style={styles.label}>
+                  Temp_amb:{' '}
+                  {dispositivo.fields &&
+                    dispositivo.fields.temp_amb.doubleValue}
+                  °C
+                </Text>
+                <Text style={styles.label}>
+                  Hum_sue:{' '}
+                  {dispositivo.fields && dispositivo.fields.hum_sue.doubleValue}
+                  %
+                </Text>
               </View>
             ))
           ) : (
-            <Text>No se encontraron dispositivos</Text>
+            <Text>Obteniendo datos... </Text>
           )}
         </View>
       </ScrollView>

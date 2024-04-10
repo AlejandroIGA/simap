@@ -22,6 +22,7 @@ class Dispositivos_model extends CI_Model
             $id_dispositivo : 0;
     }
 
+
     public function editMaestroDispositivo($id_cosecha, $maestro, $id_dispositivo)
     {
         $data = array(
@@ -38,10 +39,21 @@ class Dispositivos_model extends CI_Model
             $id_dispositivo : 0;
     }
 
+    //Método para actualizar estado de bomba y automatizado
+    public function update($id_dispositivo, $data)
+{
+    $this->db->where('id_dispositivo', $id_dispositivo);
+    $this->db->update('dispositivo', $data);
+
+    return $this->db->affected_rows() > 0;
+}
+
+
    public function getDispositivos($id_usuario)
 {
+
     $query = $this->db->query("
-        SELECT dispositivo.*, cosecha.nombre as cosecha
+        SELECT dispositivo.*, cosecha.nombre as cosecha, usuario.nombre as nomus, usuario.apellidos as appus, temp_amb_min, temp_amb_max, hum_amb_min, hum_amb_max, hum_sue_min, hum_sue_max
         FROM dispositivo
         INNER JOIN usuario ON usuario.id_usuario = dispositivo.id_usuario
         INNER JOIN cosecha ON cosecha.id_cosecha = dispositivo.id_cosecha
@@ -190,10 +202,9 @@ public function getDispositivosSinMaestro($id_usuario)
 
     public function deleteDispositivoSuscripcion($id_dispositivo)
     {
-        $this->db
+        $rs = $this->db
             ->query("CALL eliminar_dispositivo($id_dispositivo)");
-    
-        return $this->db->affected_rows() > 0;
+        return $rs->result();
     }
     
 
@@ -201,7 +212,7 @@ public function getDispositivosSinMaestro($id_usuario)
     public function getDatosDispositivo($id_usuario)
     {
         $rs = $this->db
-            ->select('dp.id_dispositivo, dp.mac, co.nombre')
+            ->select('dp.id_dispositivo, dp.mac, co.nombre as cosecha, dp.nombre as dispositivo,dp.bomba, dp.automatizado, dp.tipo, us.nombre as nomus, us.apellidos as appus')
             ->from('dispositivo AS dp')
             ->join('cosecha AS co', 'dp.id_cosecha = co.id_cosecha')
             ->join('usuario AS us', 'dp.id_usuario = us.id_usuario')
@@ -229,4 +240,42 @@ public function getDispositivosSinMaestro($id_usuario)
             return NULL;
         }
     }
+    public function activarBomba($id_dispositivo, $bomba){
+        $data = array(
+            'bomba' => $bomba
+        );
+    
+        $this->db->where('id_dispositivo', $id_dispositivo);
+        $this->db->set($data);
+        $this->db->update('dispositivo');
+        
+        return $this->db->affected_rows() > 0;
+    }
+    
+    public function activarAutomatizado($id_dispositivo, $automatizado){
+        $data = array(
+            'automatizado' => $automatizado
+        );
+    
+        $this->db->where('id_dispositivo', $id_dispositivo);
+        $this->db->set($data);
+        $this->db->update('dispositivo');
+        
+        return $this->db->affected_rows() > 0;
+    }
+
+    public function obtenerEstadoDispositivo($id_dispositivo){
+        $rs = $this->db
+        ->select('id_dispositivo, bomba, automatizado')
+        ->from('dispositivo')
+        ->where('id_dispositivo', $id_dispositivo)
+        ->get();
+
+    if ($rs->num_rows() > 0) {
+        return $rs->result();
+    } else {
+        return NULL;
+    }
+    }
+    
 }

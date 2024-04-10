@@ -81,10 +81,8 @@ class Cultivo_model extends CI_Model
     public function getCultivosActivos($id_usuario)
     {
         $rs = $this->db
-            ->select("id_cosecha,planta.id_planta as id_planta,fecha_inicio,fecha_fin,cosecha.temp_amb_min,cosecha.temp_amb_max,cosecha.hum_amb_min,cosecha.hum_amb_max,cosecha.hum_sue_min,cosecha.hum_sue_max, cosecha.nombre, planta.nombre as planta")
-            ->from("cosecha")
-            ->join("planta", "planta.id_planta = cosecha.id_planta", "inner join")
-            ->join("usuario", "cosecha.id_usuario = usuario.id_usuario", "inner join")
+            ->select("*")
+            ->from("cultivos_activos")
             ->where("cosecha.id_usuario", "IFNULL((SELECT cuenta_main FROM usuario WHERE id_usuario = $id_usuario), $id_usuario)", FALSE)
             ->where("fecha_fin is null")
             ->order_by("fecha_inicio", "DESC")

@@ -29,7 +29,6 @@ Notifications.setNotificationHandler({
   }),
 });
 
-
 async function registerForPushNotificationsAsync() {
   let token;
 
@@ -39,12 +38,13 @@ async function registerForPushNotificationsAsync() {
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
       lightColor: '#FF231F7C',
-      sound: 'https://10.13.13.99/simap/movil/assets/yametemela.mp3'
+      sound: 'https://10.13.13.99/simap/movil/assets/yametemela.mp3',
     });
   }
 
   if (Device.isDevice) {
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    const { status: existingStatus } =
+      await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
     if (existingStatus !== 'granted') {
       const { status } = await Notifications.requestPermissionsAsync();
@@ -54,7 +54,11 @@ async function registerForPushNotificationsAsync() {
       alert('Failed to get push token for push notification!');
       return;
     }
-    token = (await Notifications.getExpoPushTokenAsync({ projectId: '3d8c0a6e-b84d-4c7d-a111-7ae87e1f59c2' })).data;
+    token = (
+      await Notifications.getExpoPushTokenAsync({
+        projectId: '3d8c0a6e-b84d-4c7d-a111-7ae87e1f59c2',
+      })
+    ).data;
   } else {
     alert('Must use physical device for Push Notifications');
   }
@@ -63,10 +67,9 @@ async function registerForPushNotificationsAsync() {
 }
 
 export function Login({ onLogin }) {
-
   const [user, setUser] = useState(null);
   const [request, response, promptAsync] = Facebook.useAuthRequest({
-    clientId: "745129577370445",
+    clientId: '745129577370445',
   });
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -77,10 +80,12 @@ export function Login({ onLogin }) {
   const responseListener = useRef();
 
   useEffect(() => {
-    registerForPushNotificationsAsync().then(token => setExpoPushToken(token));
+    registerForPushNotificationsAsync().then((token) =>
+      setExpoPushToken(token)
+    );
 
-    notificationListener.current = Notifications.addNotificationReceivedListener(
-      async (notification) => {
+    notificationListener.current =
+      Notifications.addNotificationReceivedListener(async (notification) => {
         setNotification(notification);
       });
 
@@ -90,7 +95,7 @@ export function Login({ onLogin }) {
   }, []);
 
   useEffect(() => {
-    if (response && response.type === "success" && response.authentication) {
+    if (response && response.type === 'success' && response.authentication) {
       (async () => {
         const userInfoResponse = await fetch(
           `https://graph.facebook.com/me?access_token=${response.authentication.accessToken}&fields=id,name,email`
@@ -98,23 +103,22 @@ export function Login({ onLogin }) {
         const userInfo = await userInfoResponse.json();
         setUser(userInfo);
         console.log(userInfo);
-      console.log("Nombre:", userInfo.name);
-      console.log("Email:", userInfo.email);
-      console.log("ID:", userInfo.id);
+        console.log('Nombre:', userInfo.name);
+        console.log('Email:', userInfo.email);
+        console.log('ID:', userInfo.id);
       })();
     }
   }, [response]);
 
   const handleFacebookLogin2 = async () => {
     const result = await promptAsync();
-    if (result.type !== "success") {
-      alert("Uh oh, something went wrong");
+    if (result.type !== 'success') {
+      alert('Uh oh, something went wrong');
       return;
     }
   };
 
   const handleLogin = async () => {
-
     const formData = new FormData();
     formData.append('correo', email);
     formData.append('psw', password);
@@ -155,25 +159,25 @@ export function Login({ onLogin }) {
   const handleFacebookLogin = async () => {
     try {
       const result = await promptAsync();
-      if (result.type !== "success") {
-        alert("Uh oh, something went wrong");
+      if (result.type !== 'success') {
+        alert('Uh oh, something went wrong');
         return;
       }
-  
+
       const accessToken = result.authentication.accessToken;
-  
+
       // Obtiene la información del usuario desde Facebook
       const userInfoResponse = await fetch(
         `https://graph.facebook.com/me?access_token=${accessToken}&fields=id,name,email`
       );
       const userInfo = await userInfoResponse.json();
-  
+
       // Datos para iniciar sesión con Facebook
       const formData = new FormData();
       formData.append('correo', userInfo.email);
       formData.append('psw', userInfo.id);
       formData.append('token', expoPushToken);
-  
+
       try {
         // Envía los datos al backend para verificar si el usuario ya existe
         const loginResponse = await fetch(conf.url + '/login', {
@@ -181,7 +185,7 @@ export function Login({ onLogin }) {
           body: formData,
         });
         const dataResponse = await loginResponse.json();
-  
+
         if (dataResponse.data != null) {
           // El usuario ya existe, realiza el inicio de sesión
           onLogin();
@@ -193,23 +197,30 @@ export function Login({ onLogin }) {
           formData2.append('psw', userInfo.id);
           formData2.append('tipo_usuario', 'Colaborador');
           formData2.append('tipo_login', 'Facebook');
-  
+
           try {
-            const registerResponse = await fetch(conf.url + '/registroUsuario', {
-              method: 'POST',
-              body: formData2,
-            });
+            const registerResponse = await fetch(
+              conf.url + '/registroUsuario',
+              {
+                method: 'POST',
+                body: formData2,
+              }
+            );
             const registerData = await registerResponse.json();
-  
+
             if (registerData.id_usuario > 0) {
               // Registro exitoso, realiza el inicio de sesión
               onLogin();
             } else {
-              alert('Error al registrar el usuario. Por favor, inténtalo de nuevo.');
+              alert(
+                'Error al registrar el usuario. Por favor, inténtalo de nuevo.'
+              );
             }
           } catch (error) {
             console.error('Error al registrar el usuario:', error);
-            alert('Error al registrar el usuario. Por favor, inténtalo de nuevo.');
+            alert(
+              'Error al registrar el usuario. Por favor, inténtalo de nuevo.'
+            );
           }
         }
       } catch (error) {
@@ -218,11 +229,11 @@ export function Login({ onLogin }) {
       }
     } catch (error) {
       console.error('Error al iniciar sesión con Facebook:', error);
-      alert('Error al iniciar sesión con Facebook. Por favor, inténtalo de nuevo.');
+      alert(
+        'Error al iniciar sesión con Facebook. Por favor, inténtalo de nuevo.'
+      );
     }
   };
-  
-  
 
   return (
     <View style={styles.container}>
@@ -268,19 +279,10 @@ export function Login({ onLogin }) {
           <TouchableOpacity style={styles.button} onPress={handleLogin}>
             <Text style={styles.buttonText}>Ingresar</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.buttonGoogle} >
-            <Image
-              source={require('../../images/Google.png')}
-              style={styles.image}
-            />
-            <Text style={styles.buttonTextGoogle}>
-              Iniciar sesión con Google
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.buttonFacebook}
+          <TouchableOpacity
+            style={styles.buttonFacebook}
             onPress={handleFacebookLogin}
           >
-
             <Image
               source={require('../../images/Facebook.png')}
               style={styles.image}
@@ -294,8 +296,6 @@ export function Login({ onLogin }) {
     </View>
   );
 }
-
-
 
 const styles = StyleSheet.create({
   container: {

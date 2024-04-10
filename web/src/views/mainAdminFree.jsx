@@ -14,7 +14,7 @@ function MainAdminFree() {
   const [apellidos, setApellidos] = useState('');
   const [correo, setCorreo] = useState('');
   const [psw, setPsw] = useState('');
-  const [tipo_login, setTipo_login] = useState('');
+  const [tipo_login] = useState('Sistema');
   const [empleadosList, setEmpleadosList] = useState([]);
   const [editar, setEditar] = useState(false);
   const navigate = useNavigate();
@@ -71,7 +71,7 @@ function MainAdminFree() {
     formData.append('correo', correo);
     formData.append('psw', psw);
     formData.append('tipo_login', tipo_login);
-
+    formData.append('tipo_usuario', "colaborador");
     try {
       const response = await fetch(conf.url + '/insertUser', {
         method: 'POST',
@@ -123,7 +123,7 @@ function MainAdminFree() {
     formData.append('apellidos', apellidos);
     formData.append('correo', correo);
     formData.append('psw', psw);
-    formData.append('tipo_login', tipo_login);
+    formData.append('tipo_usuario', "colaborador");
 
     try {
       const response = await fetch(conf.url + '/updateUser', {
@@ -227,6 +227,7 @@ function MainAdminFree() {
         });
       }
     }
+    getEmpleados();
   };
 
   const limpiarCampos = () => {
@@ -234,7 +235,6 @@ function MainAdminFree() {
     setApellidos('');
     setCorreo('');
     setPsw('');
-    setTipo_login('');
   };
 
   const editarEmpleado = (val) => {
@@ -244,7 +244,6 @@ function MainAdminFree() {
     setApellidos(val.apellidos);
     setCorreo(val.correo);
     setPsw(val.psw);
-    setTipo_login(val.tipo_login);
   };
 
   const filterEmpleados = () => {
@@ -294,7 +293,7 @@ function MainAdminFree() {
           <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span className="navbar-toggler-icon"></span>
           </button>
-          <div className="collapse navbar-collapse justify-content-end" id="navbarNav">
+          <div style={{ zIndex: 1000, backgroundColor: '#658C7A', paddingLeft:10 }} className="collapse navbar-collapse justify-content-end" id="navbarNav">
             <ul className="navbar-nav">
               <li className="nav-item">
                 <Link type='button' to='/inicio' className='nav-link'>
@@ -327,7 +326,7 @@ function MainAdminFree() {
                     />
                   </Dropdown.Toggle>
                   <Dropdown.Menu style={{ backgroundColor: '#658C7A', boxShadow: 'none' }}>
-                    <Dropdown.Item href='/cuenta'>Perfil</Dropdown.Item>
+                    <Dropdown.Item onClick={()=>navigate('/cuenta')}>Perfil</Dropdown.Item>
                     <Dropdown.Item onClick={handleLogout}>
                       Cerrar Sesión
                     </Dropdown.Item>
@@ -412,25 +411,7 @@ function MainAdminFree() {
                   }}
                 />
               </div>
-              <div className='input-group mb-3'>
-                <span className='input-group-text' id='basic-addon1'>
-                  Tipo de login:
-                </span>
-                <select
-                  className='form-control'
-                  aria-label='Tipo de login'
-                  aria-describedby='basic-addon1'
-                  value={tipo_login}
-                  onChange={(event) => {
-                    setTipo_login(event.target.value);
-                  }}
-                >
-                  <option value=''>Seleccione tipo de login</option>
-                  <option value='Sistema'>Sistema</option>
-                  <option value='Google'>Google</option>
-                  <option value='Facebook'>Facebook</option>
-                </select>
-              </div>
+              
               <div className='mx-4'>
                 {editar ? (
                   <div>
@@ -463,7 +444,6 @@ function MainAdminFree() {
                 <th scope='col'>Apellidos</th>
                 <th scope='col'>Correo</th>
                 <th scope='col'>Contraseña</th>
-                <th scope='col'>Tipo login</th>
                 <th scope='col'>Acciones</th>
               </tr>
             </thead>
@@ -475,7 +455,6 @@ function MainAdminFree() {
                   <td>{val.apellidos}</td>
                   <td>{val.correo}</td>
                   <td>{val.psw}</td>
-                  <td>{val.tipo_login}</td>
                   <td>
                     <div className='btn-group' role='group' aria-label='Basic example'>
                       <button

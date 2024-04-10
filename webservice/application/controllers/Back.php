@@ -254,14 +254,20 @@ class Back extends CI_Controller
         $psw = $this->input->post("psw");
         $tipo_usuario = $this->input->post("tipo_usuario");
         $tipo_login = $this->input->post("tipo_login");
-        $row = $this->Usuarios_model->insert($cuenta_main, $nombre, $apellidos, $correo, $psw, $tipo_usuario, $tipo_login);
+        
 
-        $obj["resultado"] = $row != NULL;
-        $obj["mensaje"] = $obj["resultado"] ?
+        $duplicado = $this->Usuarios_model->correoDuplicado($correo);
+        if($duplicado){
+            $obj["resultado"] = false;
+            $obj["mensaje"] = "Correo duplicado";
+        }else if(!$duplicado){
+            $row = $this->Usuarios_model->insert($cuenta_main, $nombre, $apellidos, $correo, md5($psw), $tipo_usuario, $tipo_login);
+            $obj["resultado"] = $row != NULL;
+            $obj["mensaje"] = $obj["resultado"] ?
             "Usuario agregado"
             : "Error: usuario no agregado";
         $obj["data"] = $row;
-
+        }
         echo json_encode($obj);
     }
 
@@ -274,13 +280,19 @@ class Back extends CI_Controller
         $psw = $this->input->post("psw");
         $tipo_usuario = $this->input->post("tipo_usuario");
         $tipo_login = $this->input->post("tipo_login");
-        $row = $this->Usuarios_model->update($id_usuario, $nombre, $apellidos, $correo, $psw, $tipo_usuario, $tipo_login);
-        $obj["resultado"] = $row != NULL;
+        
+        $duplicado = $this->Usuarios_model->correoDuplicadoUpdate($correo,$id_usuario);
+        if($duplicado){
+            $obj["resultado"] = false;
+            $obj["mensaje"] = "Correo duplicado";
+        }else{
+            $row = $this->Usuarios_model->update($id_usuario, $nombre, $apellidos, $correo, md5($psw), $tipo_usuario, $tipo_login);
+            $obj["resultado"] = $row != NULL;
         $obj["mensaje"] = $obj["resultado"] ?
             "Usuario actualizado"
             : "No se realizaron cambios";
         $obj["data"] = $row;
-
+        }
         echo json_encode($obj);
     }
 
@@ -323,32 +335,38 @@ class Back extends CI_Controller
         $tipo = $this->input->post("tipo");
         $tipo_login = $this->input->post("tipo_login");
 
-        $data = array(
-            "nombre" => $nombre,
-            "apellidos" => $apellidos,
-            "correo" => $correo,
-            "psw" => md5($psw),
-            "estatus" => 1,
-            "tipo_usuario" => $tipo,
-            "tipo_login" => $tipo_login
-        );
+        $duplicado = $this->Usuarios_model->correoDuplicado($correo);
+        if($duplicado){
+            $obj["mensaje"] = "Este correo ya está registrado";
+        }else{
+            $data = array(
+                "nombre" => $nombre,
+                "apellidos" => $apellidos,
+                "correo" => $correo,
+                "psw" => md5($psw),
+                "estatus" => 1,
+                "tipo_usuario" => $tipo,
+                "tipo_login" => $tipo_login
+            );
+    
+            $id_usuario = $this->Usuarios_model->registro($data);
+    
+            $suscripcion = array(
+                "id_usuario" => $id_usuario,
+                "fecha_inicio" => date('Y-m-d H:i:s'),
+                "tipo" => "Free",
+                "estatus" => 1
+            );
+    
+            $id_suscripcion = $this->Usuarios_model->suscripcion($suscripcion);
+    
+            $obj["resultado"] = $id_usuario != 0;
+            $obj['mensaje'] = $obj["resultado"] ? "Usuario registrado exitosamente" : "Imposible registrar usuario, intente de nuevo";
+            $obj["id_usuario"] = $id_usuario;
+            $obj["id_suscripcion"] = $id_suscripcion;    
+        }
 
-        $id_usuario = $this->Usuarios_model->registro($data);
-
-        $suscripcion = array(
-            "id_usuario" => $id_usuario,
-            "fecha_inicio" => date('Y-m-d H:i:s'),
-            "tipo" => "Free",
-            "estatus" => 1
-        );
-
-        $id_suscripcion = $this->Usuarios_model->suscripcion($suscripcion);
-
-        $obj["resultado"] = $id_usuario != 0;
-        $obj['mensaje'] = $obj["resultado"] ? "Usuario registrado exitosamente" : "Imposible registrar usuario, intente de nuevo";
-        $obj["id_usuario"] = $id_usuario;
-        $obj["id_suscripcion"] = $id_suscripcion;
-
+        
         echo json_encode($obj);
     }
 
@@ -613,9 +631,14 @@ class Back extends CI_Controller
     {
 
         $id_dispositivo = $this->input->post("id_dispositivo");
+        $result = $this->Dispositivos_model->deleteDispositivoSuscripcion($id_dispositivo);
 
-        $obj["resultado"] = $this->Dispositivos_model->deleteDispositivoSuscripcion($id_dispositivo);
-        $obj['mensaje'] = $obj["resultado"] ? "Dispositivo borrado exitosamente" : "Imposible borrar dispositivo";
+        if((integer)$result[0]->resultado == 1){
+            $obj["resultado"] = true;
+        }else{
+            $obj["resultado"] = false; 
+        }
+        $obj['mensaje'] = $obj["resultado"] ? "Dispositivo borrado exitosamente" : "Imposible borrar dispositivo, tiene una cosecha en curso";
 
         echo json_encode($obj);
     }
@@ -635,6 +658,47 @@ class Back extends CI_Controller
 
         echo json_encode($obj);
     }
+
+    public function activarBomba()
+{
+    $id_dispositivo = $this->input->post("id_dispositivo");
+    $bomba = $this->input->post("bomba");
+    $row = $this->Dispositivos_model->activarBomba($id_dispositivo, $bomba);
+    $obj["resultado"] = $row != NULL;
+    $obj["mensaje"] = $obj["resultado"] ?
+        "Se activó bomba"
+        : " Error: Algo ocurrió al activar bomba";
+    $obj["data"] = $row;
+
+    echo json_encode($obj);
+}
+
+public function activarAutomatizado()
+{
+    $id_dispositivo = $this->input->post("id_dispositivo");
+    $automatizado = $this->input->post("automatizado");
+    $row = $this->Dispositivos_model->activarAutomatizado($id_dispositivo, $automatizado);
+    $obj["resultado"] = $row != NULL;
+    $obj["mensaje"] = $obj["resultado"] ?
+        "Se activó automatizado"
+        : " Error: Algo ocurrió al activar automatizado";
+    $obj["data"] = $row;
+
+    echo json_encode($obj);
+}
+
+public function obtenerEstadoDispositivo()
+{
+    $id_dispositivo = $this->input->post("id_dispositivo");
+
+        $data = $this->Dispositivos_model->obtenerEstadoDispositivo($id_dispositivo);
+
+        $obj['resultado'] = $data != NULL;
+        $obj['mensaje'] = $obj['resultado'] ? "Se recuperó estado de dispositivo $id_dispositivo" : "Sin estado";
+        $obj['Estado del bomba'] = $data;
+
+        echo json_encode($obj);
+}
 
     //Obtener las plantas registradas
     public function getPlantas()

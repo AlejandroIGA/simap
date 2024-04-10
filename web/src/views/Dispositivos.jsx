@@ -275,7 +275,7 @@ function Dispositivos() {
         alert('El nombre debe tener mínimo 5 caracteres.');
         return;
       }
-      if (direccionMAC.length !== 12) {
+      if (direccionMAC.length < 8 || direccionMAC.length > 12) {
         alert('La dirección MAC debe tener exactamente 12 caracteres.');
         return;
       }  

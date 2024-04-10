@@ -180,7 +180,7 @@ function Cuenta() {
                         {
                           responseData.data.tipo === "Pro" ?
                             <div className='col'>
-                              <button className='btn btn-warning' onClick={() => msg()}>Cambiar suscripción</button>
+                              <button hidden className='btn btn-warning' onClick={() => msg()}>Cambiar suscripción</button>
 
                             </div>
                             :

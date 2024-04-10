@@ -311,11 +311,8 @@ function MainAdminFree() {
         console.log(dataResponse);
         // Accede a la clave "data" para obtener los detalles de los empleados
         const empleadosData = dataResponse.data;
-        if (empleadosData && Array.isArray(empleadosData)) {
-          setEmpleadosList(empleadosData);
-        } else {
-          console.error('Error: Datos de empleados no válidos');
-        }
+        setEmpleadosList(empleadosData);
+        
       } else {
         console.error('Error al obtener empleados: ', response.statusText);
       }

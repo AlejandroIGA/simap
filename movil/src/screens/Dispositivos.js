@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
+import EliminarDispositivos from '../components/suscripcion/eliminarDispositivos.jsx';
+import AsignarMaestros from '../components/dispositivos/asignarMaestros.jsx';
 
 import {
   View,
@@ -26,11 +28,132 @@ export function Dispositivos() {
   const [dispositivoEditar, setDispositivoEditar] = useState(null);
   const screenWidth = Dimensions.get('window').width;
   const deviceItemWidth = (screenWidth - 40 - 20) / 2;
+  const [showModalDos, setShowModalDos] = useState(false);
+  const [showModalTres, setShowModalTres] = useState(false);
+  const [idUsuario, setIdUsuario] = useState(0);
+  const [tipo, setTipo] = useState(0);
+
+  const getDatos = async () => {
+    try {
+      const userDataString = await AsyncStorage.getItem('userData');
+      if (userDataString !== null) {
+        const userData = JSON.parse(userDataString);
+        console.log("Usuario: " + JSON.stringify(userData));
+        setIdUsuario(userData.id_usuario);
+        setTipo(userData.tipo);
+      } 
+    } catch (error) {
+      console.error('Error al obtener el ID del usuario:', error);
+    }
+  };
+
+  //Maixmo de dispositivos
+  const eliminarDispositivos = async () => {
+    try {
+        const userDataString = await AsyncStorage.getItem('userData');
+        const userData = JSON.parse(userDataString);
+        let id_usuario = userData.id_usuario;
+
+        const formData = new FormData();
+        formData.append('id_usuario', id_usuario);
+
+        const response = await fetch(conf.url + '/dispositivosMaestrosSuscripcion', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const data = await response.json();4
+
+        const formDataDos = new FormData();
+        formDataDos.append('id_usuario', id_usuario);
+
+        const responseDos = await fetch(conf.url + '/dispositivosEsclavosSuscripcion', {
+          method: 'POST',
+          body: formDataDos,
+        });
+
+        const dataDos = await responseDos.json();
+
+        try {
+          if (data.dispositivosMaestro || dataDos.dispositivosEsclavo ) {
+            if(data.dispositivosMaestro.length !== 1 || dataDos.dispositivosEsclavo.length !== 2 && tipo === "Free") {
+              console.log('Maestrooos: ' + JSON.stringify(data.dispositivosMaestro));
+              console.log('Esclavooos: ' + JSON.stringify(dataDos.dispositivosEsclavo));
+              openModalDos();
+            }
+          }
+        } catch (error) {
+          
+        }
+        
+      
+    } catch (error) {
+      console.error('ERROR:', error.message);
+    }
+  }
+
+  // AGIGNAR MAESTRO A ESCLAVOS
+  const asignarMaestros = async () => {
+    try {
+        const userDataString = await AsyncStorage.getItem('userData');
+        const userData = JSON.parse(userDataString);
+        let id_usuario = userData.id_usuario;
+
+        const formData = new FormData();
+        formData.append('id_usuario', id_usuario);
+
+        const response = await fetch(conf.url + '/dispositivosSinMaestro', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const data = await response.json();
+
+        if(data.dispositivos){
+          if (data.dispositivos.length > 1) {
+            openModalTres();
+          }
+        }
+      
+    } catch (error) {
+      console.error('ERROR:', error.message);
+    }
+  }
+
+  const openModalTres = async () => {
+    setShowModalTres(true);
+  };
+
+  const closeModalTres = () => {
+    setShowModalTres(false);
+  };
+
+  const openModalDos = async () => {
+    setShowModalDos(true);
+  };
+
+  const closeModalDos = () => {
+    setShowModalDos(false);
+  };
 
   const openEditModal = (dispositivo) => {
     setDispositivoEditar(dispositivo);
     setShowModal(true);
   };
+
+  useEffect(() => {
+    eliminarDispositivos();
+    asignarMaestros();
+    getDatos();
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      eliminarDispositivos();
+      asignarMaestros();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const openModal = async () => {
     try {
@@ -38,9 +161,9 @@ export function Dispositivos() {
       const userData = JSON.parse(userDataJSON);
       const id_usuario = userData.id_usuario;
       const tipo = userData.tipo;
-      if (tipo === 'Free' && dispositivosTotales === 3) {
+      if (tipo === 'Free' && dispositivosTotales && dispositivosTotales === 3) {
         alert('No puede agregar más dispositivos');
-      } else if (tipo === 'Pro' && dispositivosTotales === 10) {
+      } else if (tipo === 'Pro' && dispositivosTotales && dispositivosTotales === 10) {
         alert('Máximo de dispositivos alcanzado.');
       } else {
         const formData = new FormData();
@@ -165,7 +288,7 @@ export function Dispositivos() {
     const intervalId = setInterval(() => {
       getDispositivos();
       dispositivosGeneral();
-    }, 40000);
+    }, 20000);
     getDispositivos();
     dispositivosGeneral();
 
@@ -205,6 +328,8 @@ export function Dispositivos() {
         actualizarDispositivos={actualizarDispositivos}
         dispositivoEditar={dispositivoEditar}
       />
+      <EliminarDispositivos visible={showModalDos} onClose={closeModalDos} />
+      <AsignarMaestros visible={showModalTres} onClose={closeModalTres}/>
     </View>
   );
 }

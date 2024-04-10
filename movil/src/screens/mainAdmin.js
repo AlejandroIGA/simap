@@ -10,20 +10,12 @@ import {
   Image,
   ScrollView,
 } from 'react-native';
-import EliminarDispositivos from '../components/suscripcion/eliminarDispositivos.jsx';
 
 const MainAdmin = () => {
-  const [showModal, setShowModal] = useState(false);
   const [dispositivos, setDispositivos] = useState([]);
   const [tarjeta, setTarjeta] = useState(false);
 
-  const openModal = async () => {
-    setShowModal(true);
-  };
 
-  const closeModal = () => {
-    setShowModal(false);
-  };
 
   const handleColor = (index) => {
     setDispositivos((prevState) => {
@@ -325,7 +317,6 @@ const MainAdmin = () => {
           )}
         </View>
       </ScrollView>
-      <EliminarDispositivos visible={showModal} onClose={closeModal} />
     </View>
   );
 };

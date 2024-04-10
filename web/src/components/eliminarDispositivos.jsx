@@ -8,7 +8,6 @@ function EliminarDispositivos ({ visible, onClose }) {
   const [dispositivos, setDispositivos] = useState([]);
   const [dispositivosEsclavo, setDispositivosEsclavo] = useState([]);
   const [selectedDispositivos, setSelectedDispositivos] = useState([]);
-  const [idMaestro, setIdMaestro] = useState([]);
   const [selectedDispositivosEsclavo, setSelectedDispositivosEsclavo] = useState([]);
 
   // Función para manejar la selección de dispositivos

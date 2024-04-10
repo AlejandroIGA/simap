@@ -278,19 +278,7 @@ export function Login({ onLogin }) {
           </View>
           <TouchableOpacity style={styles.button} onPress={handleLogin}>
             <Text style={styles.buttonText}>Ingresar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.buttonFacebook}
-            onPress={handleFacebookLogin}
-          >
-            <Image
-              source={require('../../images/Facebook.png')}
-              style={styles.image}
-            />
-            <Text style={styles.buttonTextFacebook}>
-              Iniciar sesión con Facebook
-            </Text>
-          </TouchableOpacity>
+          </TouchableOpacity>  
         </View>
       </ScrollView>
     </View>

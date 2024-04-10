@@ -14,8 +14,6 @@ import HighchartsReact from 'highcharts-react-official'
 import HighchartsExporting from 'highcharts/modules/exporting';
 import HighchartsExportData from 'highcharts/modules/export-data';
 
-import EliminarDispositivos from "../components/eliminarDispositivos";
-
 function Inicio() {
   let id_usuario = sessionStorage.getItem('id_usuario');
   let tipo = sessionStorage.getItem('tipo');
@@ -27,49 +25,6 @@ function Inicio() {
   const [fechInicio, setFechInicio] = useState(null);
   const [fechFin, setFechFin] = useState(null);
   const [dispositivos, setDispositivos] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-
-  //Maixmo de dispositivos
-  const eliminarDispositivos = async () => {
-    console.log("Disp totales: " + dispositivos.length);
-    try {
-
-        const formData = new FormData();
-        formData.append('id_usuario', id_usuario);
-
-        const response = await fetch(conf.url + '/dispositivos', {
-          method: 'POST',
-          body: formData,
-        });
-
-        const data = await response.json();
-        if (data.dispositivos.length > 3 && tipo === "Free") {
-          openModal();
-        }
-      
-    } catch (error) {
-      console.error('ERROR:', error.message);
-    }
-  }
-
-  const openModal = async () => {
-    setShowModal(true);
-  };
-
-  const closeModal = () => {
-    setShowModal(false);
-  };
-
-  useEffect(() => {
-    eliminarDispositivos();
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      eliminarDispositivos();
-    }, 10000);
-    return () => clearInterval(interval);
-  }, []);
   const [cultivos, setCultivos] = useState([]);
   const [cultivosActivos, setCultivosActivos] = useState([]);
   const [id_cultivo, setIdCultivo] = useState(null);
@@ -888,10 +843,6 @@ function Inicio() {
         }
 
       </div>
-      <EliminarDispositivos
-        visible={showModal}
-        onClose={closeModal}
-      />
     </div >
   )
 }

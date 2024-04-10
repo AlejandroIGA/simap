@@ -387,6 +387,20 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
+    public function getCultivosActuales()
+    {
+        $id_usuario = $this->input->post("id_usuario");
+        $row = $this->Usuarios_model->getCultivosActuales($id_usuario);
+
+        $obj["resultado"] = $row != NULL;
+        $obj["mensaje"] = $obj["resultado"] ?
+            "Cultivos recuperados"
+            : "No hay cultivos registrados";
+        $obj["data"] = $row;
+
+        echo json_encode($obj);
+    }
+
     //Obtener la información de un cultivo especifico
     public function getCultivo($id_cosecha)
     {
@@ -422,7 +436,9 @@ class Back extends CI_Controller
                     "maestro" => $maestro,
                     "automatizado" => NULL,
                     "id_usuario" => $id_usuario,
-                    "id_cosecha" => $id_cosecha
+                    "id_cosecha" => $id_cosecha,
+                    "automatizado" => 1,
+                    "bomba" =>0
                 );
             } else {
                 $data = array(
@@ -431,7 +447,9 @@ class Back extends CI_Controller
                     "tipo" => $tipo,
                     "automatizado" => NULL,
                     "id_usuario" => $id_usuario,
-                    "id_cosecha" => $id_cosecha
+                    "id_cosecha" => $id_cosecha,
+                    "automatizado" => 1,
+                    "bomba" =>0
                 );
             }
     
@@ -485,6 +503,28 @@ class Back extends CI_Controller
         echo json_encode($obj);
     }
 
+    public function actualizarMaestroDispositivo() {
+        $maestro = $this->input->post("maestro");
+        $id_cosecha = $this->input->post("id_cosecha");
+        $dispositivosJSON = $this->input->post("dispositivos");
+        $dispositivos = json_decode($dispositivosJSON);
+        $todosProcesados = true;
+
+        foreach ($dispositivos as $row) {
+            $data = $this->Dispositivos_model->editMaestroDispositivo($id_cosecha, $maestro, $row->id_dispositivo);
+            if ($data === 0) {
+                echo 'No se pudo editar dispositivo';
+                $todosProcesados = false;
+                return;
+            }
+        }
+
+            $obj["resultado"] = $todosProcesados;
+            $obj['mensaje'] = $obj["resultado"] ? "Dispositivos actualizados" : "Imposible actualizar dispositivos";
+
+        echo json_encode($obj);
+    }
+
     public function dispositivos()
     {
 
@@ -494,6 +534,20 @@ class Back extends CI_Controller
 
         $obj['resultado'] = $data != NULL;
         $obj['mensaje'] = $obj['resultado'] ? "Se recuperaron " . count($data) . " dispositivo(s)" : "No hay nigun dispositivo registrado";
+        $obj['dispositivos'] = $data;
+
+        echo json_encode($obj);
+    }
+
+    public function dispositivosSinMaestro()
+    {
+
+        $id_usuario = $this->input->post("id_usuario");
+
+        $data = $this->Dispositivos_model->getDispositivosSinMaestro($id_usuario);
+
+        $obj['resultado'] = $data != NULL;
+        $obj['mensaje'] = $obj['resultado'] ? "Se recuperaron " . count($data) . " dispositivo(s) sin maestro" : "No hay nigun dispositivo sin maestro";
         $obj['dispositivos'] = $data;
 
         echo json_encode($obj);
@@ -510,6 +564,34 @@ class Back extends CI_Controller
         $obj['resultado'] = $data != NULL;
         $obj['mensaje'] = $obj['resultado'] ? "Se recuperaron " . count($data) . " dispositivo(s) maestros" : "No hay nigun dispositivo registrado del usuario $id_usuario";
         $obj['dispositivosMaestro'] = $data;
+
+        echo json_encode($obj);
+    }
+
+    public function dispositivosMaestrosSuscripcion()
+    {
+
+        $id_usuario = $this->input->post("id_usuario");
+
+        $data = $this->Dispositivos_model->getMaestrosSusucripcion($id_usuario);
+
+        $obj['resultado'] = $data != NULL;
+        $obj['mensaje'] = $obj['resultado'] ? "Se recuperaron " . count($data) . " dispositivo(s) maestros" : "No hay nigun dispositivo registrado del usuario $id_usuario";
+        $obj['dispositivosMaestro'] = $data;
+
+        echo json_encode($obj);
+    }
+
+    public function dispositivosEsclavosSuscripcion()
+    {
+
+        $id_usuario = $this->input->post("id_usuario");
+
+        $data = $this->Dispositivos_model->getEsclavosSuscripcion($id_usuario);
+
+        $obj['resultado'] = $data != NULL;
+        $obj['mensaje'] = $obj['resultado'] ? "Se recuperaron " . count($data) . " dispositivo(s) maestros" : "No hay nigun dispositivo registrado del usuario $id_usuario";
+        $obj['dispositivosEsclavo'] = $data;
 
         echo json_encode($obj);
     }

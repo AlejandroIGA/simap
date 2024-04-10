@@ -5,6 +5,8 @@ import conf from '../conf';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { Dropdown } from 'react-bootstrap';
 import agricultor from '../images/Granjero.png';
+import EliminarDispositivos from "../components/eliminarDispositivos";
+import AsignarMaestros from '../components/asignarMaestros';
 
 function ConfirmarEliminacion({ onConfirmar, onCancel }) {
   return (
@@ -39,6 +41,96 @@ function Dispositivos() {
     const [dispositivos, setDispositivos] = useState([]);
     const [cosechas, setCosechas] = useState([]);
     const [dispositivosMaestro, setDispositivosMaestros] = useState([]);
+    const [showModal, setShowModal] = useState(false);
+    const [showModalDos, setShowModalDos] = useState(false);
+
+    //Maixmo de dispositivos
+    const eliminarDispositivos = async () => {
+      try {
+  
+          const formData = new FormData();
+          formData.append('id_usuario', idUsuario);
+  
+          const response = await fetch(conf.url + '/dispositivosMaestrosSuscripcion', {
+            method: 'POST',
+            body: formData,
+          });
+  
+          const data = await response.json();
+  
+          if (data.dispositivosMaestro.length > 1 && tipo === "Free") {
+            openModal();
+          }
+  
+          const formDataDos = new FormData();
+            formDataDos.append('id_usuario', idUsuario);
+  
+            const responseDos = await fetch(conf.url + '/dispositivosEsclavosSuscripcion', {
+              method: 'POST',
+              body: formDataDos,
+            });
+  
+            const dataDos = await responseDos.json();
+            if (dataDos.dispositivosEsclavo.length > 2 && tipo === "Free") {
+              openModal();
+            }
+        
+      } catch (error) {
+        console.error('ERROR:', error.message);
+      }
+    }
+
+    const asignarMaestros = async () => {
+      try {
+  
+          const formData = new FormData();
+          formData.append('id_usuario', idUsuario);
+  
+          const response = await fetch(conf.url + '/dispositivosSinMaestro', {
+            method: 'POST',
+            body: formData,
+          });
+  
+          const data = await response.json();
+  
+          if (data.dispositivos.length > 1) {
+            openModalDos();
+          }
+        
+      } catch (error) {
+        console.error('ERROR:', error.message);
+      }
+    }
+  
+    const openModal = async () => {
+      setShowModal(true);
+    };
+  
+    const closeModal = () => {
+      setShowModal(false);
+    };
+
+    const openModalDos = async () => {
+      setShowModalDos(true);
+    };
+  
+    const closeModalDos = () => {
+      setShowModalDos(false);
+    };
+  
+    useEffect(() => {
+      eliminarDispositivos();
+      asignarMaestros();
+    }, []);
+  
+    useEffect(() => {
+      const interval = setInterval(() => {
+        eliminarDispositivos();
+        asignarMaestros();
+        getDispositivos();
+      }, 5000);
+      return () => clearInterval(interval);
+    }, []);
 
     const navigate = useNavigate();
 
@@ -95,7 +187,7 @@ function Dispositivos() {
       formData.append('id_usuario', idUsuario);
 
       try {
-        const response = await fetch(conf.url + '/getCultivos', {
+        const response = await fetch(conf.url + '/getCultivosActuales', {
           method: 'POST',
           body: formData,
         });
@@ -406,7 +498,7 @@ function Dispositivos() {
                                                 }}>
                                             <option value="">Seleccionar cosecha</option>
                                                 {
-                                                    cosechas != null ? (
+                                                    cosechas.length !== 0 ? (
                                                         cosechas.map((cosecha) => (
                                                             <option className='text-black' value={cosecha.id_cosecha} key={cosecha.id_cosecha}> {cosecha.nombre} </option>
                                                         ))
@@ -496,6 +588,14 @@ function Dispositivos() {
                         
                     </div>
                 </div>
+                <EliminarDispositivos
+                  visible={showModal}
+                  onClose={closeModal}
+                />
+                <AsignarMaestros
+                  visible={showModalDos}
+                  onClose={closeModalDos}
+                />
             </div>
         </div>
     )

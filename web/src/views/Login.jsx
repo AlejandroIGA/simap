@@ -170,7 +170,6 @@ function Login() {
         alert('Error al iniciar sesión');
       }
     } catch (error) {
-      console.error('Error');
       alert('Error al iniciar sesión, intenta de nuevo');
     }
   };
@@ -312,18 +311,6 @@ function Login() {
         />
       </div>
       */} 
-      
-      <div className="d-flex justify-content-center mt-3">
-        <img src={facebook} style={{ width: '40px' }} alt="Imagen facebook" />
-        <FacebookLogin
-          appId="745129577370445"
-          autoLoad={false}
-          fields="name,email"
-          callback={loginFacebook}
-          cssClass="btn btn-outline-primary mx-3"
-          textButton="Inicio de sesión rápido con Facebook"
-        />
-      </div>
     </div>
   );
 }

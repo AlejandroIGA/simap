@@ -226,6 +226,17 @@ class Usuarios_model extends CI_Model
         $this->db->insert('usuario', $data);
         return $this->db->affected_rows() > 0;
     }
+
+    public function getCantidadUsuarios($cuenta_main, $tipo_usuario){
+        $rs = $this->db
+        ->select("count(*) as cantidad")
+        ->from("usuario")
+        ->where("cuenta_main",$cuenta_main)
+        ->where("tipo_usuario",$tipo_usuario)
+        ->get();
+        return $rs->num_rows() > 0 ?
+            $rs->row() : NULL;
+    }
     
 
     public function update($id_usuario, $nombre, $apellidos, $correo, $psw, $tipo_usuario, $tipo_login){

@@ -405,6 +405,10 @@ function Dispositivos() {
   };
 
   useEffect(() => {
+    if (!sessionStorage.getItem('id_usuario')) {
+      alert("Debes iniciar sesión primero");
+      navigate('/login');
+    }
       getDispositivos();
       getDispositivosMaestros();
       getCosechas();
@@ -564,6 +568,7 @@ function Dispositivos() {
                                     <p className='text-white'>MAC: {dispositivo.mac} </p>
                                     <p className='text-white'>Tipo de dispositivo: {dispositivo.tipo} </p>
                                     <p className='text-white'>Cosecha: {dispositivo.cosecha} </p>
+                                    <p className='text-white'>Responsable: {dispositivo.nomus} {dispositivo.appus} </p>
                                 </div>
                                 <div>
                                   <div className='m-3'>

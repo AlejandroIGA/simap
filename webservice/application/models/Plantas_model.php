@@ -38,7 +38,7 @@ class Plantas_model extends CI_Model{
         $rs = $this->db
         ->select("SUBSTRING(COLUMN_TYPE, 6, LENGTH(COLUMN_TYPE) - 6) AS opciones")
         ->from("information_schema.columns")
-        ->where("TABLE_SCHEMA","simap")
+        ->where("TABLE_SCHEMA","bd_awi4_aleinf214")
         ->where("TABLE_NAME","cosecha")
         ->where("COLUMN_NAME","combate")
         ->get();

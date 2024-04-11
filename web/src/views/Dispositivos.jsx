@@ -46,8 +46,9 @@ function Dispositivos() {
 
     //Maixmo de dispositivos
     const eliminarDispositivos = async () => {
+      setShowModal(false);
       try {
-  
+          
           const formData = new FormData();
           formData.append('id_usuario', idUsuario);
   
@@ -59,6 +60,7 @@ function Dispositivos() {
           const data = await response.json();
   
           if (data.dispositivosMaestro.length > 1 && tipo === "Free") {
+            console.log("Abri en maestro")
             openModal();
           }
   
@@ -72,9 +74,9 @@ function Dispositivos() {
   
             const dataDos = await responseDos.json();
             if (dataDos.dispositivosEsclavo.length > 2 && tipo === "Free") {
+              console.log("Abri en esclavo")
               openModal();
             }
-        
       } catch (error) {
         console.error('ERROR:', error.message);
       }

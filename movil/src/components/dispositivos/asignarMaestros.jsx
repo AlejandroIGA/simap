@@ -10,7 +10,7 @@ function AsignarMaestros ({ visible, onClose }) {
   const [maestro, setMaestro] = useState(0);
   const [id_cosecha, setCosecha] = useState(0);
   const [idUsuario, setIdUsuario] = useState(0);
-  const [selectedValue, setSelectedValue] = useState(null);
+  const [selectedValue, setSelectedValue] = useState(0);
 
 
   const getDatos = async () => {
@@ -123,18 +123,20 @@ function AsignarMaestros ({ visible, onClose }) {
               style={styles.Picker}
               selectedValue={selectedValue}
               onValueChange={(itemValue, itemIndex) => {
-                console.log("Maestro: " + itemValue);
-                let maestro = itemValue;
-                setMaestro(maestro.id_dispositivo)
-                setCosecha(maestro.id_cosecha)
+                let maestro = dispositivosMaestros.find(maestro => maestro.id_dispositivo === itemValue);
+                if (maestro) {
+                  setMaestro(maestro.id_dispositivo);
+                  setCosecha(maestro.id_cosecha);
+                  setSelectedValue(itemValue);
+                }
               }}
             >
+              <Picker.Item label='Seleccione el Dispositivo' value={0}/>
               {dispositivosMaestros.map((maestro, index) => (
                 <Picker.Item
                   key={index}
                   label={maestro.nombre}
                   value={maestro.id_dispositivo}
-                  id_cosecha={maestro.id_cosecha}
                 />
               ))}
             </Picker>
@@ -195,8 +197,8 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   Picker: {
-    height: Platform.OS === 'ios' ? 60 : 30,
-    overflow:'hidden',
+    height: Platform.OS === 'ios' ? 100 : 30,
+    overflow: 'hidden',
     justifyContent: 'center'
   },
 });

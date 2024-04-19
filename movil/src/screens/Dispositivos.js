@@ -110,7 +110,7 @@ export function Dispositivos() {
         const data = await response.json();
 
         if(data.dispositivos){
-          if (data.dispositivos.length > 1) {
+          if (data.dispositivos.length > 0) {
             openModalTres();
           }
         }

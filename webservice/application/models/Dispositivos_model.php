@@ -107,6 +107,7 @@ public function getDispositivosSinMaestro($id_usuario)
                     FROM usuario 
                     WHERE cuenta_main = $id_usuario
             )
+            AND dispositivo.maestro IS NULL
         );
     ");
 

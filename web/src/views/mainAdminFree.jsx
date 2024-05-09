@@ -20,6 +20,7 @@ function MainAdminFree() {
   const navigate = useNavigate();
   const storedSession = sessionStorage.getItem('id_usuario');
   const sesion = JSON.parse(storedSession);
+  let tipo = sessionStorage.getItem('tipo');
 
 
   useEffect(() => {
@@ -343,9 +344,17 @@ function MainAdminFree() {
                 </Link>
               </li>
               <li className="nav-item">
-                <Link type='button' to='/mainAdmin' className='nav-link'>
+                {
+                  tipo === "Free" ? 
+                  <Link type='button' to='/mainAdminFree' className='nav-link'>
                   Usuarios
                 </Link>
+                  :
+                  <Link type='button' to='/mainAdmin' className='nav-link'>
+                  Usuarios
+                </Link>
+                }
+                
               </li>
               <li className="nav-item">
                 <Link type='button' to='/dispositivos' className='nav-link'>

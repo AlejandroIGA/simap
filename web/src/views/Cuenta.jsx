@@ -15,6 +15,7 @@ function Cuenta() {
 
   let tipo_usuario = sessionStorage.getItem('tipo_usuario');
   let id_usuario = sessionStorage.getItem('id_usuario');
+  let tipo = sessionStorage.getItem('tipo');
 
   //logout
   const handleLogout = async () => {
@@ -105,9 +106,17 @@ function Cuenta() {
                 </Link>
               </li>
               <li className="nav-item">
-                <Link type='button' to='/mainAdmin' className='nav-link'>
+                {
+                  tipo === "Free" ? 
+                  <Link type='button' to='/mainAdminFree' className='nav-link'>
                   Usuarios
                 </Link>
+                  :
+                  <Link type='button' to='/mainAdmin' className='nav-link'>
+                  Usuarios
+                </Link>
+                }
+                
               </li>
               <li className="nav-item">
                 <Link type='button' to='/dispositivos' className='nav-link'>
@@ -166,11 +175,11 @@ function Cuenta() {
                 </div>
                 <div className='row pt-3' style={{ fontSize: 25 }}>
                   <div className='col-4'>
-                    <p><span style={{ fontWeight: "bold" }}>Fecha de inicio: </span>{fechaInicio}</p>
+                    <p><span style={{ fontWeight: "bold" }}>Fecha de inicio: </span>{responseData.data.fecha_inicio.split('-')[2].split(' ')[0] + "-"+responseData.data.fecha_inicio.split('-')[1]+ "-"+responseData.data.fecha_inicio.split('-')[0]}</p>
 
                   </div>
                   <div className='col-4'>
-                    <p><span style={{ fontWeight: "bold" }}>Fecha fin: </span>{fechaFin}</p>
+                    <p><span style={{ fontWeight: "bold" }}>Fecha fin: </span>{responseData.data.fecha_fin !== null ? responseData.data.fecha_inicio.split('-')[2].split(' ')[0] + "-"+responseData.data.fecha_inicio.split('-')[1]+ "-"+responseData.data.fecha_inicio.split('-')[0]: "-"}</p>
                   </div>
                 </div>
                 <div className='row text-center pt-3'>

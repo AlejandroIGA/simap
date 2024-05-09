@@ -130,7 +130,7 @@ function EliminarDispositivos ({ visible, onClose }) {
     <Modal show={visible} onHide={onClose} animation={false}>
       <Modal.Body>
         <h3>Tu suscripción ha caducado</h3>
-        { dispositivos.length > 1 ? (
+        { dispositivos && dispositivos.length > 1 ? (
           <>
             <p>Tienes que eliminar ({dispositivos.length - selectedDispositivos.length - 1}) dispositivos maestro</p>
             <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
@@ -148,7 +148,7 @@ function EliminarDispositivos ({ visible, onClose }) {
           <>
           </>
         )}
-        { dispositivosEsclavo.length > 2 ? (
+        { dispositivosEsclavo && dispositivosEsclavo.length > 2 ? (
           <>
           <p>Tienes que eliminar ({dispositivosEsclavo.length - selectedDispositivosEsclavo.length - 2}) dispositivos esclavo</p>
           <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
@@ -167,17 +167,17 @@ function EliminarDispositivos ({ visible, onClose }) {
           </>
         )
         }
-        {dispositivos.length !== 0 && dispositivosEsclavo.length !== 0 && (
+        {dispositivos && dispositivosEsclavo && dispositivos.length !== 0 && dispositivosEsclavo.length !== 0 && (
             <>
               <button disabled={dispositivos.length - selectedDispositivos.length !== 1 || dispositivosEsclavo.length - selectedDispositivosEsclavo.length !== 2} onClick={handleSubmit}>Confirmar</button>
             </>
         )}
-        {dispositivos.length !== 0 && dispositivosEsclavo.length === 0 && (
+        {dispositivos && dispositivosEsclavo && dispositivos.length !== 0 && dispositivosEsclavo.length === 0 && (
             <>
               <button disabled={dispositivos.length - selectedDispositivos.length !== 1} onClick={handleSubmit}>Confirmar</button>
             </>
         )}
-        {dispositivos.length === 0 && dispositivosEsclavo.length !== 0 && (
+        {dispositivos && dispositivosEsclavo && dispositivos.length === 0 && dispositivosEsclavo.length !== 0 && (
             <>
               <button disabled={dispositivosEsclavo.length - selectedDispositivosEsclavo.length !== 2} onClick={handleSubmit}>Confirmar</button>
             </>

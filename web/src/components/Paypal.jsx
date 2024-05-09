@@ -2,8 +2,9 @@ import React from "react";
 import ReactDOM from "react-dom";
 import 'bootstrap/dist/css/bootstrap.min.css';
 /*
-    emailPrueba: sb-j6o7w29614846@personal.example.com
-    pswPrueba: ei}N6CP<
+    Datos paypal: 
+    email: sb-j6o7w29614846@personal.example.com
+    psw: ei}N6CP<
 */
 function Paypal() {
     console.log("Rendering Paypal component");
@@ -55,10 +56,10 @@ function Paypal() {
                     <div className="row">
                         <p className="subtitulo">Beneficios:</p>
                         <ul className="ms-5 ps-3">
-                            <li className="informacion">3 administradores.</li>
-                            <li className="informacion">10 colaboradores.</li>
-                            <li className="informacion">5 dispositivos maestro.</li>
-                            <li className="informacion">30 dispositivos esclavo.</li>
+                            <li className="informacion">2 administradores.</li>
+                            <li className="informacion">8 colaboradores.</li>
+                            <li className="informacion">2 dispositivos maestro.</li>
+                            <li className="informacion">8 dispositivos esclavo.</li>
                         </ul>
                     </div>
                     <div className="row" style={{ align: "center" }}>

@@ -506,8 +506,6 @@ class Back extends CI_Controller
                 "mac" => $mac,
                 "tipo" => $tipo,
                 "maestro" => $maestro,
-                "automatizado" => NULL,
-                "id_usuario" => $id_usuario,
                 "id_cosecha" => $id_cosecha
             );
         } else {
@@ -515,8 +513,6 @@ class Back extends CI_Controller
                 "nombre" => $nombre,
                 "mac" => $mac,
                 "tipo" => $tipo,
-                "automatizado" => NULL,
-                "id_usuario" => $id_usuario,
                 "id_cosecha" => $id_cosecha
             );
         }

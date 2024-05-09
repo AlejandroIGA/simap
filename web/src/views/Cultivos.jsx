@@ -12,6 +12,7 @@ function Cultivos() {
     const [plantasData, setPlantasData] = useState([]);
     const [editarForm, setEditarForm] = useState(false);
     const [fechaInicioAux, setFechaInicioAux ] = useState("");
+    let tipo = sessionStorage.getItem('tipo');
 
     const [cultivoId, setCultivoId] = useState('');
     const [nombre, setNombre] = useState("");
@@ -416,9 +417,17 @@ function Cultivos() {
                 </Link>
               </li>
               <li className="nav-item">
-                <Link type='button' to='/mainAdmin' className='nav-link'>
+                {
+                  tipo === "Free" ? 
+                  <Link type='button' to='/mainAdminFree' className='nav-link'>
                   Usuarios
                 </Link>
+                  :
+                  <Link type='button' to='/mainAdmin' className='nav-link'>
+                  Usuarios
+                </Link>
+                }
+                
               </li>
               <li className="nav-item">
                 <Link type='button' to='/dispositivos' className='nav-link'>
@@ -507,7 +516,7 @@ function Cultivos() {
             </div>
 
             {/*<--------------------TARJETAS CULTIVOS-------------------------->*/}
-            <div className='container p-0 pb-5 px-3'>
+            <div className='container p-0 pb-5 px-3' style={{height: "100vh"}}>
                 {
                     //Ciclo con los datos recuperados de la peticion getCultivos().
                     filteredResponseData.map((val, key) => {

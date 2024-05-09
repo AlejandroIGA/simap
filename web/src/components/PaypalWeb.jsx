@@ -18,9 +18,6 @@ function PaypalWeb() {
             method: 'POST',
             body: formData
         });
-        const data = await response.json();
-        console.log(data.mensaje);
-        alert(data.mensaje);
     }catch(error){
         console.error("ERROR PAYPAL: ", error.message);
     }
@@ -72,7 +69,7 @@ function PaypalWeb() {
   }
 
   function onError(err) {
-    console.log("onError: ",err);
+    console.log("Error: ", "Se cancelo la operación");
     alert("Error: ",err);
     let errObj = {
       err: err,
@@ -96,10 +93,10 @@ function PaypalWeb() {
                 <div class="card h-100" style={{ border: "none", background: '#f2f2f2', }}>
                   <div class="card-body">
                     <ul class="list-group list-group-flush" >
-                      <li class="list-group-item" style={{ background: '#f2f2f2', border: "none" }}>- 3 administradores</li>
-                      <li class="list-group-item" style={{ background: '#f2f2f2', border: "none" }}>- 10 colaboradores</li>
-                      <li class="list-group-item" style={{ background: '#f2f2f2', border: "none" }}>- 5 dispositivos maestro</li>
-                      <li class="list-group-item" style={{ background: '#f2f2f2', border: "none" }}>- 30 dispositivos esclavo</li>
+                      <li class="list-group-item" style={{ background: '#f2f2f2', border: "none" }}>- 2 administradores</li>
+                      <li class="list-group-item" style={{ background: '#f2f2f2', border: "none" }}>- 8 colaboradores</li>
+                      <li class="list-group-item" style={{ background: '#f2f2f2', border: "none" }}>- 2 dispositivos maestro</li>
+                      <li class="list-group-item" style={{ background: '#f2f2f2', border: "none" }}>- 8 dispositivos esclavo</li>
                     </ul>
                     <div className="row w-100">
                     <div className="col">

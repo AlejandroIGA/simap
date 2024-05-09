@@ -57,9 +57,11 @@ function Dispositivos() {
           });
   
           const data = await response.json();
-  
-          if (data.dispositivosMaestro.length > 1 && tipo === "Free") {
-            openModal();
+
+          if(data.dispositivosMaestro){
+            if (data.dispositivosMaestro.length > 1 && tipo === "Free") {
+              openModal();
+            }
           }
   
           const formDataDos = new FormData();
@@ -71,9 +73,13 @@ function Dispositivos() {
             });
   
             const dataDos = await responseDos.json();
-            if (dataDos.dispositivosEsclavo.length > 2 && tipo === "Free") {
-              openModal();
+
+            if(data.dispositivosEsclavo){
+              if (dataDos.dispositivosEsclavo.length > 2 && tipo === "Free") {
+                openModal();
+              }
             }
+            
         
       } catch (error) {
         console.error('ERROR:', error.message);
@@ -431,9 +437,17 @@ function Dispositivos() {
                 </Link>
               </li>
               <li className="nav-item">
-                <Link type='button' to='/mainAdmin' className='nav-link'>
+                {
+                  tipo === "Free" ? 
+                  <Link type='button' to='/mainAdminFree' className='nav-link'>
                   Usuarios
                 </Link>
+                  :
+                  <Link type='button' to='/mainAdmin' className='nav-link'>
+                  Usuarios
+                </Link>
+                }
+                
               </li>
               <li className="nav-item">
                 <Link type='button' to='/dispositivos' className='nav-link'>
@@ -502,7 +516,7 @@ function Dispositivos() {
                                                 }}>
                                             <option value="">Seleccionar cosecha</option>
                                                 {
-                                                    cosechas.length !== 0 ? (
+                                                    cosechas && cosechas.length !== 0 ? (
                                                         cosechas.map((cosecha) => (
                                                             <option className='text-black' value={cosecha.id_cosecha} key={cosecha.id_cosecha}> {cosecha.nombre} </option>
                                                         ))

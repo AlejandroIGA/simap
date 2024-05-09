@@ -32,7 +32,7 @@ function Login() {
             }
           }
   }, []);
-/*
+
   //INICIO DE SESION CON GOOGLE
   const onSuccess = async (response) => {
     console.log(response);
@@ -119,7 +119,7 @@ function Login() {
     console.log("Error: " + response);
   }
 
-  */
+  
 
 
   const login = async () => {
@@ -143,7 +143,6 @@ function Login() {
 
         if (dataResponse.resultado) {
           console.log("OK: ", dataResponse);
-          alert(dataResponse.mensaje);
           // Obtener el tipo de cuenta (tipo de usuario) de la respuesta
           const tipoCuenta = dataResponse.data.tipo;
           // Almacenar el tipo de cuenta en el estado cuenta
@@ -167,9 +166,12 @@ function Login() {
         }
       } else {
         console.error('Error al iniciar sesión: ', response.statusText);
-        alert('Error en credenciales');
+        alert('Error al iniciar sesión');
       }
     } catch (error) {
+      console.error('Error');
+      alert('Error al iniciar sesión, intenta de nuevo');
+      console.error(error.message);
       alert('Error al iniciar sesión, intenta de nuevo');
     }
   };
@@ -310,7 +312,8 @@ function Login() {
           cookiePolicy={'single_host_origin'}
         />
       </div>
-      */} 
+  */} 
+    
     </div>
   );
 }

@@ -116,16 +116,16 @@ function LandingPage() {
                                 <ul style={{ textAlign: 'left' }}>
                                 <p style={{fontWeight:"bold"}}>Beneficios: </p>
                                     <li>
-                                        3 administradores.
+                                        2 administradores.
                                     </li>
                                     <li>
-                                        10 colaboradores.
+                                        8 colaboradores.
                                     </li>
                                     <li>
-                                        5 dispositivo maestro.
+                                        2 dispositivo maestro.
                                     </li>
                                     <li>
-                                        30 dispositivos esclavo.
+                                        8 dispositivos esclavo.
                                     </li>
                                 </ul>
                                 <p style={{fontWeight:"bold"}}>$285 al mes.</p>

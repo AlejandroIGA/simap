@@ -57,26 +57,28 @@ class Usuarios_model extends CI_Model
         ->get();
 
         //die($this->db->last_query());
-        echo $aux->row();
+        //echo $aux->row();
 
 
-        if($aux->row()->cuenta_main == null){
-            $rs = $this->db
-            ->select("us.id_usuario,us.tipo_usuario,us.estatus,us.correo,us.psw,us.token,su.tipo")
-            ->from("usuario AS us")
-            ->join("suscripcion AS su", "su.id_usuario = us.id_usuario")
-            ->where("correo", $correo)
-            ->where("psw", $psw)
-            ->get();
-        }else{
-            $rs = $this->db
-            ->select("us.id_usuario,us.tipo_usuario,us.estatus,us.correo,us.psw,us.token,su.tipo")
-            ->from("usuario AS us")
-            ->join("suscripcion AS su", "su.id_usuario = $aux->row()->cuenta_main")
-            ->where("correo", $correo)
-            ->where("psw", $psw)
-            ->get();
-        }
+        $cuenta_main = $aux->row()->cuenta_main;
+
+if($aux->row()->cuenta_main == null){
+    $rs = $this->db
+        ->select("us.id_usuario,us.tipo_usuario,us.estatus,us.correo,us.psw,us.token,su.tipo")
+        ->from("usuario AS us")
+        ->join("suscripcion AS su", "su.id_usuario = us.id_usuario")
+        ->where("correo", $correo)
+        ->where("psw", $psw)
+        ->get();
+} else {
+    $rs = $this->db
+        ->select("us.id_usuario,us.tipo_usuario,us.estatus,us.correo,us.psw,us.token,su.tipo")
+        ->from("usuario AS us")
+        ->join("suscripcion AS su", "su.id_usuario = $cuenta_main")
+        ->where("correo", $correo)
+        ->where("psw", $psw)
+        ->get();
+}
 
         return $rs->num_rows() > 0 ?
         $rs->row() : NULL;
